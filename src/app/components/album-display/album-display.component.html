@@ -1,0 +1,8 @@
+<div class="album-display"
+     fxLayout="column"
+     fxLayoutAlign="space-around center"
+     fxLayoutGap="6px"
+     >
+  <img src="{{getAlbumArtUrl()}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
+  <img src="{{getSpotifyCodeUrl()}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
+</div>

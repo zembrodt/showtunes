@@ -1,0 +1,18 @@
+html, body {
+    height: 100%;
+}
+
+.container {
+    height: 100%;
+    overflow-y: hidden;
+}
+
+.fill-height {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+}
+
+.music-display-app {
+  height: 100%;
+}

@@ -1,0 +1,42 @@
+@import '~@angular/material/theming';
+
+// For explanation, see: https://material.angular.io/guide/theming
+
+@include mat-core();
+
+// Light theme
+$light-primary: mat-palette($mat-gray);
+$light-accent:  mat-palette($mat-green, A400, A200, A700);
+$light-warn:    mat-palette($mat-deep-orange);
+
+$light-theme: mat-light-theme((
+  color: (
+    primary: $light-primary,
+    accent: $light-accent,
+    warn: $light-warn,
+  )
+));
+
+@include angular-material-theme($light-theme);
+.light-theme {
+  background-color: mat-color($mat-blue-gray, 50);
+}
+
+// Alternate dark theme
+$dark-primary: mat-palette($mat-gray);
+$dark-accent:  mat-palette($mat-green, A400, A200, A700);
+$dark-warn:    mat-palette($mat-deep-orange);
+
+$dark-theme: mat-light-theme((
+  color: (
+    primary: $dark-primary,
+    accent: $dark-accent,
+    warn: $dark-warn,
+  )
+));
+
+.dark-theme {
+  @include angular-material-theme($dark-theme);
+  background-color: mat-color($mat-blue-gray, 700);
+  color: mat-color($mat-gray, 100);
+}

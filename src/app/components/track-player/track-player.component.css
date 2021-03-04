@@ -1,0 +1,34 @@
+.track-player {
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+}
+
+.track-title {
+  font-weight: bold;
+}
+.track-artist {
+}
+
+.track-album {
+}
+
+.track-slider {
+  width: 100%;
+}
+
+.track-playback {
+  width: 100%;
+}
+
+.player-buttons {
+}
+
+.volume-slider {
+  width: 100%;
+  max-width: 60%;
+}
+
+.mat-slider-horizontal {
+  width: 100%;
+}

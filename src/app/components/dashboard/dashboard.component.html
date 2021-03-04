@@ -1,0 +1,26 @@
+<div class="dashboard">
+  <div class="dark-mode-toggle">
+    <app-dark-mode></app-dark-mode>
+  </div>
+  <div class="content"
+       fxLayout="row"
+       fxLayout.lt-sm="column"
+       fxLayoutAlign="space-around center">
+    <div class="dashboard-item album-display">
+      <app-album-display
+        [album]="album"
+        [codeId]="currentTrack.id"></app-album-display>
+    </div>
+    <div class="dashboard-item track-player">
+      <app-track-player
+        [track]="currentTrack"
+        (progressChange)="onProgressChange($event)"
+        (playingChange)="onPlayingChange($event)"
+        (skipNextChange)="onSkipNextChange($event)"
+        (volumeChange)="onVolumeChange($event)"
+        (shuffleChange)="onShuffleChange($event)"
+        (repeatChange)="onRepeatChange($event)"></app-track-player>
+    </div>
+  </div>
+</div>
+

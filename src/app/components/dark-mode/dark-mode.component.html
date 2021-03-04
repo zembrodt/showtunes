@@ -1,0 +1,11 @@
+<div class="dark-mode-toggle"
+     fxLayout="row"
+     fxLayoutGap="6px">
+  <mat-icon [color]="iconColor">dark_mode</mat-icon>
+  <mat-slide-toggle
+    [disabled]="!darkModeEnabled"
+    [checked]="getDarkMode()"
+    [color]="'primary'"
+    (toggleChange)="onDarkModeChange($event)"
+  ></mat-slide-toggle>
+</div>
