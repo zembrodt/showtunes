@@ -3,6 +3,12 @@
   height: auto;
 }
 
+.album-placeholder {
+  width: 508px;
+  height: 508px;
+  border: 2px dashed #9e9e9e;
+}
+
 .img-sm {
   width: 70%;
 }

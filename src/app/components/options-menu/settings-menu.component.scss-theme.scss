@@ -1,0 +1,14 @@
+@import "~@angular/material/theming";
+
+@mixin options-menu-theme($theme) {
+  $primary: map-get($theme, primary);
+  $foreground: map-get($theme, foreground);
+
+  .options-icon {
+    color: mat-color($primary, text);
+  }
+
+  .foreground-text {
+    color: mat-color($foreground, text);
+  }
+}

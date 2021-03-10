@@ -1,0 +1,37 @@
+<div class="color-picker"
+     fxLayout="row">
+  <form class="color-picker-form" [formGroup]="form">
+    <mat-form-field class="color-picker-field foreground-text">
+      <mat-label>Spotify Code color</mat-label>
+      <span matPrefix>#</span>
+      <input matInput
+             formControlName="color"
+             [formControl]="inputControl"
+             (input)="onColorChange($event);"
+             autocapitalize="on"
+             autocomplete="off"
+             maxlength="6"
+             placeholder="{{placeholderColor}}">
+      <mat-error *ngIf="inputControl.hasError('pattern') && !inputControl.hasError('required')">
+        Value must be a valid hex value
+      </mat-error>
+      <mat-error *ngIf="inputControl.hasError('required')">
+        Background color is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+  </form>
+  <button mat-icon-button [matMenuTriggerFor]="colorPickerMenu">
+    <mat-icon class="app-icon">colorize</mat-icon>
+  </button>
+  <mat-menu #colorPickerMenu="matMenu"> <!--[ngClass]="getMenuClass()"-->
+    <mat-grid-list cols="6" (click)="$event.stopPropagation()">
+      <mat-grid-tile *ngFor="let presetColor of presetColors">
+        <button mat-fab
+                class="color-button"
+                [ngStyle]="calculateButtonStyle(presetColor)"
+                [ngClass]="calculateButtonClass(presetColor)"
+                (click)="onPresetColorSelect(presetColor); $event.stopPropagation();"></button>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-menu>
+</div>

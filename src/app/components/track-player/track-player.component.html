@@ -2,7 +2,7 @@
 <div class="track-player"
      fxLayout="column"
      fxLayoutAlign="space-around stretch">
-  <div class="track-info"
+  <div *ngIf="track" class="track-info"
      fxLayout="column"
      fxLayoutAlign="space-around start"
      fxLayoutGap="24px">
@@ -10,45 +10,62 @@
     <div class="mat-display-1 track-artist">{{track.artist}}</div>
     <div class="mat-display-1 track-album">{{track.album}}</div>
   </div>
-  <div class="mat-subheading-2 track-playback"
-       fxLayout="row"
-       fxLayoutAlign="center center"
-       fxLayoutGap="6px">
-    <div class="progress-time">{{getProgress(track.progress)}}</div>
+  <div *ngIf="!track" class="track-placeholder"
+       fxLayout="column"
+       fxLayoutAlign="center start">
+    <div class="mat-display-1">No track currently playing</div>
+  </div>
+  <div class="track-playback"
+       fxLayout="column"
+       fxLayoutAlign="center center">
     <div class="track-slider">
-      <mat-slider min="0" [max]="track.duration" step="1" [value]="track.progress" (change)="onProgressChange($event)"></mat-slider>
+      <mat-slider min="0" [max]="track ? track.duration : 100" step="1" [value]="track ? track.progress : 0" (change)="onProgressChange($event)"></mat-slider>
     </div>
-    <div class="duration-time">{{getProgress(track.duration)}}</div>
+    <div class="mat-subheading-2 time-values"
+         fxLayout="row"
+    fxLayoutAlign="center center">
+      <div class="progress-time">{{track ? getProgress(track.progress) : '0:00'}}</div>
+      <div class="duration-time">{{track ? getProgress(track.duration) : '0:00'}}</div>
+    </div>
   </div>
   <div class="mat-subheading-2 player-buttons"
        fxLayout="row"
-       fxLayoutAlign="center center">
-    <button mat-icon-button color="{{track.isShuffle ? 'accent' : 'primary'}}" (click)="onToggleShuffle()">
-      <mat-icon aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
+       fxLayoutAlign="center center"
+       fxLayoutGap="48px">
+    <button mat-icon-button color="{{getShuffleColor()}}" (click)="onToggleShuffle()">
+      <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
     </button>
     <button mat-icon-button color="primary" (click)="onSkipPrevious()">
-      <mat-icon aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
+      <mat-icon class="player-button" aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
     </button>
-    <button mat-icon-button color="primary" (click)="onPause()">
-      <mat-icon aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon()}}</mat-icon>
+    <button mat-fab class="play-button" color="primary" (click)="onPause()">
+      <mat-icon class="player-button" color="primary" aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon()}}</mat-icon>
     </button>
     <button mat-icon-button color="primary" (click)="onSkipNext()">
-      <mat-icon aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
+      <mat-icon class="player-button" aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
     </button>
     <button mat-icon-button color="{{getRepeatColor()}}" (click)="onRepeatChange()">
-      <mat-icon aria-hidden="false" aria-label="Repeat">{{getRepeatIcon()}}</mat-icon>
+      <mat-icon class="player-button" aria-hidden="false" aria-label="Repeat">{{getRepeatIcon()}}</mat-icon>
     </button>
   </div>
-  <div class="mat-subheading-2 track-volume"
+  <div class="track-volume"
        fxLayout="row"
        fxLayoutAlign="center center"
        fxLayoutGap="6px">
-    <button mat-icon-button color="primary" (click)="onVolumeMute()">
-      <mat-icon>{{getVolumeIcon()}}</mat-icon>
+    <button mat-icon-button class="mat-subheading-2" color="primary" (click)="onVolumeMute()">
+      <mat-icon class="volume-button">{{getVolumeIcon()}}</mat-icon>
     </button>
     <div class="volume-slider">
-      <mat-slider min="0" max="100" step="1" [value]="track.volume" (change)="onVolumeChange($event)"></mat-slider>
+      <mat-slider min="0" max="100" step="1" [value]="track ? track.volume : 100" (change)="onVolumeChange($event)"></mat-slider>
     </div>
-    <div class="volume-amount">{{track.volume}}%</div>
+    <!--<button mat-icon-button disabled class="mat-subheading-2 volume-filler">
+      <mat-icon class="volume-button">volume_up</mat-icon>
+    </button>-->
+    <app-devices></app-devices>
+    <div class="like-button">
+      <button mat-icon-button [color]="(track && track.isLiked) ? 'accent' : 'primary'" (click)="onLikeChange()">
+        <mat-icon>thumb_up</mat-icon>
+      </button>
+    </div>
   </div>
 </div>

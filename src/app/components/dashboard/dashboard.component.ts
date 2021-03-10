@@ -1,13 +1,15 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { map } from 'rxjs/operators';
-import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
-import {interval, Subscription} from 'rxjs';
-import { Track } from '../../models/track.model';
-import { Album } from '../../models/album.model';
-import {AlbumDisplayComponent} from '../album-display/album-display.component';
-import {SpotifyService} from '../../services/spotify.service';
-import {Router} from '@angular/router';
-import {PREVIOUS_VOLUME} from '../../core/globals';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { interval, Subscription } from 'rxjs';
+import { newTrack, Track } from '../../models/track.model';
+import {Album, newAlbum} from '../../models/album.model';
+import { SpotifyService } from '../../services/spotify/spotify.service';
+import { Router } from '@angular/router';
+import { PREVIOUS_VOLUME } from '../../core/globals';
+import { CurrentPlaybackResponse } from '../../models/current-playback.model';
+import {StorageService} from '../../services/storage/storage.service';
+
+const LAST_TRACK = 'LAST_TRACK';
+const LAST_ALBUM = 'LAST_ALBUM';
 
 // Default values
 const PLAYBACK_INTERVAL = 1000; // ms
@@ -24,37 +26,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   nextPlaybackRequest: Subscription;
 
-  currentTrack: Track = {
-    id: '',
-    title: '',
-    artist: '',
-    album: 'Loading...',
-    progress: 0,
-    duration: 100,
-    isPlaying: false,
-    isShuffle: false,
-    repeatState: 'off',
-    volume: 100
-  };
+  currentTrack: Track;
 
-  album: Album = {
-    id: '',
-    coverArt: { url: 'assets/images/placeholder.png', width: 512, height: 512 },
-    name: '',
-    release_date: '',
-    total_tracks: 0,
-    album_type: '',
-    artists: [
-      {id: '', name: '', type: '', uri: ''}
-    ],
-    type: '',
-    uri: ''
-  };
+  album: Album;
 
   changeOccurring = false;
   changeOccurred = false;
 
-  constructor(private spotifyService: SpotifyService, private router: Router) {}
+  constructor(private router: Router, private spotifyService: SpotifyService, private storage: StorageService) { }
 
   ngOnInit(): void {
     if (!this.spotifyService.isAuthTokenSet()) {
@@ -72,12 +51,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.updateInfo();
+    // load previous track progress if no track is playing
+    if (!this.currentTrack) {
+      const prevTrack = this.storage.get(LAST_TRACK);
+      if (prevTrack) {
+        this.currentTrack = JSON.parse(prevTrack);
+        const prevAlbum = this.storage.get(LAST_ALBUM);
+        if (prevAlbum) {
+          this.album = JSON.parse(prevAlbum);
+        }
+      }
+    }
+    // delete outdated progress if exists
+    this.storage.remove(LAST_TRACK);
+    this.storage.remove(LAST_ALBUM);
+
     this.startPlaybackRequests();
   }
 
   ngOnDestroy(): void {
     if (this.nextPlaybackRequest) {
       this.nextPlaybackRequest.unsubscribe();
+    }
+  }
+
+  @HostListener('window:unload', ['$event'])
+  unloadHandler(event): void {
+    // Save the current track
+    if (this.currentTrack) {
+      this.storage.set(LAST_TRACK, JSON.stringify(this.currentTrack));
+      if (this.album) {
+        this.storage.set(LAST_ALBUM, JSON.stringify(this.album));
+      }
     }
   }
 
@@ -93,13 +98,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private updateInfo(): void {
-    this.spotifyService.getCurrentTrack().subscribe(res => {
+    this.spotifyService.getCurrentTrack().subscribe((res: CurrentPlaybackResponse) => {
+      console.log('Playback response: ' + JSON.stringify(res));
       if (res && !this.changeOccurring && !this.changeOccurred) {
         if (res.item) {
+          if (!this.currentTrack) {
+            this.currentTrack = newTrack();
+          }
           if (this.currentTrack.id !== res.item.id) {
             this.currentTrack.id = res.item.id;
             this.currentTrack.title = res.item.name;
             this.currentTrack.duration = res.item.duration_ms;
+            this.currentTrack.uri = res.item.uri;
             // Artist info
             if (res.item.artists && res.item.artists.length > 0) {
               this.currentTrack.artist = res.item.artists[0].name;
@@ -108,6 +118,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             if (res.item.album) {
               this.currentTrack.album = res.item.album.name;
 
+              if (!this.album) {
+                this.album = newAlbum();
+              }
               this.album.id = res.item.album.id;
               this.album.name = res.item.album.name;
               this.album.album_type = res.item.album.type;
@@ -145,7 +158,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
         if (this.currentTrack.volume !== res.device.volume_percent) {
           if (this.currentTrack.volume > 0 && res.device.volume_percent === 0) {
-            window.localStorage.setItem(PREVIOUS_VOLUME, this.currentTrack.volume.toString());
+            this.storage.set(PREVIOUS_VOLUME, this.currentTrack.volume.toString());
           }
           this.currentTrack.volume = res.device.volume_percent;
         }

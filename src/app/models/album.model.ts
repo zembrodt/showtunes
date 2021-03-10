@@ -13,6 +13,24 @@ export interface Album {
   uri: string;
 }
 
+export function newAlbum(): Album {
+  return {
+    id: '',
+    name: '',
+    release_date: '',
+    total_tracks: 0,
+    type: '',
+    album_type: '',
+    artists: [],
+    coverArt: {
+      width: 0,
+      height: 0,
+      url: ''
+    },
+    uri: ''
+  };
+}
+
 export interface AlbumResponse {
   id: string;
   name: string;

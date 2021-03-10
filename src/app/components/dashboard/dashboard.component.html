@@ -1,6 +1,6 @@
 <div class="dashboard">
-  <div class="dark-mode-toggle">
-    <app-dark-mode></app-dark-mode>
+  <div class="user-options-menu">
+    <app-settings-menu></app-settings-menu>
   </div>
   <div class="content"
        fxLayout="row"
@@ -9,7 +9,7 @@
     <div class="dashboard-item album-display">
       <app-album-display
         [album]="album"
-        [codeId]="currentTrack.id"></app-album-display>
+        [uri]="currentTrack ? currentTrack.uri : null"></app-album-display>
     </div>
     <div class="dashboard-item track-player">
       <app-track-player

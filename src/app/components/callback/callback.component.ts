@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {SpotifyService} from '../../services/spotify.service';
+import {SpotifyService} from '../../services/spotify/spotify.service';
 
 const codeKey = 'code';
 const errorKey = 'error';

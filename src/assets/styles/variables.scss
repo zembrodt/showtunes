@@ -1,0 +1,10 @@
+@import "src/assets/styles/themes";
+
+$-primary-light: mat-color($light-primary);
+$-primary-dark:  mat-color($dark-primary);
+
+$-accent-light: mat-color($light-accent);
+$-accent-dark:  mat-color($dark-accent);
+
+$-warn-light: mat-color($light-warn);
+$-warn-dark:  mat-color($dark-warn);

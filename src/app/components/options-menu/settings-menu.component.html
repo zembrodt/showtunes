@@ -1,0 +1,49 @@
+<button mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu"
+          (closed)="onMenuClose($event)"
+          (click)="$event.stopPropagation();">
+  <div class="menu-item dark-mode-toggle"
+       fxLayout="row"
+       fxLayoutGap="6px">
+    <mat-icon [ngClass]="!isDarkMode ? 'app-icon' : ''"
+              [color]="isDarkMode ? 'accent' : ''">dark_mode</mat-icon>
+    <mat-slide-toggle
+      [checked]="isDarkMode"
+      [color]="'primary'"
+      (toggleChange)="onDarkModeChange()"
+      (click)="$event.stopPropagation();"
+    ></mat-slide-toggle>
+  </div>
+  <div class="menu-item bar-code-toggle"
+       fxLayout="row"
+       fxLayoutGap="6px">
+    <mat-icon class="app-icon">qr_code_2</mat-icon>
+    <mat-slide-toggle
+      [checked]="showSpotifyCode"
+      [color]="'primary'"
+      (toggleChange)="onShowBarCodeChange()"
+      (click)="$event.stopPropagation();"
+    ></mat-slide-toggle>
+  </div>
+  <div class="menu-item bar-color-toggle"
+       fxLayout="row"
+       fxLayoutGap="6px">
+    <mat-icon class="app-icon">invert_colors</mat-icon>
+    <mat-slide-toggle
+      [checked]="isBarColorBlack()"
+      [color]="'primary'"
+      (toggleChange)="onBarColorChange()"
+      (click)="$event.stopPropagation();"
+    ></mat-slide-toggle>
+  </div>
+  <app-color-picker
+      [color]="backgroundColor"
+      [placeholderColor]="getPlaceholderColor()"
+      [presetColors]="getPresetColors()"
+      [colorResetEvent]="colorPickerResetEvent.asObservable()"
+      (colorChange)="onColorChange($event)"
+      (click)="$event.stopPropagation();"></app-color-picker>
+</mat-menu>
+

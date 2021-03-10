@@ -1,0 +1,35 @@
+@import "~@angular/material/theming";
+@import "./assets/styles/themes";
+@import "./assets/styles/mat-menu-theme";
+@import "app/components/app/app.component.scss-theme";
+@import "app/components/options-menu/settings-menu.component.scss-theme";
+
+@include mat-core();
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@mixin custom-components-theme($theme) {
+  @include app-component-theme($theme);
+  @include options-menu-theme($theme);
+}
+
+.light-theme {
+  @include angular-material-theme($light-theme);
+  @include custom-components-theme($light-theme);
+
+  $foreground: map-get($light-theme, foreground);
+  .app-icon {
+    color: mat-color($foreground, text);
+  }
+}
+
+.dark-theme {
+  @include angular-material-theme($dark-theme);
+  @include custom-components-theme($dark-theme);
+
+  $primary: map-get($dark-theme, primary);
+  .app-icon {
+    color: mat-color($primary, text);
+  }
+}

@@ -8,16 +8,10 @@
   display: flex;
 }
 
-.dark-mode-toggle {
+.user-options-menu {
   position: absolute;
   top: 12px;
-  right: 12px;
-}
-
-.more-button {
-  position: absolute;
-  top: 5px;
-  right: 10px;
+  left: 12px;
 }
 
 .dashboard-item {

@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Track} from '../../models/track.model';
 import {MatSliderChange} from '@angular/material/slider';
 import {PREVIOUS_VOLUME} from '../../core/globals';
+import {StorageService} from '../../services/storage/storage.service';
 
 // Default values
 const DEFAULT_VOLUME = 50;
@@ -40,7 +41,7 @@ export class TrackPlayerComponent implements OnInit {
   @Output() shuffleChange = new EventEmitter<boolean>();
   @Output() repeatChange = new EventEmitter<string>();
 
-  constructor() { }
+  constructor(private storage: StorageService) { }
 
   ngOnInit(): void {
   }
@@ -67,82 +68,112 @@ export class TrackPlayerComponent implements OnInit {
   }
 
   onProgressChange(change: MatSliderChange): void {
-    if (change.value >= 0 && change.value <= this.track.duration) {
-      this.progressChange.emit(change.value);
+    if (this.track) {
+      if (change.value >= 0 && change.value <= this.track.duration) {
+        this.progressChange.emit(change.value);
+      }
     }
   }
 
   onPause(): void {
-    this.playingChange.emit(!this.track.isPlaying);
+    if (this.track) {
+      this.playingChange.emit(!this.track.isPlaying);
+    }
   }
 
   onSkipPrevious(): void {
-    this.skipNextChange.emit(false);
+    if (this.track) {
+      this.skipNextChange.emit(false);
+    }
   }
 
   onSkipNext(): void {
-    this.skipNextChange.emit(true);
+    if (this.track) {
+      this.skipNextChange.emit(true);
+    }
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    if (change.value >= 0 && change.value <= 100) {
+    if (this.track && change.value >= 0 && change.value <= 100) {
       this.volumeChange.emit(change.value);
     }
   }
 
   onVolumeMute(): void {
-    if (this.track.volume > 0) {
-      window.localStorage.setItem(PREVIOUS_VOLUME, this.track.volume.toString());
-      this.volumeChange.emit(0);
-    } else {
-      const previousVolume = parseInt(window.localStorage.getItem(PREVIOUS_VOLUME), 10);
-      if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
-        this.volumeChange.emit(previousVolume);
+    if (this.track) {
+      if (this.track.volume > 0) {
+        this.storage.set(PREVIOUS_VOLUME, this.track.volume.toString());
+        this.volumeChange.emit(0);
       } else {
-        // Emit a default volume
-        this.volumeChange.emit(DEFAULT_VOLUME);
+        const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
+        if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
+          this.volumeChange.emit(previousVolume);
+        } else {
+          // Emit a default volume
+          this.volumeChange.emit(DEFAULT_VOLUME);
+        }
       }
     }
   }
 
   onToggleShuffle(): void {
-    this.shuffleChange.emit(!this.track.isShuffle);
-  }
-
-  onRepeatChange(): void {
-    switch (this.track.repeatState) {
-      case REPEAT_OFF:
-        this.repeatChange.emit(REPEAT_CONTEXT);
-        break;
-      case REPEAT_CONTEXT:
-        this.repeatChange.emit(REPEAT_TRACK);
-        break;
-      default:
-        this.repeatChange.emit(REPEAT_OFF);
+    if (this.track) {
+      this.shuffleChange.emit(!this.track.isShuffle);
     }
   }
 
+  onRepeatChange(): void {
+    if (this.track) {
+      switch (this.track.repeatState) {
+        case REPEAT_OFF:
+          this.repeatChange.emit(REPEAT_CONTEXT);
+          break;
+        case REPEAT_CONTEXT:
+          this.repeatChange.emit(REPEAT_TRACK);
+          break;
+        default:
+          this.repeatChange.emit(REPEAT_OFF);
+      }
+    }
+  }
+
+  onLikeChange(): void {
+    console.log('TODO: Track like');
+  }
+
   getPlayIcon(): string {
-    return this.track.isPlaying ? PAUSE_ICON : PLAY_ICON;
+    if (this.track && this.track.isPlaying) {
+      return PAUSE_ICON;
+    }
+    return PLAY_ICON;
   }
 
   getRepeatIcon(): string {
     let icon = REPEAT_ICON;
-    if (this.track.repeatState === REPEAT_TRACK) {
+    if (this.track && this.track.repeatState === REPEAT_TRACK) {
       icon = REPEAT_ONE_ICON;
     }
     return icon;
   }
 
   getRepeatColor(): string {
-    if (this.track.repeatState === REPEAT_OFF) {
+    if (!this.track || this.track.repeatState === REPEAT_OFF) {
       return 'primary';
-    } else {
-      return 'accent';
     }
+    return 'accent';
+  }
+
+  getShuffleColor(): string {
+    if (!this.track || !this.track.isShuffle) {
+      return 'primary';
+    }
+    return 'accent';
   }
 
   getVolumeIcon(): string {
+    if (!this.track) {
+      return VOLUME_HIGH_ICON;
+    }
     let icon = VOLUME_MUTE_ICON;
     if (this.track.volume >= 50) {
       icon = VOLUME_HIGH_ICON;

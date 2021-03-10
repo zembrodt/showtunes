@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CurrentPlaybackResponse } from '../models/current-playback.model';
-import { TokenResponse } from '../models/token.model';
-import { generateRandomString } from '../core/crypto';
-import {AppConfig} from '../app.config';
+import { CurrentPlaybackResponse } from '../../models/current-playback.model';
+import { TokenResponse } from '../../models/token.model';
+import { generateRandomString } from '../../core/crypto';
+import {AppConfig} from '../../app.config';
+import {StorageService} from '../storage/storage.service';
+import {DeviceResponse, MultipleDevicesResponse} from '../../models/device.model';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -20,6 +22,7 @@ const volumeEndpoint   = playbackEndpoint + '/volume';
 const shuffleEndpoint  = playbackEndpoint + '/shuffle';
 const repeatEndpoint   = playbackEndpoint + '/repeat';
 const seekEndpoint     = playbackEndpoint + '/seek';
+const devicesEndpoint  = playbackEndpoint + '/devices';
 
 // Local storage keys
 const tokenKey = 'AUTH_TOKEN';
@@ -45,9 +48,9 @@ export class SpotifyService {
   authToken: TokenResponse = null;
   state: string = null;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private storage: StorageService) {
     if (this.authToken === null) {
-      const localToken = window.localStorage.getItem(tokenKey);
+      const localToken = this.storage.get(tokenKey);
       if (localToken !== null) {
         this.authToken = JSON.parse(localToken);
       }
@@ -56,15 +59,15 @@ export class SpotifyService {
     // TODO: may not need to do this
     this.tokenExpiresIn();
 
-    this.state = window.localStorage.getItem(stateKey);
+    this.state = this.storage.get(stateKey);
     if (this.state === null) {
       this.state = generateRandomString(stateLength);
-      window.localStorage.setItem(stateKey, this.state);
+      this.storage.set(stateKey, this.state);
     }
   }
 
   isAuthTokenSet(): boolean {
-    const localToken = window.localStorage.getItem(tokenKey);
+    const localToken = this.storage.get(tokenKey);
     if (this.authToken !== null || localToken !== null) {
       if (localToken !== null) {
         this.authToken = JSON.parse(localToken);
@@ -78,7 +81,7 @@ export class SpotifyService {
 
   requestAuthToken(code: string): Promise<boolean> {
     console.log('Requesting new auth token');
-    const tok = window.localStorage.getItem(tokenKey);
+    const tok = this.storage.get(tokenKey);
     if (tok) {
       console.log('Current token: ' + JSON.stringify(tok));
     }
@@ -104,7 +107,7 @@ export class SpotifyService {
         ).subscribe(token => {
           // Set new auth token
           this.authToken = token;
-          window.localStorage.setItem(tokenKey, JSON.stringify(token));
+          this.storage.set(tokenKey, JSON.stringify(token));
           resolve(true);
         },
         error => {
@@ -116,7 +119,7 @@ export class SpotifyService {
 
   setAuthToken(token: TokenResponse): void {
     this.authToken = token;
-    window.localStorage.setItem(tokenKey, JSON.stringify(token));
+    this.storage.set(tokenKey, JSON.stringify(token));
   }
 
   getCurrentTrack(): Observable<CurrentPlaybackResponse> {
@@ -188,6 +191,11 @@ export class SpotifyService {
     });
   }
 
+  getDevices(): Observable<MultipleDevicesResponse> {
+    this.checkTokenExpiry();
+    return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
+  }
+
   getAuthorizeRequestUrl(): string {
     const request = authEndpoint +
       '?response_type=code' +
@@ -229,7 +237,7 @@ export class SpotifyService {
         console.log('Loaded auth token has expired.');
         // delete token
         this.authToken = null;
-        window.localStorage.removeItem(tokenKey);
+        this.storage.remove(tokenKey);
       }
     }
     return 0;

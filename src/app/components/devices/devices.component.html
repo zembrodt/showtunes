@@ -1,0 +1,9 @@
+<button mat-icon-button [matMenuTriggerFor]="devicesMenu">
+  <mat-icon class="app-icon">devices</mat-icon>
+</button>
+<mat-menu #devicesMenu="matMenu">
+  <button *ngFor="let device of devices" mat-menu-item>
+    <mat-icon class="app-icon">{{getDeviceIcon(device.type)}}</mat-icon>
+    <span>{{device.name}}</span>
+  </button>
+</mat-menu>

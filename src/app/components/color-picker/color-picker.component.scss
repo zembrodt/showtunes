@@ -1,0 +1,39 @@
+@import "src/assets/styles/themes";
+@import "src/assets/styles/variables";
+
+::ng-deep .mat-menu-panel {
+  max-width: 100% !important;
+  width: calc(48px * 6) !important;
+}
+
+.color-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  box-shadow: 0px 0px 0px -1px rgb(0 0 0 / 20%);
+  transition-duration: 280ms, 280ms !important;
+}
+
+.white-unselected {
+  background-color: #FFFFFF !important;
+}
+
+.white-unselected-light {
+  border: 2px solid $-primary-light !important;
+}
+
+.white-unselected-dark {
+  border: 2px solid $-primary-dark !important;
+}
+
+.selected {
+  background-color: transparent !important;
+}
+
+.white-selected-light {
+  box-shadow: $-primary-light 0px 0px 0px 6px inset !important;
+}
+
+.white-selected-dark {
+  box-shadow: $-primary-dark 0px 0px 0px 6px inset !important;
+}
