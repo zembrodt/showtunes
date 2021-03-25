@@ -15,12 +15,20 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
 import { AlbumDisplayComponent } from './components/album-display/album-display.component';
 import { MaterialModule } from './modules/material.module';
-import { SettingsMenuComponent } from './components/options-menu/settings-menu.component';
+import { SettingsMenuComponent } from './components/settings-menu/settings-menu.component';
 import { ColorPickerComponent } from './components/color-picker/color-picker.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DevicesComponent } from './components/devices/devices.component';
 import { StorageService } from './services/storage/storage.service';
-import { StoreModule } from '@ngrx/store';
+import {NgxsModule} from '@ngxs/store';
+import {SettingsState} from './core/settings/settings.state';
+import {PlaybackState} from './core/playback/playback.state';
+import {environment} from '../environments/environment';
+import {SpotifyService} from './services/spotify/spotify.service';
+import {PlaybackService} from './core/playback/playback.service';
+import {NgxsStoragePluginModule} from '@ngxs/storage-plugin';
+import {NgxsReduxDevtoolsPluginModule} from '@ngxs/devtools-plugin';
+import {AuthState} from './core/auth/auth.state';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   return () => appConfig.load();
@@ -47,15 +55,28 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     FlexLayoutModule,
     ColorPickerModule,
     FontAwesomeModule,
-    StoreModule.forRoot({}, {}),
+    NgxsModule.forRoot(
+      [AuthState, PlaybackState, SettingsState],
+      {developmentMode: !environment.production}
+      ),
+    NgxsStoragePluginModule.forRoot({
+      key: ['MUSIC_DISPLAY_AUTH', 'MUSIC_DISPLAY_SETTINGS']
+    }),
+    NgxsReduxDevtoolsPluginModule.forRoot({
+      disabled: environment.production
+    })
   ],
   providers: [
     AppConfig,
-    { provide: APP_INITIALIZER,
+    {
+      provide: APP_INITIALIZER,
       useFactory: initializeApp,
       deps: [AppConfig],
-      multi: true },
-    StorageService
+      multi: true
+    },
+    StorageService,
+    SpotifyService,
+    PlaybackService,
   ],
   bootstrap: [AppComponent]
 })

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import {SpotifyService} from '../../services/spotify/spotify.service';
-import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,5 +14,4 @@ export class LoginComponent implements OnInit {
     const redirect = this.spotify.getAuthorizeRequestUrl();
     window.location.href = redirect;
   }
-
 }

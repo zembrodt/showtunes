@@ -1,8 +1,19 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Track} from '../../models/track.model';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatSliderChange} from '@angular/material/slider';
 import {PREVIOUS_VOLUME} from '../../core/globals';
 import {StorageService} from '../../services/storage/storage.service';
+import {Select, Store} from '@ngxs/store';
+import {PlaybackState} from '../../core/playback/playback.state';
+import {Observable, Subject} from 'rxjs';
+import {AlbumModel, TrackModel} from '../../core/playback/playback.model';
+import {
+  ChangeDeviceVolume,
+  ChangeProgress,
+  ChangeRepeatState, SkipNextTrack, SkipPreviousTrack,
+  TogglePlaying,
+  ToggleShuffle
+} from '../../core/playback/playback.actions';
+import {takeUntil} from 'rxjs/operators';
 
 // Default values
 const DEFAULT_VOLUME = 50;
@@ -28,22 +39,36 @@ const REPEAT_TRACK = 'track';
   templateUrl: './track-player.component.html',
   styleUrls: ['./track-player.component.css']
 })
-export class TrackPlayerComponent implements OnInit {
+export class TrackPlayerComponent implements OnInit, OnDestroy {
+  private ngUnsubscribe = new Subject();
 
-  @Input() track: Track;
+  @Select(PlaybackState.track) track$: Observable<TrackModel>;
+  @Select(PlaybackState.album) album$: Observable<AlbumModel>;
+  @Select(PlaybackState.deviceVolume) volume$: Observable<number>;
+  @Select(PlaybackState.progress) progress$: Observable<number>;
+  @Select(PlaybackState.duration) duration$: Observable<number>;
+  @Select(PlaybackState.isPlaying) isPlaying$: Observable<boolean>;
+  @Select(PlaybackState.isShuffle) isShuffle$: Observable<boolean>;
+  @Select(PlaybackState.repeat) repeat$: Observable<string>;
+  @Select(PlaybackState.isLiked) isLiked$: Observable<boolean>;
 
-  // Outputs
-  @Output() progressChange = new EventEmitter<number>();
-  @Output() playingChange = new EventEmitter<boolean>();
-  // true if skipping to next, false if skipping to previous
-  @Output() skipNextChange = new EventEmitter<boolean>();
-  @Output() volumeChange = new EventEmitter<number>();
-  @Output() shuffleChange = new EventEmitter<boolean>();
-  @Output() repeatChange = new EventEmitter<string>();
+  private volume: number;
+  private repeatState: string;
 
-  constructor(private storage: StorageService) { }
+  constructor(private storage: StorageService, private store: Store) { }
 
   ngOnInit(): void {
+    this.volume$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((volume) => this.volume = volume);
+    this.repeat$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((repeat) => this.repeatState = repeat);
+  }
+
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   getProgress(milliseconds: number): string {
@@ -68,72 +93,58 @@ export class TrackPlayerComponent implements OnInit {
   }
 
   onProgressChange(change: MatSliderChange): void {
-    if (this.track) {
-      if (change.value >= 0 && change.value <= this.track.duration) {
-        this.progressChange.emit(change.value);
-      }
-    }
+    // TODO: check this is within 0 and track duration?
+    console.log('Updating progress to: ' + change.value);
+    this.store.dispatch(new ChangeProgress(change.value));
   }
 
   onPause(): void {
-    if (this.track) {
-      this.playingChange.emit(!this.track.isPlaying);
-    }
+    this.store.dispatch(new TogglePlaying());
   }
 
   onSkipPrevious(): void {
-    if (this.track) {
-      this.skipNextChange.emit(false);
-    }
+    this.store.dispatch(new SkipPreviousTrack());
   }
 
   onSkipNext(): void {
-    if (this.track) {
-      this.skipNextChange.emit(true);
-    }
+    this.store.dispatch(new SkipNextTrack());
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    if (this.track && change.value >= 0 && change.value <= 100) {
-      this.volumeChange.emit(change.value);
-    }
+    // TODO: check value is within 0 and 100?
+    console.log('Changing volume to: ' + change.value);
+    this.store.dispatch(new ChangeDeviceVolume(change.value));
   }
 
   onVolumeMute(): void {
-    if (this.track) {
-      if (this.track.volume > 0) {
-        this.storage.set(PREVIOUS_VOLUME, this.track.volume.toString());
-        this.volumeChange.emit(0);
+    if (this.volume > 0) {
+      this.storage.set(PREVIOUS_VOLUME, this.volume.toString());
+      this.store.dispatch(new ChangeDeviceVolume(0));
+    } else {
+      const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
+      if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
+        this.store.dispatch(new ChangeDeviceVolume(previousVolume));
       } else {
-        const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
-        if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
-          this.volumeChange.emit(previousVolume);
-        } else {
-          // Emit a default volume
-          this.volumeChange.emit(DEFAULT_VOLUME);
-        }
+        // Emit a default volume
+        this.store.dispatch(new ChangeDeviceVolume(DEFAULT_VOLUME));
       }
     }
   }
 
   onToggleShuffle(): void {
-    if (this.track) {
-      this.shuffleChange.emit(!this.track.isShuffle);
-    }
+    this.store.dispatch(new ToggleShuffle());
   }
 
   onRepeatChange(): void {
-    if (this.track) {
-      switch (this.track.repeatState) {
-        case REPEAT_OFF:
-          this.repeatChange.emit(REPEAT_CONTEXT);
-          break;
-        case REPEAT_CONTEXT:
-          this.repeatChange.emit(REPEAT_TRACK);
-          break;
-        default:
-          this.repeatChange.emit(REPEAT_OFF);
-      }
+    switch (this.repeatState) {
+      case REPEAT_OFF:
+        this.store.dispatch(new ChangeRepeatState(REPEAT_CONTEXT));
+        break;
+      case REPEAT_CONTEXT:
+        this.store.dispatch(new ChangeRepeatState(REPEAT_TRACK));
+        break;
+      default:
+        this.store.dispatch(new ChangeRepeatState(REPEAT_OFF));
     }
   }
 
@@ -141,43 +152,34 @@ export class TrackPlayerComponent implements OnInit {
     console.log('TODO: Track like');
   }
 
-  getPlayIcon(): string {
-    if (this.track && this.track.isPlaying) {
-      return PAUSE_ICON;
-    }
-    return PLAY_ICON;
+  getPlayIcon(isPlaying: boolean): string {
+    return isPlaying ? PAUSE_ICON : PLAY_ICON;
   }
 
-  getRepeatIcon(): string {
+  getRepeatIcon(repeatState: string): string {
     let icon = REPEAT_ICON;
-    if (this.track && this.track.repeatState === REPEAT_TRACK) {
+    if (repeatState === REPEAT_TRACK) {
       icon = REPEAT_ONE_ICON;
     }
     return icon;
   }
 
-  getRepeatColor(): string {
-    if (!this.track || this.track.repeatState === REPEAT_OFF) {
+  getRepeatColor(repeatState: string): string {
+    if (repeatState === REPEAT_OFF) {
       return 'primary';
     }
     return 'accent';
   }
 
-  getShuffleColor(): string {
-    if (!this.track || !this.track.isShuffle) {
-      return 'primary';
-    }
-    return 'accent';
+  getShuffleColor(isShuffle: boolean): string {
+    return isShuffle ? 'accent' : 'primary';
   }
 
-  getVolumeIcon(): string {
-    if (!this.track) {
-      return VOLUME_HIGH_ICON;
-    }
+  getVolumeIcon(volume: number): string {
     let icon = VOLUME_MUTE_ICON;
-    if (this.track.volume >= 50) {
+    if (volume >= 50) {
       icon = VOLUME_HIGH_ICON;
-    } else if (this.track.volume > 0) {
+    } else if (volume > 0) {
       icon = VOLUME_LOW_ICON;
     }
     return icon;

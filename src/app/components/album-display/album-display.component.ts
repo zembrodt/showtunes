@@ -1,8 +1,11 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {Album} from '../../models/album.model';
-import {SettingsService} from '../../services/settings/settings.service';
-import {DEFAULT_OPTIONS} from '../../models/user-settings.model';
-import {Subscription} from 'rxjs';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Observable, Subject} from 'rxjs';
+import {Select} from '@ngxs/store';
+import {SettingsState} from '../../core/settings/settings.state';
+import {PlaybackState} from '../../core/playback/playback.state';
+import {TrackModel} from '../../core/playback/playback.model';
+import {ImageResponse} from '../../models/image.model';
+import {takeUntil} from 'rxjs/operators';
 
 const MAX_CODE_WIDTH = 512;
 const IMAGES_DIR = 'assets/images';
@@ -13,61 +16,50 @@ const IMAGES_DIR = 'assets/images';
   styleUrls: ['./album-display.component.css']
 })
 export class AlbumDisplayComponent implements OnInit, OnDestroy {
+  private ngUnsubscribe = new Subject();
 
-  private showSpotifyCodeSubscription: Subscription;
-  private spotifyCodeBackgroundColorSubscription: Subscription;
-  private spotifyCodeBarColorSubscription: Subscription;
+  @Select(PlaybackState.covertArt) coverArt$: Observable<ImageResponse>;
 
-  @Input() album: Album;
-  @Input() uri: string;
+  @Select(PlaybackState.track) track$: Observable<TrackModel>;
+  private track: TrackModel;
 
-  showSpotifyCode = DEFAULT_OPTIONS.showSpotifyCode;
-  backgroundColor = DEFAULT_OPTIONS.spotifyCode.backgroundColor;
-  barColor = DEFAULT_OPTIONS.spotifyCode.barColor;
+  @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
 
-  constructor(private settingsService: SettingsService) { }
+  @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
+  private backgroundColor: string;
+
+  @Select(SettingsState.spotifyCodeBarColor) barColor$: Observable<string>;
+  private barColor: string;
+
+  constructor() { }
 
   ngOnInit(): void {
-    this.showSpotifyCodeSubscription = this.settingsService
-      .getShowSpotifyCode().subscribe(value => {
-        console.log('AlbumDisplayComponent: received new show spotify code value: ' + value);
-        this.showSpotifyCode = value;
+    this.track$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((track) => this.track = track);
+    this.backgroundColor$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((backgroundColor) => {
+        this.backgroundColor = backgroundColor;
       });
-
-    this.spotifyCodeBackgroundColorSubscription = this.settingsService
-      .getSpotifyCodeBackgroundColor().subscribe(value => {
-        console.log('AlbumDisplayComponent: received new background color value: ' + value);
-        this.backgroundColor = value;
-      });
-
-    this.spotifyCodeBarColorSubscription = this.settingsService
-      .getSpotifyCodeBarColor().subscribe(value => {
-        console.log('AlbumDisplayComponent: received new bar color value: ' + value);
-        this.barColor = value;
-      });
+    this.barColor$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((barColor) => this.barColor = barColor);
   }
 
   ngOnDestroy(): void {
-    this.showSpotifyCodeSubscription.unsubscribe();
-    this.spotifyCodeBackgroundColorSubscription.unsubscribe();
-    this.spotifyCodeBarColorSubscription.unsubscribe();
-  }
-
-  getAlbumArtUrl(): string {
-    if (this.album) {
-      return this.album.coverArt.url;
-    }
-    return '';
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   getSpotifyCodeUrl(): string {
-    if (this.album && this.backgroundColor && this.barColor && this.uri) {
+    if (this.backgroundColor && this.barColor && this.track) {
       return 'https://www.spotifycodes.com/downloadCode.php?uri='
         + encodeURIComponent('jpeg/'
           + this.backgroundColor + '/'
           + this.barColor + '/'
           + MAX_CODE_WIDTH + '/'
-          + this.uri
+          + this.track.uri
         );
     }
     return IMAGES_DIR + '/placeholder_spotify_code.png';

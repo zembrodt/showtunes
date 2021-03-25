@@ -1,7 +1,6 @@
 <!--<div [class]="'theme-wrapper ' + (theme$ | async)">-->
 <div class="music-display-app"
-     [class.dark-theme]="isDarkMode"
-     [class.light-theme]="!isDarkMode">
+     [class]="theme$ | async">
     <mat-sidenav-container class="container">
       <router-outlet></router-outlet>
     </mat-sidenav-container>

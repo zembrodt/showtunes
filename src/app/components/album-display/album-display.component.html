@@ -3,11 +3,11 @@
      fxLayoutAlign="space-around center"
      fxLayoutGap="6px"
      >
-  <img *ngIf="album" src="{{getAlbumArtUrl()}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
-  <div *ngIf="!album" class="album-image">
+  <img *ngIf="(coverArt$ | async)" src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
+  <div *ngIf="!(coverArt$ | async)" class="album-image">
     <div class="album-placeholder"></div>
   </div>
-  <div *ngIf="showSpotifyCode">
+  <div *ngIf="showSpotifyCode$ | async">
     <img src="{{getSpotifyCodeUrl()}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
   </div>
 </div>

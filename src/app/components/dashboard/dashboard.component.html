@@ -7,19 +7,10 @@
        fxLayout.lt-sm="column"
        fxLayoutAlign="space-around center">
     <div class="dashboard-item album-display">
-      <app-album-display
-        [album]="album"
-        [uri]="currentTrack ? currentTrack.uri : null"></app-album-display>
+      <app-album-display></app-album-display>
     </div>
     <div class="dashboard-item track-player">
-      <app-track-player
-        [track]="currentTrack"
-        (progressChange)="onProgressChange($event)"
-        (playingChange)="onPlayingChange($event)"
-        (skipNextChange)="onSkipNextChange($event)"
-        (volumeChange)="onVolumeChange($event)"
-        (shuffleChange)="onShuffleChange($event)"
-        (repeatChange)="onRepeatChange($event)"></app-track-player>
+      <app-track-player></app-track-player>
     </div>
   </div>
 </div>

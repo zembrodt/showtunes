@@ -1,13 +1,3 @@
-export interface Device {
-  id: string;
-  name: string;
-  type: string;
-  volume: number;
-  isActive: boolean;
-  isPrivateSession: boolean;
-  isRestricted: boolean;
-}
-
 export interface DeviceResponse {
   id: string;
   name: string;

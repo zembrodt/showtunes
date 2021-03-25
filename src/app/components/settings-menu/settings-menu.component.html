@@ -7,10 +7,10 @@
   <div class="menu-item dark-mode-toggle"
        fxLayout="row"
        fxLayoutGap="6px">
-    <mat-icon [ngClass]="!isDarkMode ? 'app-icon' : ''"
-              [color]="isDarkMode ? 'accent' : ''">dark_mode</mat-icon>
+    <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
+              [color]="(theme$ | async) === 'dark-theme' ? 'accent' : ''">dark_mode</mat-icon>
     <mat-slide-toggle
-      [checked]="isDarkMode"
+      [checked]="(theme$ | async) === 'dark-theme'"
       [color]="'primary'"
       (toggleChange)="onDarkModeChange()"
       (click)="$event.stopPropagation();"
@@ -21,7 +21,7 @@
        fxLayoutGap="6px">
     <mat-icon class="app-icon">qr_code_2</mat-icon>
     <mat-slide-toggle
-      [checked]="showSpotifyCode"
+      [checked]="showSpotifyCode$ | async"
       [color]="'primary'"
       (toggleChange)="onShowBarCodeChange()"
       (click)="$event.stopPropagation();"
@@ -32,14 +32,14 @@
        fxLayoutGap="6px">
     <mat-icon class="app-icon">invert_colors</mat-icon>
     <mat-slide-toggle
-      [checked]="isBarColorBlack()"
+      [checked]="(barColor$ | async) === 'black'"
       [color]="'primary'"
       (toggleChange)="onBarColorChange()"
       (click)="$event.stopPropagation();"
     ></mat-slide-toggle>
   </div>
   <app-color-picker
-      [color]="backgroundColor"
+      [color]="backgroundColor$ | async"
       [placeholderColor]="getPlaceholderColor()"
       [presetColors]="getPresetColors()"
       [colorResetEvent]="colorPickerResetEvent.asObservable()"
