@@ -12,11 +12,20 @@ gulp.task('generate-config', () => {
 
     let configJson = {};
     // Get values from current config file if exists
-    const configFile = fs.readFileSync(`./src/assets/config/config.${env}.json`);
-    if (configFile) {
-      configJson = JSON.parse(configFile);
+    const configFilepath = `./src/assets/config/config.${env}.json`;
+    if (fs.existsSync(configFilepath)) {
+      configJson = JSON.parse(fs.readFileSync(configFilepath));
       console.log('In gulp :: Read from file: ' + JSON.stringify(configJson));
     }
+
+    // Check config objects exist
+    if (!configJson.env) {
+      configJson.env = {};
+    }
+    if (!configJson.auth) {
+      configJson.auth = {};
+    }
+
     // Overwrite config with environment variables
     if ('MD_DOMAIN' in process.env) {
       configJson.env.domain = process.env.MD_DOMAIN;
@@ -34,6 +43,11 @@ gulp.task('generate-config', () => {
       configJson.auth.isDirectSpotifyRequest = process.env.MD_DIRECT_REQ === 'true';
     }
     console.log('In gulp :: After OS Env: ' + JSON.stringify(configJson));
+
+    if (!configJson.env.name) {
+      configJson.env.name = env;
+    }
+
     // Rewrite json config to dist
     fs.writeFileSync(`./dist/music-display/assets/config/config.${env}.json`, JSON.stringify(configJson));
     resolve();
