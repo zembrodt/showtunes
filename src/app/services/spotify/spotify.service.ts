@@ -8,12 +8,14 @@ import { AppConfig } from '../../app.config';
 import { StorageService } from '../storage/storage.service';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { AuthToken } from '../../core/auth/auth.model';
+import {Router} from '@angular/router';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
 const authEndpoint = accountsUrl + '/authorize';
 
-const apiUrl           = 'https://api.spotify.com/v1';
+const apiUrl = 'https://api.spotify.com/v1';
+
 const playbackEndpoint = apiUrl + '/me/player';
 const playEndpoint     = playbackEndpoint + '/play';
 const pauseEndpoint    = playbackEndpoint + '/pause';
@@ -25,6 +27,10 @@ const repeatEndpoint   = playbackEndpoint + '/repeat';
 const seekEndpoint     = playbackEndpoint + '/seek';
 const devicesEndpoint  = playbackEndpoint + '/devices';
 
+const savedTracksEndpoint = apiUrl + '/me/tracks';
+const checkSavedEndpoint  = savedTracksEndpoint + '/contains';
+
+
 // Local storage keys
 const tokenKey = 'AUTH_TOKEN';
 const stateKey = 'STATE';
@@ -33,6 +39,8 @@ const stateKey = 'STATE';
 const stateLength = 40;
 const expiryThreshold = 30 * 1000; // 30s
 const SCOPES = [
+  'user-library-read',
+  'user-library-modify',
   'user-read-playback-state',
   'user-modify-playback-state'
 ];
@@ -47,6 +55,8 @@ export class SpotifyService {
 
   private authToken: AuthToken = null;
   private readonly state: string = null;
+  private isAuthenticating = false;
+  private oAuthTimerId: number = null;
 
   static initialize(): boolean {
     try {
@@ -62,7 +72,7 @@ export class SpotifyService {
     return true;
   }
 
-  constructor(private http: HttpClient, private storage: StorageService) {
+  constructor(private http: HttpClient, private storage: StorageService, private router: Router) {
     this.state = this.storage.get(stateKey);
     if (this.state === null) {
       this.state = generateRandomString(stateLength);
@@ -177,9 +187,44 @@ export class SpotifyService {
     });
   }
 
+  isTrackSaved(id: string): Observable<boolean[]> {
+    this.checkTokenExpiry();
+    let requestParams = new HttpParams();
+    requestParams = requestParams.append('ids', id);
+
+    return this.http.get<boolean[]>(checkSavedEndpoint, {
+      headers: this.getHeaders(),
+        params: requestParams
+    });
+  }
+
+  setSavedTrack(id: string, isSaved: boolean): Observable<any> {
+    this.checkTokenExpiry();
+    let requestParams = new HttpParams();
+    requestParams = requestParams.append('ids', id);
+    const options = {
+      headers: this.getHeaders(),
+      params: requestParams
+    };
+
+    if (isSaved) {
+      return this.http.put(savedTracksEndpoint, {}, options);
+    } else {
+      return this.http.delete(savedTracksEndpoint, options);
+    }
+  }
+
   getDevices(): Observable<MultipleDevicesResponse> {
     this.checkTokenExpiry();
     return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
+  }
+
+  setDevice(id: string): Observable<any> {
+    this.checkTokenExpiry();
+    return this.http.put(playbackEndpoint, {
+      device_ids: [id],
+      play: true
+    }, {headers: this.getHeaders()});
   }
 
   getAuthorizeRequestUrl(): string {
@@ -201,12 +246,14 @@ export class SpotifyService {
     if (expiresIn === 0) {
       // Need to authorize a new login, redirect to authorization
       // TODO: potentially could add some info to state here on where to redirect user after callback from OAuth
-      window.location.href = this.getAuthorizeRequestUrl();
+      // window.location.href = this.getAuthorizeRequestUrl();
+      // Redirect to /login
+      this.router.navigateByUrl('/login');
     } else if (expiresIn < expiryThreshold) {
       // Token is expiring soon. Refresh
       this.requestAuthToken(this.authToken.refreshToken).then(success => {
         if (!success) {
-          console.log('Failed to refresh auth token');
+          console.error('Failed to refresh auth token');
         } else {
           console.log('Successfully refreshed auth token');
         }
@@ -218,6 +265,10 @@ export class SpotifyService {
     this.authToken = authToken;
   }
 
+  toggleIsAuthenticating(): void {
+    this.isAuthenticating = !this.isAuthenticating;
+  }
+
   private tokenExpiresIn(): number {
     if (this.authToken) {
       const expiresIn = Date.parse(this.authToken.expiry) - Date.now();
@@ -227,7 +278,6 @@ export class SpotifyService {
         console.log('Loaded auth token has expired.');
         // delete token
         this.authToken = null;
-        // this.storage.remove(tokenKey);
       }
     }
     return 0;

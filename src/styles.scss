@@ -2,6 +2,7 @@
 @import "./assets/styles/themes";
 @import "./assets/styles/mat-menu-theme";
 @import "app/components/app/app.component.scss-theme";
+@import "app/components/devices/devices.component.scss-theme";
 @import "app/components/settings-menu/settings-menu.component.scss-theme";
 
 @include mat-core();
@@ -11,7 +12,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @mixin custom-components-theme($theme) {
   @include app-component-theme($theme);
-  @include options-menu-theme($theme);
+  @include devices-menu-theme($theme);
+  @include settings-menu-theme($theme);
 }
 
 .light-theme {

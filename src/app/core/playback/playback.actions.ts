@@ -25,6 +25,10 @@ export class ChangeDeviceIsActive {
   constructor(public isActive: boolean) { }
 }
 
+export class GetAvailableDevices {
+  static readonly type = '[Playback] Get Available Devices';
+}
+
 export class ChangeProgress {
   static readonly type = '[Playback] Change Progress';
   constructor(public progress: number) { }
@@ -53,6 +57,11 @@ export class ChangeRepeatState {
 
 export class ToggleLiked {
   static readonly type = '[Playback] Toggle Liked';
+}
+
+export class SetLiked {
+  static readonly type = '[Playback] Set Liked';
+  constructor(public isLiked: boolean) { }
 }
 
 export class PollCurrentPlayback {

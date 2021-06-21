@@ -1,0 +1,21 @@
+@import "~@angular/material/theming";
+
+@mixin devices-menu-theme($theme) {
+  $accent: map-get($theme, accent);
+
+  .devices-menu {
+    .active {
+      color: mat-color($accent, default-contrast);
+      background-color: mat-color($accent);
+
+      .app-icon {
+        color: mat-color($accent, default-contrast);
+      }
+
+      &:hover {
+        color: mat-color($accent, default-contrast);
+        background-color: mat-color($accent);
+      }
+    }
+  }
+}

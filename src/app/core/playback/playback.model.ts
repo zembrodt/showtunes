@@ -2,6 +2,7 @@ export interface PlaybackModel {
   track: TrackModel;
   album: AlbumModel;
   device: DeviceModel;
+  availableDevices: DeviceModel[];
   progress: number;
   duration: number;
   isPlaying: boolean;
@@ -83,6 +84,7 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
     isPrivateSession: false,
     isRestricted: false
   },
+  availableDevices: [],
   duration: 0,
   progress: 0,
   isLiked: false,

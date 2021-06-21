@@ -1,6 +1,6 @@
 @import "~@angular/material/theming";
 
-@mixin options-menu-theme($theme) {
+@mixin settings-menu-theme($theme) {
   $primary: map-get($theme, primary);
   $foreground: map-get($theme, foreground);
 

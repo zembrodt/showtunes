@@ -1,32 +1,28 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {SpotifyService} from '../../services/spotify/spotify.service';
-import {DeviceResponse} from '../../models/device.model';
-import {Subscription} from 'rxjs';
+import {Component} from '@angular/core';
+import {Observable} from 'rxjs';
+import {Select, Store} from '@ngxs/store';
+import {PlaybackState} from '../../core/playback/playback.state';
+import {DeviceModel} from '../../core/playback/playback.model';
+import {ChangeDevice, GetAvailableDevices} from '../../core/playback/playback.actions';
 
 @Component({
   selector: 'app-devices',
   templateUrl: './devices.component.html',
   styleUrls: ['./devices.component.css']
 })
-export class DevicesComponent implements OnInit, OnDestroy {
+export class DevicesComponent {
 
-  private devicesSubscription: Subscription;
+  @Select(PlaybackState.device) currentDevice$: Observable<DeviceModel>;
+  @Select(PlaybackState.availableDevices) availableDevices$: Observable<DeviceModel[]>;
 
-  devices: DeviceResponse[] = [];
+  constructor(private store: Store) { }
 
-  constructor(private spotify: SpotifyService) { }
-
-  ngOnInit(): void {
-    this.devicesSubscription = this.spotify
-      .getDevices().subscribe(res => {
-        if (res.devices !== null) {
-          this.devices = res.devices;
-        }
-      });
+  onMenuOpened(): void {
+    this.store.dispatch(new GetAvailableDevices());
   }
 
-  ngOnDestroy(): void {
-    this.devicesSubscription.unsubscribe();
+  onSelectDevice(device: DeviceModel): void {
+    this.store.dispatch(new ChangeDevice(device));
   }
 
   getDeviceIcon(deviceType: string): string {

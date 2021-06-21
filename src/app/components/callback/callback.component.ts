@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SpotifyService} from '../../services/spotify/spotify.service';
-import {Store} from '@ngxs/store';
+import {Select, Store} from '@ngxs/store';
 import {SetAuthToken} from '../../core/auth/auth.actions';
+import {AuthState} from '../../core/auth/auth.state';
+import {Observable} from 'rxjs';
+import {AuthToken} from '../../core/auth/auth.model';
 
 const codeKey = 'code';
 const errorKey = 'error';
@@ -15,6 +18,8 @@ const stateKey = 'state';
 })
 export class CallbackComponent implements OnInit {
 
+  @Select(AuthState.token) token$: Observable<AuthToken>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -22,6 +27,13 @@ export class CallbackComponent implements OnInit {
     private store: Store) { }
 
   ngOnInit(): void {
+    // redirect to /dashboard if already authenticated
+    this.token$.subscribe(token => {
+      if (token) {
+        this.router.navigateByUrl('/dashboard');
+      }
+    });
+
     // subscribe to anytime parameters change for a callback
     this.route.queryParamMap.subscribe(params => {
       const code = params.get(codeKey);
@@ -33,8 +45,9 @@ export class CallbackComponent implements OnInit {
         this.spotify.requestAuthToken(code)
           .then((res) => {
             this.store.dispatch(new SetAuthToken(res));
-            console.log('Redirect to /dashboard');
-            this.router.navigateByUrl('/dashboard');
+            this.spotify.toggleIsAuthenticating();
+            // console.log('Redirect to /dashboard');
+            // this.router.navigateByUrl('/dashboard');
           })
           .catch((reason) => {
             console.error('Spotify request failed: ' + reason);

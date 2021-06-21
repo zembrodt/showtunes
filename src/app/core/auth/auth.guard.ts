@@ -20,6 +20,7 @@ export class AuthGuard implements CanActivate, OnDestroy {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    console.log('AuthGuard: checking if access token exists: ' + JSON.stringify(this.accessToken));
     if (this.accessToken) {
       return true;
     } else {

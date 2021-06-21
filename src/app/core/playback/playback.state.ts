@@ -7,7 +7,7 @@ import {
   ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume,
   ChangeProgress,
   ChangeRepeatState,
-  ChangeTrack, PollCurrentPlayback, SkipNextTrack, SkipPreviousTrack,
+  ChangeTrack, GetAvailableDevices, PollCurrentPlayback, SetLiked, SkipNextTrack, SkipPreviousTrack,
   ToggleLiked,
   TogglePlaying,
   ToggleShuffle
@@ -17,6 +17,7 @@ import {tap} from 'rxjs/operators';
 import {CurrentPlaybackResponse} from '../../models/current-playback.model';
 import {parseAlbum, parseDevice, parseTrack} from '../util';
 import {Observable} from 'rxjs';
+import {MultipleDevicesResponse} from '../../models/device.model';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
@@ -51,6 +52,11 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Selector()
   static deviceVolume(state: PlaybackModel): number {
     return state.device.volume;
+  }
+
+  @Selector()
+  static availableDevices(state: PlaybackModel): DeviceModel[] {
+    return state.availableDevices;
   }
 
   @Selector()
@@ -93,9 +99,6 @@ export class PlaybackState implements NgxsAfterBootstrap {
       console.error('Failed to initialize spotify service');
     } else {
       // Initialize state?
-      // TODO: How do we create a way to execute actions at specific intervals?
-      //  Should the actions call the Spotify service? Or should the state just hold
-      //  the current values at a global application level?
     }
   }
 
@@ -110,8 +113,13 @@ export class PlaybackState implements NgxsAfterBootstrap {
   }
 
   @Action(ChangeDevice)
-  changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): void {
-    ctx.patchState({device: action.device});
+  changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
+    return this.spotifyService.setDevice(action.device.id).pipe(
+      tap(res => {
+        console.log('Set device response: ' + JSON.stringify(res));
+        ctx.patchState({device: action.device});
+      })
+    );
   }
 
   @Action(ChangeDeviceVolume)
@@ -130,6 +138,15 @@ export class PlaybackState implements NgxsAfterBootstrap {
   changeDeviceIsActive(ctx: StateContext<PlaybackModel>, action: ChangeDeviceIsActive): void {
     const device = ctx.getState().device;
     ctx.patchState({device: {...device, isActive: action.isActive}});
+  }
+
+  @Action(GetAvailableDevices)
+  getAvailableDevices(ctx: StateContext<PlaybackModel>): Observable<any> {
+    return this.spotifyService.getDevices().pipe(
+      tap((response: MultipleDevicesResponse) => {
+        ctx.patchState({availableDevices: response.devices.map(device => parseDevice(device))});
+      })
+    );
   }
 
   @Action(ChangeProgress)
@@ -210,12 +227,19 @@ export class PlaybackState implements NgxsAfterBootstrap {
   toggleLiked(ctx: StateContext<PlaybackModel>): Observable<any> {
     this.lockState(ctx);
     const isLiked = ctx.getState().isLiked;
-    return this.spotifyService.setPlaying(!isLiked).pipe(
+    const track = ctx.getState().track;
+
+    return this.spotifyService.setSavedTrack(track.id, !isLiked).pipe(
       tap(res => {
         ctx.patchState({isLiked: !isLiked});
         this.unlockState(ctx);
       })
     );
+  }
+
+  @Action(SetLiked)
+  setLiked(ctx: StateContext<PlaybackModel>, action: SetLiked): void {
+    ctx.patchState({isLiked: action.isLiked});
   }
 
   @Action(PollCurrentPlayback)
@@ -230,6 +254,14 @@ export class PlaybackState implements NgxsAfterBootstrap {
             const track = currentPlayback.item;
             if (track.id !== state.track.id) {
               ctx.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
+              // Check status of if new track is saved
+              this.spotifyService.isTrackSaved(track.id).pipe(
+                tap((isSaved) => {
+                  if (isSaved.length === 1) {
+                    ctx.dispatch(new SetLiked(isSaved[0]));
+                  }
+                })
+              );
             }
             // check if we have a new album
             if (track.album.id !== state.album.id) {
@@ -251,8 +283,6 @@ export class PlaybackState implements NgxsAfterBootstrap {
             });
             // set the playback to not be idling
             ctx.patchState({isIdle: false});
-            // TODO: Check if track has been liked?
-            // this.spotifyService
           } else {
             // Set the playback state to idling
             ctx.patchState({isIdle: true});

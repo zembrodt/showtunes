@@ -9,7 +9,7 @@ import {AlbumModel, TrackModel} from '../../core/playback/playback.model';
 import {
   ChangeDeviceVolume,
   ChangeProgress,
-  ChangeRepeatState, SkipNextTrack, SkipPreviousTrack,
+  ChangeRepeatState, SkipNextTrack, SkipPreviousTrack, ToggleLiked,
   TogglePlaying,
   ToggleShuffle
 } from '../../core/playback/playback.actions';
@@ -149,7 +149,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   }
 
   onLikeChange(): void {
-    console.log('TODO: Track like');
+    this.store.dispatch(new ToggleLiked());
   }
 
   getPlayIcon(isPlaying: boolean): string {
