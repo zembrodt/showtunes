@@ -2,7 +2,6 @@ import {Action, Selector, State, StateContext} from '@ngxs/store';
 import {AuthModel, AuthToken, DEFAULT_AUTH} from './auth.model';
 import {Injectable} from '@angular/core';
 import {SetAuthToken, SetIsAuthenticated} from './auth.actions';
-import {SpotifyService} from '../../services/spotify/spotify.service';
 
 @State<AuthModel>({
   name: 'MUSIC_DISPLAY_AUTH',
@@ -10,7 +9,7 @@ import {SpotifyService} from '../../services/spotify/spotify.service';
 })
 @Injectable()
 export class AuthState {
-  constructor(private spotifyService: SpotifyService) { }
+  constructor() { }
 
   @Selector()
   static token(state: AuthModel): AuthToken {
@@ -24,7 +23,6 @@ export class AuthState {
 
   @Action(SetAuthToken)
   setAuthToken(ctx: StateContext<AuthModel>, action: SetAuthToken): void {
-    this.spotifyService.setAuthToken(action.token);
     ctx.patchState({
       token: action.token,
       isAuthenticated: action.token != null

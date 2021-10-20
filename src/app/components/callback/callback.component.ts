@@ -45,7 +45,7 @@ export class CallbackComponent implements OnInit {
         this.spotify.requestAuthToken(code)
           .then((res) => {
             this.store.dispatch(new SetAuthToken(res));
-            this.spotify.toggleIsAuthenticating();
+            // this.spotify.toggleIsAuthenticating();
             // console.log('Redirect to /dashboard');
             // this.router.navigateByUrl('/dashboard');
           })

@@ -164,15 +164,11 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
     return icon;
   }
 
-  getRepeatColor(repeatState: string): string {
+  getRepeatClass(repeatState: string): string {
     if (repeatState === REPEAT_OFF) {
-      return 'primary';
+      return 'track-player-icon';
     }
-    return 'accent';
-  }
-
-  getShuffleColor(isShuffle: boolean): string {
-    return isShuffle ? 'accent' : 'primary';
+    return 'track-player-icon-accent';
   }
 
   getVolumeIcon(volume: number): string {

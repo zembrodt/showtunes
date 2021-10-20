@@ -29,6 +29,7 @@ import {PlaybackService} from './core/playback/playback.service';
 import {NgxsStoragePluginModule} from '@ngxs/storage-plugin';
 import {NgxsReduxDevtoolsPluginModule} from '@ngxs/devtools-plugin';
 import {AuthState} from './core/auth/auth.state';
+import {LoadingComponent} from './components/loading/loading.component';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   return () => appConfig.load();
@@ -37,14 +38,15 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
-    CallbackComponent,
-    DashboardComponent,
-    TrackPlayerComponent,
     AlbumDisplayComponent,
-    SettingsMenuComponent,
+    CallbackComponent,
     ColorPickerComponent,
-    DevicesComponent
+    DashboardComponent,
+    DevicesComponent,
+    LoadingComponent,
+    LoginComponent,
+    SettingsMenuComponent,
+    TrackPlayerComponent,
   ],
   imports: [
     BrowserModule,

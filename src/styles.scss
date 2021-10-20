@@ -4,6 +4,7 @@
 @import "app/components/app/app.component.scss-theme";
 @import "app/components/devices/devices.component.scss-theme";
 @import "app/components/settings-menu/settings-menu.component.scss-theme";
+@import "app/components/track-player/track-player.component.scss-theme";
 
 @include mat-core();
 
@@ -14,6 +15,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   @include app-component-theme($theme);
   @include devices-menu-theme($theme);
   @include settings-menu-theme($theme);
+  @include track-player-theme($theme);
 }
 
 .light-theme {
@@ -21,8 +23,21 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   @include custom-components-theme($light-theme);
 
   $foreground: map-get($light-theme, foreground);
+  $background: map-get($light-theme, background);
   .app-icon {
     color: mat-color($foreground, text);
+  }
+
+  .track-player-icon {
+    color: mat-color($foreground, text);
+  }
+
+  .track-player-icon-foreground {
+    color: mat-color($foreground, text);
+  }
+
+  .track-player-icon-background {
+    background-color: mat-color($background, background) !important;
   }
 }
 
@@ -31,7 +46,21 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   @include custom-components-theme($dark-theme);
 
   $primary: map-get($dark-theme, primary);
+  $foreground: map-get($dark-theme, foreground);
+  $background: map-get($dark-theme, background);
   .app-icon {
     color: mat-color($primary, text);
+  }
+
+  .track-player-icon {
+    color: mat-color($primary, text);
+  }
+
+  .track-player-icon-foreground {
+    color: mat-color($background, text);
+  }
+
+  .track-player-icon-background {
+    background-color: mat-color($foreground, text) !important;
   }
 }

@@ -32,19 +32,19 @@
        fxLayout="row"
        fxLayoutAlign="center center"
        fxLayoutGap="48px">
-    <button mat-icon-button color="{{getShuffleColor((isShuffle$ | async))}}" (click)="onToggleShuffle()">
+    <button mat-icon-button [ngClass]="(isShuffle$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onToggleShuffle()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
     </button>
-    <button mat-icon-button color="primary" (click)="onSkipPrevious()">
+    <button mat-icon-button class="track-player-icon" (click)="onSkipPrevious()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
     </button>
-    <button mat-fab class="play-button" color="primary" (click)="onPause()">
-      <mat-icon class="player-button" color="primary" aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon((isPlaying$ | async))}}</mat-icon>
+    <button mat-fab class="track-player-icon-background" (click)="onPause()">
+      <mat-icon class="track-player-icon-foreground" aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon((isPlaying$ | async))}}</mat-icon>
     </button>
-    <button mat-icon-button color="primary" (click)="onSkipNext()">
+    <button mat-icon-button class="track-player-icon" (click)="onSkipNext()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
     </button>
-    <button mat-icon-button color="{{getRepeatColor((repeat$ | async))}}" (click)="onRepeatChange()">
+    <button mat-icon-button [ngClass]="getRepeatClass((repeat$ | async))" (click)="onRepeatChange()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="Repeat">{{getRepeatIcon((repeat$ | async))}}</mat-icon>
     </button>
   </div>
@@ -52,7 +52,7 @@
        fxLayout="row"
        fxLayoutAlign="center center"
        fxLayoutGap="6px">
-    <button mat-icon-button class="mat-subheading-2" color="primary" (click)="onVolumeMute()">
+    <button mat-icon-button class="mat-subheading-2 track-player-icon" (click)="onVolumeMute()">
       <mat-icon class="volume-button">{{getVolumeIcon((volume$ | async))}}</mat-icon>
     </button>
     <div class="volume-slider">
@@ -63,7 +63,7 @@
     </button>-->
     <app-devices></app-devices>
     <div class="like-button">
-      <button mat-icon-button [color]="(isLiked$ | async) ? 'accent' : 'primary'" (click)="onLikeChange()">
+      <button mat-icon-button [ngClass]="(isLiked$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onLikeChange()">
         <mat-icon>thumb_up</mat-icon>
       </button>
     </div>
