@@ -9,6 +9,8 @@ import { StorageService } from '../storage/storage.service';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { AuthToken } from '../../core/auth/auth.model';
 import {Router} from '@angular/router';
+import {Select, Store} from '@ngxs/store';
+import {AuthState} from '../../core/auth/auth.state';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -53,6 +55,7 @@ export class SpotifyService {
   protected static isDirectSpotifyRequest: boolean;
   protected static redirectUri: string;
 
+  @Select(AuthState.token) token$: Observable<AuthToken>;
   private authToken: AuthToken = null;
   private readonly state: string = null;
   private isAuthenticating = false;
@@ -72,12 +75,17 @@ export class SpotifyService {
     return true;
   }
 
-  constructor(private http: HttpClient, private storage: StorageService, private router: Router) {
+  constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
     this.state = this.storage.get(stateKey);
     if (this.state === null) {
       this.state = generateRandomString(stateLength);
       this.storage.set(stateKey, this.state);
     }
+
+    this.token$.subscribe(token => {
+      this.authToken = token;
+      console.log('SpotifyService: Auth token updated: ' + JSON.stringify(this.authToken));
+    });
   }
 
   requestAuthToken(code: string): Promise<AuthToken> {
@@ -112,6 +120,7 @@ export class SpotifyService {
           resolve(authToken);
         },
         error => {
+          // TODO: delete currently saved auth token and re-request a new one?
           console.error('Error requesting token: ' + JSON.stringify(error));
           reject(`Error requesting token: ${JSON.stringify(error)}`);
         });
@@ -243,14 +252,14 @@ export class SpotifyService {
 
   private checkTokenExpiry(): void {
     const expiresIn = this.tokenExpiresIn();
-    if (expiresIn === 0) {
+    if (expiresIn < 0) {
       // Need to authorize a new login, redirect to authorization
       // TODO: potentially could add some info to state here on where to redirect user after callback from OAuth
       // window.location.href = this.getAuthorizeRequestUrl();
       // Redirect to /login
       this.router.navigateByUrl('/login');
     } else if (expiresIn < expiryThreshold) {
-      // Token is expiring soon. Refresh
+      // Token is expiring soon or has expired. Refresh the token
       this.requestAuthToken(this.authToken.refreshToken).then(success => {
         if (!success) {
           console.error('Failed to refresh auth token');
@@ -259,10 +268,6 @@ export class SpotifyService {
         }
       });
     }
-  }
-
-  setAuthToken(authToken: AuthToken): void {
-    this.authToken = authToken;
   }
 
   toggleIsAuthenticating(): void {
@@ -276,16 +281,20 @@ export class SpotifyService {
         return expiresIn;
       } else {
         console.log('Loaded auth token has expired.');
-        // delete token
-        this.authToken = null;
+        return 0;
       }
     }
-    return 0;
+    return -1; // no auth token exists
   }
 
   private getHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      Authorization: `${this.authToken.tokenType} ${this.authToken.accessToken}`
-    });
+    // this.authToken = null; // test
+    if (this.authToken) {
+      return new HttpHeaders({
+        Authorization: `${this.authToken.tokenType} ${this.authToken.accessToken}`
+      });
+    }
+    console.error('No auth token present');
+    return null;
   }
 }
