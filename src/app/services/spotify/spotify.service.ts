@@ -78,6 +78,7 @@ export class SpotifyService {
   constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
     this.state = this.storage.get(stateKey);
     if (this.state === null) {
+      console.log('Generating new state value')
       this.state = generateRandomString(stateLength);
       this.storage.set(stateKey, this.state);
     }
