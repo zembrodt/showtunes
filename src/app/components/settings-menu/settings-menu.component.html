@@ -4,7 +4,7 @@
 <mat-menu #menu="matMenu"
           (closed)="onMenuClose($event)"
           (click)="$event.stopPropagation();">
-  <div class="menu-item dark-mode-toggle"
+  <div class="menu-item"
        fxLayout="row"
        fxLayoutGap="6px">
     <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
@@ -16,7 +16,7 @@
       (click)="$event.stopPropagation();"
     ></mat-slide-toggle>
   </div>
-  <div class="menu-item bar-code-toggle"
+  <div class="menu-item"
        fxLayout="row"
        fxLayoutGap="6px">
     <mat-icon class="app-icon">qr_code_2</mat-icon>
@@ -27,7 +27,18 @@
       (click)="$event.stopPropagation();"
     ></mat-slide-toggle>
   </div>
-  <div class="menu-item bar-color-toggle"
+  <div class="menu-item"
+       fxLayout="row"
+       fxLayoutGap="6px">
+    <mat-icon class="app-icon">qr_code_2</mat-icon>
+    <mat-slide-toggle
+      [checked]="useSmartCodeColor$ | async"
+      [color]="'primary'"
+      (toggleChange)="onUseSmartCodeColor()"
+      (click)="$event.stopPropagation();"
+    ></mat-slide-toggle>
+  </div>
+  <div class="menu-item"
        fxLayout="row"
        fxLayoutGap="6px">
     <mat-icon class="app-icon">invert_colors</mat-icon>

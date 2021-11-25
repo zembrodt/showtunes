@@ -8,7 +8,7 @@ import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme,
+  ChangeTheme, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
@@ -37,9 +37,9 @@ const PRESET_COLORS = [
 export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
-
   @Select(SettingsState.theme) theme$: Observable<string>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
+  @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
   @Select(SettingsState.spotifyCodeBarColor) barColor$: Observable<string>;
 
@@ -75,6 +75,10 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   onShowBarCodeChange(): void {
     this.store.dispatch(new ToggleSpotifyCode());
+  }
+
+  onUseSmartCodeColor(): void {
+    this.store.dispatch(new ToggleSmartCodeColor());
   }
 
   onBarColorChange(): void {
