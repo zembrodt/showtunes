@@ -2,6 +2,7 @@ export interface IAppConfig {
   env: {
     name: string;
     domain: string;
+    albumColorUrl: string;
   };
   auth: {
     clientId: string;
