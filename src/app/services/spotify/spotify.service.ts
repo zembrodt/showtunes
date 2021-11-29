@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Observable, of} from 'rxjs';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { TokenResponse } from '../../models/token.model';
 import { generateRandomString } from '../../core/crypto';
@@ -52,6 +52,7 @@ export class SpotifyService {
   static initialized = false;
   protected static clientId: string;
   protected static tokenUrl: string;
+  protected static albumColorUrl: string;
   protected static isDirectSpotifyRequest: boolean;
   protected static redirectUri: string;
 
@@ -59,12 +60,12 @@ export class SpotifyService {
   private authToken: AuthToken = null;
   private readonly state: string = null;
   private isAuthenticating = false;
-  private oAuthTimerId: number = null;
 
   static initialize(): boolean {
     try {
       this.clientId = AppConfig.settings.auth.clientId;
       this.tokenUrl = AppConfig.settings.auth.tokenUrl;
+      this.albumColorUrl = AppConfig.settings.env.albumColorUrl;
       this.isDirectSpotifyRequest = AppConfig.settings.auth.isDirectSpotifyRequest;
       this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback');
     } catch (error) {
@@ -105,10 +106,9 @@ export class SpotifyService {
     }
 
     return new Promise<AuthToken>((resolve, reject) => {
-      this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers})
-        .pipe(
-          // catchError(err => console.log('Error getting tokens with oauth code: ' + ))
-        ).subscribe((token) => {
+      this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'})
+        .subscribe((response) => {
+          const token = response.body;
           const authToken: AuthToken = {
             accessToken: token.access_token,
             tokenType: token.token_type,
@@ -119,7 +119,10 @@ export class SpotifyService {
           console.log('Returning new token: ' + JSON.stringify(authToken));
           resolve(authToken);
         },
-        error => {
+          (error) => {
+          if (error.status === 401) {
+
+          }
           // TODO: delete currently saved auth token and re-request a new one?
           console.error('Error requesting token: ' + JSON.stringify(error));
           reject(`Error requesting token: ${JSON.stringify(error)}`);
@@ -203,7 +206,7 @@ export class SpotifyService {
 
     return this.http.get<boolean[]>(checkSavedEndpoint, {
       headers: this.getHeaders(),
-        params: requestParams
+      params: requestParams
     });
   }
 
@@ -244,6 +247,18 @@ export class SpotifyService {
       '&redirect_uri=' + SpotifyService.redirectUri +
       '&state=' + this.state;
     return request;
+  }
+
+  getAlbumColor(coverArtUrl: string): Observable<string> {
+    let requestParams = new HttpParams();
+    requestParams = requestParams.append('url', encodeURIComponent(coverArtUrl));
+    // Check we have an album color URL set
+    if (SpotifyService.albumColorUrl) {
+      return this.http.get<string>(SpotifyService.albumColorUrl, {
+        params: requestParams
+      });
+    }
+    return of<string>(null);
   }
 
   compareState(state: string): boolean {

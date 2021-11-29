@@ -53,3 +53,25 @@ export function parseDevice(device: DeviceResponse): DeviceModel {
   }
   return null;
 }
+
+export function isHexColor(hex: string): boolean {
+  const match = hex.match(/^[0-9A-Fa-f]{6}$/);
+  return match !== undefined && match !== null;
+}
+
+export interface Color {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export function hexToRgb(hex: string): Color {
+  if (isHexColor(hex)) {
+    return {
+      r: parseInt(hex.substring(0, 2), 16),
+      g: parseInt(hex.substring(2, 4), 16),
+      b: parseInt(hex.substring(4, 6), 16)
+    };
+  }
+  return null;
+}

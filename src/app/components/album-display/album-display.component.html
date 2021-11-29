@@ -3,11 +3,32 @@
      fxLayoutAlign="space-around center"
      fxLayoutGap="6px"
      >
-  <img *ngIf="(coverArt$ | async)" src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
-  <div *ngIf="!(coverArt$ | async)" class="album-image">
-    <div class="album-placeholder"></div>
+  <img *ngIf="(coverArt$ | async) && (coverArt$ | async).url; else albumPlaceholder" src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
+  <ng-template #albumPlaceholder>
+    <div class="album-image">
+      <div class="album-placeholder" [ngClass.lt-md]="'album-placeholder-sm'"
+           fxLayout="column"
+           fxLayoutAlign="center center">
+        <mat-spinner class="album-placeholder-spinner"></mat-spinner>
+      </div>
+    </div>
+  </ng-template>
+  <div *ngIf="(showSpotifyCode$ | async) && !getSpotifyCodeUrl(); else spotifyCode">
+    <div class="qr-code-image">
+      <div class="qr-code-placeholder" [ngClass.lt-md]="'qr-code-placeholder-sm'"
+           fxLayout="column"
+           fxLayoutAlign="center center">
+        <div style="width: 100%; height: 100%"
+             fxLayout="row"
+             fxLayoutAlign="center center"
+             fxLayoutGap="12px">
+          <fa-icon [icon]="spotifyIcon" style="font-size: 20px"></fa-icon>
+          <mat-progress-bar style="width: 33%" mode="indeterminate"></mat-progress-bar>
+        </div>
+      </div>
+    </div>
   </div>
-  <div *ngIf="showSpotifyCode$ | async">
-    <img src="{{getSpotifyCodeUrl()}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
-  </div>
+  <ng-template #spotifyCode>
+    <img *ngIf="showSpotifyCode$ | async" src="{{getSpotifyCodeUrl()}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
+  </ng-template>
 </div>
