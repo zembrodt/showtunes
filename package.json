@@ -33,6 +33,7 @@
     "component": "^1.1.0",
     "gulp": "^4.0.2",
     "ngx-color-picker": "^11.0.0",
+    "postcss": "^8.4.4",
     "rxjs": "~6.6.6",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"
