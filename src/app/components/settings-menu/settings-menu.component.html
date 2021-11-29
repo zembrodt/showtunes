@@ -4,7 +4,7 @@
 <mat-menu #menu="matMenu"
           (closed)="onMenuClose($event)"
           (click)="$event.stopPropagation();">
-  <div class="menu-item dark-mode-toggle"
+  <div class="menu-item"
        fxLayout="row"
        fxLayoutGap="6px">
     <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
@@ -16,7 +16,7 @@
       (click)="$event.stopPropagation();"
     ></mat-slide-toggle>
   </div>
-  <div class="menu-item bar-code-toggle"
+  <div class="menu-item"
        fxLayout="row"
        fxLayoutGap="6px">
     <mat-icon class="app-icon">qr_code_2</mat-icon>
@@ -27,9 +27,23 @@
       (click)="$event.stopPropagation();"
     ></mat-slide-toggle>
   </div>
-  <div class="menu-item bar-color-toggle"
+  <div class="menu-item"
        fxLayout="row"
-       fxLayoutGap="6px">
+       fxLayoutGap="6px"
+       *ngIf="showSpotifyCode$ | async">
+    <mat-icon class="app-icon">lightbulb</mat-icon>
+    <mat-slide-toggle
+      [checked]="(useSmartCodeColor$ | async) && smartCodeColorUrlSet"
+      [color]="'primary'"
+      [disabled]="!smartCodeColorUrlSet"
+      (toggleChange)="onUseSmartCodeColor()"
+      (click)="$event.stopPropagation();"
+    ></mat-slide-toggle>
+  </div>
+  <div class="menu-item"
+       fxLayout="row"
+       fxLayoutGap="6px"
+       *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)">
     <mat-icon class="app-icon">invert_colors</mat-icon>
     <mat-slide-toggle
       [checked]="(barColor$ | async) === 'black'"
@@ -44,6 +58,7 @@
       [presetColors]="getPresetColors()"
       [colorResetEvent]="colorPickerResetEvent.asObservable()"
       (colorChange)="onColorChange($event)"
-      (click)="$event.stopPropagation();"></app-color-picker>
+      (click)="$event.stopPropagation();"
+      *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
 </mat-menu>
 

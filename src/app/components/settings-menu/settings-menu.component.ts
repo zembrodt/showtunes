@@ -1,25 +1,22 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
-import {Observable, Subject, Subscription} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {isValidHex} from '../../core/util';
 import {SettingsState} from '../../core/settings/settings.state';
 import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme,
+  ChangeTheme, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
 import {takeUntil} from 'rxjs/operators';
-
-const ENABLED_COLOR = 'accent';
-const DISABLED_COLOR = 'primary';
+import {AppConfig} from '../../app.config';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
-const THEMES = [LIGHT_THEME, DARK_THEME];
 
 const PRESET_COLORS = [
   'FFFFFF', '010101', '3C94F0', '4B23F2', '2A48B4', '1A3366',
@@ -37,18 +34,20 @@ const PRESET_COLORS = [
 export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
-
   @Select(SettingsState.theme) theme$: Observable<string>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
+  @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
   @Select(SettingsState.spotifyCodeBarColor) barColor$: Observable<string>;
 
   private currentTheme: string;
   private currentBarColor: string;
 
+  smartCodeColorUrlSet = false;
+
   colorPickerResetEvent = new Subject<void>();
 
-  constructor(private store: Store) { }
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.theme$
@@ -57,6 +56,10 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.barColor$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((barColor) => this.currentBarColor = barColor);
+
+    if (AppConfig.settings.env.albumColorUrl) {
+      this.smartCodeColorUrlSet = true;
+    }
   }
 
   ngOnDestroy(): void {
@@ -75,6 +78,10 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   onShowBarCodeChange(): void {
     this.store.dispatch(new ToggleSpotifyCode());
+  }
+
+  onUseSmartCodeColor(): void {
+    this.store.dispatch(new ToggleSmartCodeColor());
   }
 
   onBarColorChange(): void {

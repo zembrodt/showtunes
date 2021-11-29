@@ -7,6 +7,10 @@ export class ToggleSpotifyCode {
   static readonly type = '[Settings] Toggle Spotify Code';
 }
 
+export class ToggleSmartCodeColor {
+  static readonly type = '[Settings] Toggle Smart Code Color';
+}
+
 export class ChangeSpotifyCodeBackgroundColor {
   static readonly type = '[Settings] Change Spotify Code Background Color';
   constructor(public backgroundColor: string) {}

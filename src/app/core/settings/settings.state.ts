@@ -1,6 +1,12 @@
 import {Action, NgxsOnInit, Selector, State, StateContext} from '@ngxs/store';
 import {Injectable} from '@angular/core';
-import {ChangeTheme, ToggleSpotifyCode, ChangeSpotifyCodeBackgroundColor, ChangeSpotifyCodeBarColor} from './settings.actions';
+import {
+  ChangeTheme,
+  ToggleSpotifyCode,
+  ChangeSpotifyCodeBackgroundColor,
+  ChangeSpotifyCodeBarColor,
+  ToggleSmartCodeColor
+} from './settings.actions';
 import {DEFAULT_SETTINGS, SettingsModel} from './settings.model';
 import {OverlayContainer} from '@angular/cdk/overlay';
 
@@ -20,6 +26,11 @@ export class SettingsState implements NgxsOnInit {
   @Selector()
   static showSpotifyCode(state: SettingsModel): boolean {
     return state.showSpotifyCode;
+  }
+
+  @Selector()
+  static useSmartCodeColor(state: SettingsModel): boolean {
+    return state.useSmartCodeColor;
   }
 
   @Selector()
@@ -46,6 +57,12 @@ export class SettingsState implements NgxsOnInit {
   toggleSpotifyCode(ctx: StateContext<SettingsModel>): void {
     const state = ctx.getState();
     ctx.patchState({showSpotifyCode: !state.showSpotifyCode});
+  }
+
+  @Action(ToggleSmartCodeColor)
+  toggleSmartCodeColor(ctx: StateContext<SettingsModel>): void {
+    const state = ctx.getState();
+    ctx.patchState({useSmartCodeColor: !state.useSmartCodeColor});
   }
 
   @Action(ChangeSpotifyCodeBackgroundColor)

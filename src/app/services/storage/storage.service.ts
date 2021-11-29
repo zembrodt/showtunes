@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class StorageService {
-  static prefix = 'MUSIC_DISPLAY_';
+  static prefix = 'MUSIC_DISPLAY';
 
   constructor() { }
 
@@ -25,6 +25,6 @@ export class StorageService {
   }
 
   private getKey(key: string): string {
-    return `${StorageService.prefix}${key}`;
+    return `${StorageService.prefix}_${key}`;
   }
 }
