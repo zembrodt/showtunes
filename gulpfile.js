@@ -30,6 +30,9 @@ gulp.task('generate-config', () => {
     if ('MD_DOMAIN' in process.env) {
       configJson.env.domain = process.env.MD_DOMAIN;
     }
+    if ('MD_ALBUM_COLOR_URL' in process.env) {
+      configJson.env.albumColorUrl = process.env.MD_ALBUM_COLOR_URL;
+    }
     if ('MD_CLIENT_ID' in process.env) {
       configJson.auth.clientId = process.env.MD_CLIENT_ID;
     }
