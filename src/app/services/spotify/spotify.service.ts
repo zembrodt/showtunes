@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { TokenResponse } from '../../models/token.model';
@@ -11,6 +11,7 @@ import { AuthToken } from '../../core/auth/auth.model';
 import {Router} from '@angular/router';
 import {Select, Store} from '@ngxs/store';
 import {AuthState} from '../../core/auth/auth.state';
+import {SetAuthToken} from '../../core/auth/auth.actions';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -89,13 +90,15 @@ export class SpotifyService {
     });
   }
 
-  requestAuthToken(code: string): Promise<AuthToken> {
+  requestAuthToken(code: string, isRefresh: boolean): Promise<AuthToken> {
     console.log('Requesting new auth token');
     // Create request body
     const body = new URLSearchParams();
-    body.set('grant_type', 'authorization_code');
     body.set('code', code);
-    body.set('redirect_uri', SpotifyService.redirectUri);
+    body.set('grant_type', 'authorization_code');
+    if (!isRefresh) {
+      body.set('redirect_uri', SpotifyService.redirectUri);
+    }
 
     // Create request headers
     const headers = new HttpHeaders().set(
@@ -106,8 +109,13 @@ export class SpotifyService {
     }
 
     return new Promise<AuthToken>((resolve, reject) => {
-      this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'})
-        .subscribe((response) => {
+      let clientResponse: Observable<HttpResponse<TokenResponse>>;
+      if (!isRefresh) {
+        clientResponse = this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
+      } else {
+        clientResponse = this.http.put<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
+      }
+      clientResponse.subscribe((response) => {
           const token = response.body;
           const authToken: AuthToken = {
             accessToken: token.access_token,
@@ -120,10 +128,6 @@ export class SpotifyService {
           resolve(authToken);
         },
           (error) => {
-          if (error.status === 401) {
-
-          }
-          // TODO: delete currently saved auth token and re-request a new one?
           console.error('Error requesting token: ' + JSON.stringify(error));
           reject(`Error requesting token: ${JSON.stringify(error)}`);
         });
@@ -269,19 +273,15 @@ export class SpotifyService {
     const expiresIn = this.tokenExpiresIn();
     if (expiresIn < 0) {
       // Need to authorize a new login, redirect to authorization
-      // TODO: potentially could add some info to state here on where to redirect user after callback from OAuth
-      // window.location.href = this.getAuthorizeRequestUrl();
-      // Redirect to /login
       this.router.navigateByUrl('/login');
     } else if (expiresIn < expiryThreshold) {
       // Token is expiring soon or has expired. Refresh the token
-      this.requestAuthToken(this.authToken.refreshToken).then(success => {
-        if (!success) {
-          console.error('Failed to refresh auth token');
-        } else {
-          console.log('Successfully refreshed auth token');
-        }
-      });
+      this.requestAuthToken(this.authToken.refreshToken, true)
+        .then((res) => {
+          this.store.dispatch(new SetAuthToken(res));
+        }).catch((reason) => {
+          console.error('Spotify request failed: ' + reason);
+        });
     }
   }
 

@@ -42,12 +42,9 @@ export class CallbackComponent implements OnInit {
 
       if (code && this.spotify.compareState(state)) {
         // use code to get auth tokens
-        this.spotify.requestAuthToken(code)
+        this.spotify.requestAuthToken(code, false)
           .then((res) => {
             this.store.dispatch(new SetAuthToken(res));
-            // this.spotify.toggleIsAuthenticating();
-            // console.log('Redirect to /dashboard');
-            // this.router.navigateByUrl('/dashboard');
           })
           .catch((reason) => {
             console.error('Spotify request failed: ' + reason);
