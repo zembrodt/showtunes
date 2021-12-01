@@ -11,11 +11,13 @@ import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {MatDialogModule} from '@angular/material/dialog';
 
 
 const materialModules = [
   MatSliderModule,
   MatButtonModule,
+  MatDialogModule,
   MatIconModule,
   MatGridListModule,
   MatCardModule,

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
 import {Observable, Subject} from 'rxjs';
@@ -14,6 +14,10 @@ import {
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
 import {takeUntil} from 'rxjs/operators';
 import {AppConfig} from '../../app.config';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {environment} from '../../../environments/environment';
+import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
+import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -47,7 +51,9 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   colorPickerResetEvent = new Subject<void>();
 
-  constructor(private store: Store) {}
+  githubIcon = faGithub;
+
+  constructor(private store: Store, public helpDialog: MatDialog) {}
 
   ngOnInit(): void {
     this.theme$
@@ -101,5 +107,34 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     if (isValidHex(change)) {
       this.store.dispatch(new ChangeSpotifyCodeBackgroundColor(change));
     }
+  }
+
+  openHelpDialog(): void {
+    this.helpDialog.open(HelpDialogComponent, {
+      width: '90%',
+      data: {
+        version: environment.version,
+        githubIcon: this.githubIcon
+      }
+    });
+  }
+}
+
+export interface HelpDialogData {
+  version: string;
+  githubIcon: IconDefinition;
+}
+
+@Component({
+  selector: 'app-help-dialog',
+  templateUrl: 'help-dialog.component.html',
+  styleUrls: ['./help-dialog.component.css']
+})
+export class HelpDialogComponent {
+  constructor(public dialogRef: MatDialogRef<HelpDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: HelpDialogData) {}
+
+  onClose(): void {
+    this.dialogRef.close();
   }
 }

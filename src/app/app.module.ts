@@ -15,7 +15,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
 import { AlbumDisplayComponent } from './components/album-display/album-display.component';
 import { MaterialModule } from './modules/material.module';
-import { SettingsMenuComponent } from './components/settings-menu/settings-menu.component';
+import {HelpDialogComponent, SettingsMenuComponent} from './components/settings-menu/settings-menu.component';
 import { ColorPickerComponent } from './components/color-picker/color-picker.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DevicesComponent } from './components/devices/devices.component';
@@ -43,6 +43,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     ColorPickerComponent,
     DashboardComponent,
     DevicesComponent,
+    HelpDialogComponent,
     LoadingComponent,
     LoginComponent,
     SettingsMenuComponent,
