@@ -6,6 +6,7 @@ export const DEFAULT_BAR_CODE_COLOR = BAR_COLOR_BLACK;
 
 export interface SettingsModel {
   theme: string;
+  showPlayerControls: boolean;
   showSpotifyCode: boolean;
   useSmartCodeColor: boolean;
   spotifyCode: {
@@ -16,6 +17,7 @@ export interface SettingsModel {
 
 export const DEFAULT_SETTINGS: SettingsModel = {
   theme: 'light-theme',
+  showPlayerControls: true,
   showSpotifyCode: true,
   useSmartCodeColor: false,
   spotifyCode: {

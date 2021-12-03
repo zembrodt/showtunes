@@ -14,6 +14,7 @@ import {
   ToggleShuffle
 } from '../../core/playback/playback.actions';
 import {takeUntil} from 'rxjs/operators';
+import {SettingsState} from '../../core/settings/settings.state';
 
 // Default values
 const DEFAULT_VOLUME = 50;
@@ -51,6 +52,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   @Select(PlaybackState.isShuffle) isShuffle$: Observable<boolean>;
   @Select(PlaybackState.repeat) repeat$: Observable<string>;
   @Select(PlaybackState.isLiked) isLiked$: Observable<boolean>;
+  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
 
   private volume: number;
   private repeatState: string;

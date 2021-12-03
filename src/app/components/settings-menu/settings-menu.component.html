@@ -23,6 +23,17 @@
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="6px">
+        <mat-icon class="app-icon">play_circle</mat-icon>
+        <mat-slide-toggle
+          [checked]="showPlayerControls$ | async"
+          [color]="'primary'"
+          (toggleChange)="onShowPlayerControlsChange()"
+          (click)="$event.stopPropagation();"
+        ></mat-slide-toggle>
+      </div>
+      <div class="menu-item"
+           fxLayout="row"
+           fxLayoutGap="6px">
         <mat-icon class="app-icon">qr_code_2</mat-icon>
         <mat-slide-toggle
           [checked]="showSpotifyCode$ | async"

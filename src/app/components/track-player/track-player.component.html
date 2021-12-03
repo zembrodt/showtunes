@@ -31,7 +31,8 @@
   <div class="mat-subheading-2 player-buttons"
        fxLayout="row"
        fxLayoutAlign="center center"
-       fxLayoutGap="48px">
+       fxLayoutGap="48px"
+       *ngIf="showPlayerControls$ | async">
     <button mat-icon-button [ngClass]="(isShuffle$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onToggleShuffle()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
     </button>
@@ -51,7 +52,8 @@
   <div class="track-volume"
        fxLayout="row"
        fxLayoutAlign="center center"
-       fxLayoutGap="6px">
+       fxLayoutGap="6px"
+       *ngIf="showPlayerControls$ | async">
     <button mat-icon-button class="mat-subheading-2 track-player-icon" (click)="onVolumeMute()">
       <mat-icon class="volume-button">{{getVolumeIcon((volume$ | async))}}</mat-icon>
     </button>

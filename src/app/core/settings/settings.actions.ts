@@ -3,6 +3,10 @@ export class ChangeTheme {
   constructor(public theme: string) {}
 }
 
+export class TogglePlayerControls {
+  static readonly type = '[Settings] Toggle Player Controls';
+}
+
 export class ToggleSpotifyCode {
   static readonly type = '[Settings] Toggle Spotify Code';
 }
