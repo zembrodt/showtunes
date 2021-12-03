@@ -70,4 +70,11 @@
       </button>
     </div>
   </div>
+  <div class="mat-subheading-1 playlist-font"
+       *ngIf="(showPlaylistName$ | async) && (playlist$ | async)"
+  >Currently playing from:
+    <span class="playlist-name">
+      <a href="{{(playlist$ | async).href}}" target="_blank">{{(playlist$ | async).name}}</a>
+    </span>
+  </div>
 </div>

@@ -2,10 +2,12 @@ import {Action, NgxsOnInit, Selector, State, StateContext} from '@ngxs/store';
 import {Injectable} from '@angular/core';
 import {
   ChangeTheme,
+  TogglePlayerControls,
+  TogglePlaylistName,
   ToggleSpotifyCode,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ToggleSmartCodeColor, TogglePlayerControls
+  ToggleSmartCodeColor
 } from './settings.actions';
 import {DEFAULT_SETTINGS, SettingsModel} from './settings.model';
 import {OverlayContainer} from '@angular/cdk/overlay';
@@ -22,9 +24,15 @@ export class SettingsState implements NgxsOnInit {
   static theme(state: SettingsModel): string {
     return state.theme;
   }
+
   @Selector()
   static showPlayerControls(state: SettingsModel): boolean {
     return state.showPlayerControls;
+  }
+
+  @Selector()
+  static showPlaylistName(state: SettingsModel): boolean {
+    return state.showPlaylistName;
   }
 
   @Selector()
@@ -61,6 +69,12 @@ export class SettingsState implements NgxsOnInit {
   togglePlayerControls(ctx: StateContext<SettingsModel>): void {
     const state = ctx.getState();
     ctx.patchState({showPlayerControls: !state.showPlayerControls});
+  }
+
+  @Action(TogglePlaylistName)
+  togglePlaylistName(ctx: StateContext<SettingsModel>): void {
+    const state = ctx.getState();
+    ctx.patchState({showPlaylistName: !state.showPlaylistName});
   }
 
   @Action(ToggleSpotifyCode)

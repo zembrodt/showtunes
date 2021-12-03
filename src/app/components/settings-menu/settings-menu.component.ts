@@ -8,7 +8,7 @@ import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme, TogglePlayerControls, ToggleSmartCodeColor,
+  ChangeTheme, TogglePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
@@ -40,6 +40,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   @Select(SettingsState.theme) theme$: Observable<string>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
+  @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
@@ -85,6 +86,10 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   onShowPlayerControlsChange(): void {
     this.store.dispatch(new TogglePlayerControls());
+  }
+
+  onShowPlaylistNameChange(): void {
+    this.store.dispatch(new TogglePlaylistName());
   }
 
   onShowBarCodeChange(): void {

@@ -1,10 +1,10 @@
-import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PlaybackModel, TrackModel} from './playback.model';
+import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PlaybackModel, PlaylistModel, TrackModel} from './playback.model';
 import {Injectable} from '@angular/core';
 import {Action, NgxsAfterBootstrap, Selector, State, StateContext} from '@ngxs/store';
 import {ImageResponse} from '../../models/image.model';
 import {
   ChangeAlbum,
-  ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume,
+  ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume, ChangePlaylist,
   ChangeProgress,
   ChangeRepeatState,
   ChangeTrack, GetAvailableDevices, PollCurrentPlayback, SetLiked, SkipNextTrack, SkipPreviousTrack,
@@ -15,9 +15,10 @@ import {
 import {SpotifyService} from '../../services/spotify/spotify.service';
 import {tap} from 'rxjs/operators';
 import {CurrentPlaybackResponse} from '../../models/current-playback.model';
-import {parseAlbum, parseDevice, parseTrack} from '../util';
+import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack} from '../util';
 import {Observable} from 'rxjs';
 import {MultipleDevicesResponse} from '../../models/device.model';
+import {ContextResponse} from '../../models/context.model';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
@@ -37,6 +38,11 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Selector()
   static album(state: PlaybackModel): AlbumModel {
     return state.album;
+  }
+
+  @Selector()
+  static playlist(state: PlaybackModel): PlaylistModel {
+    return state.playlist;
   }
 
   @Selector()
@@ -110,6 +116,19 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Action(ChangeAlbum)
   changeAlbum(ctx: StateContext<PlaybackModel>, action: ChangeAlbum): void {
     ctx.patchState({album: action.album});
+  }
+
+  @Action(ChangePlaylist)
+  changePlaylist(ctx: StateContext<PlaybackModel>, action: ChangePlaylist): void {
+    if (action.playlistId) {
+      this.spotifyService.getPlaylist(action.playlistId).subscribe(
+        (response) => {
+          ctx.patchState({playlist: parsePlaylist(response)});
+        }
+      );
+    } else {
+      ctx.patchState({playlist: null});
+    }
   }
 
   @Action(ChangeDevice)
@@ -266,6 +285,16 @@ export class PlaybackState implements NgxsAfterBootstrap {
             // check if we have a new album
             if (track.album.id !== state.album.id) {
               ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
+            }
+            // Check if we're in a new playlist and update state
+            if (currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
+              const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
+              if (!state.playlist || state.playlist.id !== playlistId) {
+                ctx.dispatch(new ChangePlaylist(playlistId));
+              }
+            } else if (state.playlist) {
+              // No longer playing a playlist, update if we previously were
+              ctx.dispatch(new ChangePlaylist(null));
             }
             // check if using a new device
             if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {

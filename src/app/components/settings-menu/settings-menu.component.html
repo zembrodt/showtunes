@@ -34,6 +34,17 @@
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="6px">
+        <mat-icon class="app-icon">queue_music</mat-icon>
+        <mat-slide-toggle
+          [checked]="showPlaylistName$ | async"
+          [color]="'primary'"
+          (toggleChange)="onShowPlaylistNameChange()"
+          (click)="$event.stopPropagation();"
+        ></mat-slide-toggle>
+      </div>
+      <div class="menu-item"
+           fxLayout="row"
+           fxLayoutGap="6px">
         <mat-icon class="app-icon">qr_code_2</mat-icon>
         <mat-slide-toggle
           [checked]="showSpotifyCode$ | async"

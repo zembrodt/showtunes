@@ -5,7 +5,7 @@ import {StorageService} from '../../services/storage/storage.service';
 import {Select, Store} from '@ngxs/store';
 import {PlaybackState} from '../../core/playback/playback.state';
 import {Observable, Subject} from 'rxjs';
-import {AlbumModel, TrackModel} from '../../core/playback/playback.model';
+import {AlbumModel, PlaylistModel, TrackModel} from '../../core/playback/playback.model';
 import {
   ChangeDeviceVolume,
   ChangeProgress,
@@ -45,6 +45,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
 
   @Select(PlaybackState.track) track$: Observable<TrackModel>;
   @Select(PlaybackState.album) album$: Observable<AlbumModel>;
+  @Select(PlaybackState.playlist) playlist$: Observable<PlaylistModel>;
   @Select(PlaybackState.deviceVolume) volume$: Observable<number>;
   @Select(PlaybackState.progress) progress$: Observable<number>;
   @Select(PlaybackState.duration) duration$: Observable<number>;
@@ -53,6 +54,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   @Select(PlaybackState.repeat) repeat$: Observable<string>;
   @Select(PlaybackState.isLiked) isLiked$: Observable<boolean>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
+  @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
 
   private volume: number;
   private repeatState: string;

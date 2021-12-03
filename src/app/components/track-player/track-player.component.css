@@ -71,3 +71,20 @@
 .mat-slider-horizontal {
   width: 100%;
 }
+
+.playlist-font {
+  margin-top: 32px;
+}
+
+/* Playlist link styling */
+.playlist-font a:link, a:visited {
+  text-decoration: none;
+}
+
+.playlist-font a:hover, a:active {
+  text-decoration: underline;
+}
+
+.playlist-name {
+  font-weight: bold;
+}
