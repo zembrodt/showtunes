@@ -53,17 +53,30 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   spotifyIcon = faSpotify;
 
-  constructor(private spotifyService: SpotifyService) {
-    this.spotifyCodeUrl = this.getSpotifyCodeUrl();
-  }
+  constructor(private spotifyService: SpotifyService) {}
 
   ngOnInit(): void {
+    // Set initial spotify code color
+    if (this.useSmartCodeColor) {
+      this.setSmartCodeColor();
+    }
+    this.spotifyCodeUrl = this.getSpotifyCodeUrl();
+
     this.track$
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((track) => this.track = track);
+      .subscribe((track) => {
+        this.track = track;
+        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
+      });
     this.coverArt$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((coverArt) => {
+        // TODO: This adds a "loading" time to the spotify code while it fetches the new color, but album moves around while the
+        // placeholder is switched to the new code
+        /*if (!this.coverArt || coverArt.url !== this.coverArt.url) {
+          this.smartBackgroundColor = null;
+          this.smartBarColor = null;
+        }*/
         this.coverArt = coverArt;
         if (this.useSmartCodeColor) {
           this.setSmartCodeColor();
@@ -73,10 +86,14 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((backgroundColor) => {
         this.backgroundColor = backgroundColor;
+        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
       });
     this.barColor$
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((barColor) => this.barColor = barColor);
+      .subscribe((barColor) => {
+        this.barColor = barColor;
+        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
+      });
     this.useSmartCodeColor$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((useSmartCodeColor) => {
@@ -84,6 +101,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
         if (useSmartCodeColor) {
           this.setSmartCodeColor();
         }
+        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
       });
     this.showSpotifyCode$
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -108,7 +126,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getSpotifyCodeUrl(): string {
+  private getSpotifyCodeUrl(): string {
     if (this.useSmartCodeColor && AppConfig.settings.env.albumColorUrl) {
       return this.createSpotifyCodeUrl(this.smartBackgroundColor, this.smartBarColor);
     }
@@ -131,6 +149,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
           this.smartBackgroundColor = DEFAULT_CODE_COLOR;
           this.smartBarColor = DEFAULT_BAR_CODE_COLOR;
         }
+        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
       });
     }
   }
