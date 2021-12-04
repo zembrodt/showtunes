@@ -3,4 +3,7 @@ export interface ArtistResponse {
   name: string;
   type: string;
   uri: string;
+  external_urls: {
+    spotify: string;
+  };
 }

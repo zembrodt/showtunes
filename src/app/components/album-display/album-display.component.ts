@@ -4,7 +4,7 @@ import {Select} from '@ngxs/store';
 import {faSpotify} from '@fortawesome/free-brands-svg-icons';
 import {SettingsState} from '../../core/settings/settings.state';
 import {PlaybackState} from '../../core/playback/playback.state';
-import {TrackModel} from '../../core/playback/playback.model';
+import {AlbumModel, TrackModel} from '../../core/playback/playback.model';
 import {ImageResponse} from '../../models/image.model';
 import {takeUntil} from 'rxjs/operators';
 import {SpotifyService} from '../../services/spotify/spotify.service';
@@ -34,6 +34,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   @Select(PlaybackState.track) track$: Observable<TrackModel>;
   private track: TrackModel;
+
+  @Select(PlaybackState.album) album$: Observable<AlbumModel>;
 
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   private useSmartCodeColor: boolean;

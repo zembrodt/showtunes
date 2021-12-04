@@ -16,8 +16,14 @@ export function parseTrack(track: TrackResponse): TrackModel {
     return {
       id: track.id,
       title: track.name,
+      artists: track.artists.map((artist) => {
+        return {
+          name: artist.name,
+          href: artist.external_urls.spotify
+        };
+      }),
       uri: track.uri,
-      artists: track.artists.map((artist) => artist.name)
+      href: track.external_urls.spotify
     };
   }
   return null;
@@ -34,7 +40,8 @@ export function parseAlbum(album: AlbumResponse): AlbumModel {
       totalTracks: album.total_tracks,
       uri: album.uri,
       artists: album.artists.map((artist) => artist.name),
-      coverArt: album.images.find((image) => image.width === imagesMaxWidth)
+      coverArt: album.images.find((image) => image.width === imagesMaxWidth),
+      href: album.external_urls.spotify
     };
   }
   return null;

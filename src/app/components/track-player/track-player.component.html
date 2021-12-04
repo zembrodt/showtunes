@@ -6,9 +6,21 @@
      fxLayout="column"
      fxLayoutAlign="space-around start"
      fxLayoutGap="24px">
-    <div class="mat-display-3 track-title">{{(track$ | async).title}}</div>
-    <div class="mat-display-1 track-artist">{{(track$ | async).artists.length > 0 ? (track$ | async).artists[0] : ''}}</div>
-    <div class="mat-display-1 track-album">{{(album$ | async) ? (album$ | async).name : ''}}</div>
+    <div class="mat-display-3 track-title">
+      <a href="{{(track$ | async).href}}" target="_blank">
+        {{(track$ | async).title}}
+      </a>
+    </div>
+    <div class="mat-display-1 track-artist">
+      <a href="{{(track$ | async).artists.length > 0 ? (track$ | async).artists[0].href : ''}}" target="_blank">
+        {{(track$ | async).artists.length > 0 ? (track$ | async).artists[0].name : ''}}
+      </a>
+    </div>
+    <div class="mat-display-1 track-album">
+      <a href="{{(album$ | async) ? (album$ | async).href : ''}}" target="_blank">
+        {{(album$ | async) ? (album$ | async).name : ''}}
+      </a>
+    </div>
   </div>
   <div *ngIf="!(track$ | async)" class="track-placeholder"
        fxLayout="column"

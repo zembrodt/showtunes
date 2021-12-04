@@ -4,6 +4,19 @@
   height: 100%;
 }
 
+/* Track info link styling */
+.track-info a {
+  color: inherit;
+}
+
+.track-info a:link, a:visited {
+  text-decoration: none;
+}
+
+.track-info a:hover, a:active {
+  text-decoration: underline;
+}
+
 .track-title {
   font-weight: bold;
 }
