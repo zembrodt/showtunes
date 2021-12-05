@@ -12,9 +12,10 @@
       </a>
     </div>
     <div class="mat-display-1 track-artist">
-      <a href="{{(track$ | async).artists.length > 0 ? (track$ | async).artists[0].href : ''}}" target="_blank">
-        {{(track$ | async).artists.length > 0 ? (track$ | async).artists[0].name : ''}}
-      </a>
+      <ng-container *ngFor="let artist of (track$ | async).artists; let i = index">
+        <a href="{{artist.href}}" target="_blank">{{artist.name}}</a>
+        <span *ngIf="i + 1 < (track$ | async).artists.length">, </span>
+      </ng-container>
     </div>
     <div class="mat-display-1 track-album">
       <a href="{{(album$ | async) ? (album$ | async).href : ''}}" target="_blank">
