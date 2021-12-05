@@ -19,6 +19,8 @@ import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack}
 import {Observable} from 'rxjs';
 import {MultipleDevicesResponse} from '../../models/device.model';
 import {ContextResponse} from '../../models/context.model';
+import {StorageService} from '../../services/storage/storage.service';
+import {PREVIOUS_VOLUME} from '../globals';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
@@ -28,7 +30,7 @@ const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 })
 @Injectable()
 export class PlaybackState implements NgxsAfterBootstrap {
-  constructor(private spotifyService: SpotifyService) { }
+  constructor(private spotifyService: SpotifyService, private storage: StorageService) { }
 
   @Selector()
   static track(state: PlaybackModel): TrackModel {
@@ -303,6 +305,10 @@ export class PlaybackState implements NgxsAfterBootstrap {
             // check all other items that can change during playback
             ctx.dispatch(new ChangeDeviceIsActive(currentPlayback.device.is_active));
             const device = ctx.getState().device;
+            // Check if volume was muted externally to save previous value
+            if (currentPlayback.device.volume_percent === 0 && device.volume > 0) {
+              this.storage.set(PREVIOUS_VOLUME, device.volume.toString());
+            }
             ctx.patchState({
               device: {...device, volume: currentPlayback.device.volume_percent},
               progress: currentPlayback.progress_ms,
