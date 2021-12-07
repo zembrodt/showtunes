@@ -3,7 +3,12 @@
      fxLayoutAlign="space-around center"
      fxLayoutGap="6px"
      >
-  <img *ngIf="(coverArt$ | async) && (coverArt$ | async).url; else albumPlaceholder" src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
+  <div *ngIf="(coverArt$ | async) && (coverArt$ | async).url; else albumPlaceholder"
+       class="album-image-container">
+    <a href="{{(album$ | async).href}}" target="_blank">
+      <img src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
+    </a>
+  </div>
   <ng-template #albumPlaceholder>
     <div class="album-image">
       <div class="album-placeholder" [ngClass.lt-md]="'album-placeholder-sm'"
@@ -13,7 +18,7 @@
       </div>
     </div>
   </ng-template>
-  <div *ngIf="(showSpotifyCode$ | async) && !getSpotifyCodeUrl(); else spotifyCode">
+  <div *ngIf="(showSpotifyCode$ | async) && (!spotifyCodeUrl || !smartBackgroundColor || !smartBarColor); else spotifyCode">
     <div class="qr-code-image">
       <div class="qr-code-placeholder" [ngClass.lt-md]="'qr-code-placeholder-sm'"
            fxLayout="column"
@@ -29,6 +34,6 @@
     </div>
   </div>
   <ng-template #spotifyCode>
-    <img *ngIf="showSpotifyCode$ | async" src="{{getSpotifyCodeUrl()}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
+    <img *ngIf="showSpotifyCode$ | async" src="{{spotifyCodeUrl}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
   </ng-template>
 </div>

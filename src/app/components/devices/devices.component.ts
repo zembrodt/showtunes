@@ -22,7 +22,7 @@ export class DevicesComponent {
   }
 
   onSelectDevice(device: DeviceModel): void {
-    this.store.dispatch(new ChangeDevice(device));
+    this.store.dispatch(new ChangeDevice(device, true));
   }
 
   getDeviceIcon(deviceType: string): string {

@@ -4,6 +4,19 @@
   height: 100%;
 }
 
+/* Track info link styling */
+.track-info a {
+  color: inherit;
+}
+
+.track-info a:link, a:visited {
+  text-decoration: none;
+}
+
+.track-info a:hover, a:active {
+  text-decoration: underline;
+}
+
 .track-title {
   font-weight: bold;
 }
@@ -70,4 +83,21 @@
 
 .mat-slider-horizontal {
   width: 100%;
+}
+
+.playlist-font {
+  margin-top: 32px;
+}
+
+/* Playlist link styling */
+.playlist-font a:link, a:visited {
+  text-decoration: none;
+}
+
+.playlist-font a:hover, a:active {
+  text-decoration: underline;
+}
+
+.playlist-name {
+  font-weight: bold;
 }

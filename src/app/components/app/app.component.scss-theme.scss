@@ -13,4 +13,15 @@
   .app-foreground-text {
     color: mat-color($foreground, text);
   }
+
+  /* Link styling */
+  a:link, a:visited {
+    color: mat-color($accent, text);
+    text-decoration: none;
+  }
+
+  a:hover, a:active {
+    color: mat-color($accent, text);
+    text-decoration: underline;
+  }
 }

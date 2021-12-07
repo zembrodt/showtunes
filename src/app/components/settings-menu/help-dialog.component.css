@@ -1,0 +1,19 @@
+.actions {
+  justify-content: end;
+}
+
+.help-dialog-title {
+  margin-bottom: 24px;
+}
+
+.version-text {
+  color: #9e9e9e;
+}
+
+.help-icon {
+  vertical-align: middle;
+}
+
+::ng-deep .mat-raised-button.mat-primary {
+  color: white !important;
+}

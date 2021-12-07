@@ -6,9 +6,22 @@
      fxLayout="column"
      fxLayoutAlign="space-around start"
      fxLayoutGap="24px">
-    <div class="mat-display-3 track-title">{{(track$ | async).title}}</div>
-    <div class="mat-display-1 track-artist">{{(track$ | async).artists.length > 0 ? (track$ | async).artists[0] : ''}}</div>
-    <div class="mat-display-1 track-album">{{(album$ | async) ? (album$ | async).name : ''}}</div>
+    <div class="mat-display-3 track-title">
+      <a href="{{(track$ | async).href}}" target="_blank">
+        {{(track$ | async).title}}
+      </a>
+    </div>
+    <div class="mat-display-1 track-artist">
+      <ng-container *ngFor="let artist of (track$ | async).artists; let i = index">
+        <a href="{{artist.href}}" target="_blank">{{artist.name}}</a>
+        <span *ngIf="i + 1 < (track$ | async).artists.length">, </span>
+      </ng-container>
+    </div>
+    <div class="mat-display-1 track-album">
+      <a href="{{(album$ | async) ? (album$ | async).href : ''}}" target="_blank">
+        {{(album$ | async) ? (album$ | async).name : ''}}
+      </a>
+    </div>
   </div>
   <div *ngIf="!(track$ | async)" class="track-placeholder"
        fxLayout="column"
@@ -31,7 +44,8 @@
   <div class="mat-subheading-2 player-buttons"
        fxLayout="row"
        fxLayoutAlign="center center"
-       fxLayoutGap="48px">
+       fxLayoutGap="48px"
+       *ngIf="showPlayerControls$ | async">
     <button mat-icon-button [ngClass]="(isShuffle$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onToggleShuffle()">
       <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
     </button>
@@ -51,7 +65,8 @@
   <div class="track-volume"
        fxLayout="row"
        fxLayoutAlign="center center"
-       fxLayoutGap="6px">
+       fxLayoutGap="6px"
+       *ngIf="showPlayerControls$ | async">
     <button mat-icon-button class="mat-subheading-2 track-player-icon" (click)="onVolumeMute()">
       <mat-icon class="volume-button">{{getVolumeIcon((volume$ | async))}}</mat-icon>
     </button>
@@ -67,5 +82,12 @@
         <mat-icon>thumb_up</mat-icon>
       </button>
     </div>
+  </div>
+  <div class="mat-subheading-1 playlist-font"
+       *ngIf="(showPlaylistName$ | async) && (playlist$ | async)"
+  >Currently playing from:
+    <span class="playlist-name">
+      <a href="{{(playlist$ | async).href}}" target="_blank">{{(playlist$ | async).name}}</a>
+    </span>
   </div>
 </div>

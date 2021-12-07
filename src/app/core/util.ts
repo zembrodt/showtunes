@@ -1,7 +1,8 @@
-import {AlbumModel, DeviceModel, TrackModel} from './playback/playback.model';
+import {AlbumModel, DeviceModel, PlaylistModel, TrackModel} from './playback/playback.model';
 import {TrackResponse} from '../models/track.model';
 import {AlbumResponse} from '../models/album.model';
 import {DeviceResponse} from '../models/device.model';
+import {PlaylistResponse} from '../models/playlist.model';
 
 export const VALID_HEX = '^[A-Za-z0-9]{6}';
 
@@ -15,8 +16,14 @@ export function parseTrack(track: TrackResponse): TrackModel {
     return {
       id: track.id,
       title: track.name,
+      artists: track.artists.map((artist) => {
+        return {
+          name: artist.name,
+          href: artist.external_urls.spotify
+        };
+      }),
       uri: track.uri,
-      artists: track.artists.map((artist) => artist.name)
+      href: track.external_urls.spotify
     };
   }
   return null;
@@ -33,7 +40,19 @@ export function parseAlbum(album: AlbumResponse): AlbumModel {
       totalTracks: album.total_tracks,
       uri: album.uri,
       artists: album.artists.map((artist) => artist.name),
-      coverArt: album.images.find((image) => image.width === imagesMaxWidth)
+      coverArt: album.images.find((image) => image.width === imagesMaxWidth),
+      href: album.external_urls.spotify
+    };
+  }
+  return null;
+}
+
+export function parsePlaylist(playlist: PlaylistResponse): PlaylistModel {
+  if (playlist) {
+    return {
+      id: playlist.id,
+      name: playlist.name,
+      href: playlist.external_urls.spotify
     };
   }
   return null;
@@ -50,6 +69,16 @@ export function parseDevice(device: DeviceResponse): DeviceModel {
       isActive: device.is_active,
       isPrivateSession: device.is_private_session
     };
+  }
+  return null;
+}
+
+export function getIdFromSpotifyUri(uri: string): string {
+  if (uri) {
+    const uriParts = uri.split(':');
+    if (uriParts.length === 3) {
+      return uriParts[2];
+    }
   }
   return null;
 }

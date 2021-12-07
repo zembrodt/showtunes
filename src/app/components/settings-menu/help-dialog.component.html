@@ -1,0 +1,64 @@
+<h1 class="help-dialog-title mat-display-2">Music Display App</h1>
+<div>
+  <p class="version-text">v{{data.version}}</p>
+  <h1 class="help-dialog-title mat-display-1">Info</h1>
+  <p>
+    Music Display App is a web application that retrieves information from the Spotify API on the track currently
+    playing on your Spotify account. It then updates and displays this information in a minimalistic and customizable
+    web page with a fully controllable web player.
+  </p>
+  <p>
+    Feel free to take a look at the <a href="https://github.com/zembrodt/music-display">Github</a> and open issues for
+    any problems you find!
+  </p>
+  <h1 class="help-dialog-title mat-display-1">Features</h1>
+  <ul>
+    <li>Current track's album artwork</li>
+    <li>An optional Spotify code for the current track</li>
+    <li>Customization for the Spotify code's colors</li>
+    <li>A full music player to connect to your Spotify account</li>
+    <li>Light and dark themes</li>
+  </ul>
+  <h1 class="help-dialog-title mat-display-1">Help</h1>
+  <ul>
+    <li>
+      <mat-icon class="help-icon">dark_mode</mat-icon> - Toggle between the light and dark themes
+    </li>
+    <li>
+      <mat-icon class="help-icon">play_circle</mat-icon> - Toggle the music player controls on and off
+    </li>
+    <li>
+      <mat-icon class="help-icon">queue_music</mat-icon> - Toggle displaying the current playlist's name
+    </li>
+    <li>
+      <mat-icon class="help-icon">qr_code_2</mat-icon> - Toggle the Spotify code on and off. A Spotify code is similar
+      to a QR code and allows people to scan them to access the track on their Spotify app
+    </li>
+    <li>
+      <mat-icon class="help-icon">lightbulb</mat-icon> - Toggle between using a dynamic color generated from the current
+      album's artwork for the Spotify code or a fixed color
+    </li>
+    <li>
+      <mat-icon class="help-icon">invert_colors</mat-icon> - Toggle the bar code on the Spotify code as black or white.
+      Only usable when dynamic color is set to off
+    </li>
+    <li>
+      Color picker - Set the background color of the Spotify code to a fixed color. The widget displays preset colors
+      or allows a hex code to set to a specific color. Only usable when dynamic color is set to off
+    </li>
+  </ul>
+  <p>
+    Developed by <a href="https://zembrodt.com/">Ryan Zembrodt</a>
+  </p>
+  <div fxLayout="row"
+       fxLayoutAlign="space-between center">
+    <div class="mat-title">
+      <a href="https://github.com/zembrodt/music-display">
+        <fa-icon [icon]="data.githubIcon"></fa-icon>
+      </a>
+    </div>
+    <div mat-dialog-actions class="actions">
+      <button mat-raised-button color="primary" (click)="onClose()">Close</button>
+    </div>
+  </div>
+</div>

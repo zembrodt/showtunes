@@ -1,6 +1,7 @@
 export interface PlaybackModel {
   track: TrackModel;
   album: AlbumModel;
+  playlist: PlaylistModel;
   device: DeviceModel;
   availableDevices: DeviceModel[];
   progress: number;
@@ -16,17 +17,24 @@ export interface PlaybackModel {
 export interface TrackModel {
   id: string;
   title: string;
+  artists: ArtistModel[];
   uri: string;
-  artists: string[];
+  href: string;
 }
 
 export function newTrackStateModel(): TrackModel {
   return {
     id: '',
     title: '',
+    artists: [],
     uri: '',
-    artists: []
+    href: ''
   };
+}
+
+export interface ArtistModel {
+  name: string;
+  href: string;
 }
 
 export interface AlbumModel {
@@ -42,6 +50,13 @@ export interface AlbumModel {
     url: string;
   };
   uri: string;
+  href: string;
+}
+
+export interface PlaylistModel {
+  id: string;
+  name: string;
+  href: string;
 }
 
 export interface DeviceModel {
@@ -59,7 +74,8 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
     id: '',
     title: '',
     artists: [],
-    uri: ''
+    uri: '',
+    href: ''
   },
   album: {
     id: '',
@@ -73,8 +89,10 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
       width: 0,
       height: 0,
       url: ''
-    }
+    },
+    href: ''
   },
+  playlist: null,
   device: {
     id: '',
     name: '',

@@ -2,6 +2,8 @@ import {Action, NgxsOnInit, Selector, State, StateContext} from '@ngxs/store';
 import {Injectable} from '@angular/core';
 import {
   ChangeTheme,
+  TogglePlayerControls,
+  TogglePlaylistName,
   ToggleSpotifyCode,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
@@ -21,6 +23,16 @@ export class SettingsState implements NgxsOnInit {
   @Selector()
   static theme(state: SettingsModel): string {
     return state.theme;
+  }
+
+  @Selector()
+  static showPlayerControls(state: SettingsModel): boolean {
+    return state.showPlayerControls;
+  }
+
+  @Selector()
+  static showPlaylistName(state: SettingsModel): boolean {
+    return state.showPlaylistName;
   }
 
   @Selector()
@@ -51,6 +63,18 @@ export class SettingsState implements NgxsOnInit {
   changeTheme(ctx: StateContext<SettingsModel>, action: ChangeTheme): void {
     this.updateOverlayContainer(action.theme);
     ctx.patchState({theme: action.theme});
+  }
+
+  @Action(TogglePlayerControls)
+  togglePlayerControls(ctx: StateContext<SettingsModel>): void {
+    const state = ctx.getState();
+    ctx.patchState({showPlayerControls: !state.showPlayerControls});
+  }
+
+  @Action(TogglePlaylistName)
+  togglePlaylistName(ctx: StateContext<SettingsModel>): void {
+    const state = ctx.getState();
+    ctx.patchState({showPlaylistName: !state.showPlaylistName});
   }
 
   @Action(ToggleSpotifyCode)

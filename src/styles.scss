@@ -1,4 +1,4 @@
-@import "~@angular/material/theming";
+@import "@angular/material/theming";
 @import "./assets/styles/themes";
 @import "./assets/styles/mat-menu-theme";
 @import "app/components/app/app.component.scss-theme";
@@ -39,6 +39,19 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   .track-player-icon-background {
     background-color: mat-color($background, background) !important;
   }
+
+  .playlist-font {
+    color: mat-color($foreground, text);
+  }
+
+  /* Playlist link styling */
+  .playlist-font a:link, a:visited {
+    color: mat-color($foreground, text);
+  }
+
+  .playlist-font a:hover, a:active {
+    color: mat-color($foreground, text);
+  }
 }
 
 .dark-theme {
@@ -62,5 +75,18 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
   .track-player-icon-background {
     background-color: mat-color($foreground, text) !important;
+  }
+
+  .playlist-font {
+    color: mat-color($primary, text);
+  }
+
+  /* Playlist link styling */
+  .playlist-font a:link, a:visited {
+    color: mat-color($primary, text);
+  }
+
+  .playlist-font a:hover, a:active {
+    color: mat-color($primary, text);
   }
 }

@@ -12,4 +12,7 @@ export interface TrackResponse {
   popularity: number;
   type: string;
   uri: string;
+  external_urls: {
+    spotify: string;
+  };
 }

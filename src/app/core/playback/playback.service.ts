@@ -22,7 +22,7 @@ export class PlaybackService implements OnDestroy {
   constructor(private store: Store) { }
 
   initialize(): void {
-   this.intervalSubject
+    this.intervalSubject
      .pipe(
        switchMap(value => {
          if (this.isAuthenticated) {
@@ -38,7 +38,7 @@ export class PlaybackService implements OnDestroy {
        this.store.dispatch(new PollCurrentPlayback(pollingInterval));
      });
 
-   this.isIdle$
+    this.isIdle$
      .pipe(takeUntil(this.ngUnsubscribe))
      .subscribe(isIdle => {
        if (isIdle) {
@@ -50,7 +50,7 @@ export class PlaybackService implements OnDestroy {
        }
      });
 
-   this.isAuthenticated$
+    this.isAuthenticated$
      .pipe(takeUntil(this.ngUnsubscribe))
      .subscribe(isAuthenticated => {
        this.isAuthenticated = isAuthenticated;

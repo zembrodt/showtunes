@@ -11,4 +11,7 @@ export interface AlbumResponse {
   artists: ArtistResponse[];
   images: ImageResponse[];
   uri: string;
+  external_urls: {
+    spotify: string;
+  };
 }

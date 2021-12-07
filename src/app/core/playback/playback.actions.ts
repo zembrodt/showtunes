@@ -1,4 +1,5 @@
-import {AlbumModel, DeviceModel, TrackModel} from './playback.model';
+import {AlbumModel, DeviceModel, PlaylistModel, TrackModel} from './playback.model';
+import {ContextResponse} from '../../models/context.model';
 
 export class ChangeTrack {
   static readonly type = '[Playback] Change Track';
@@ -10,9 +11,14 @@ export class ChangeAlbum {
   constructor(public album: AlbumModel) { }
 }
 
+export class ChangePlaylist {
+  static readonly type = '[Playback] Change Playlist';
+  constructor(public playlistId: string) { }
+}
+
 export class ChangeDevice {
   static readonly type = '[Playback] Change Device';
-  constructor(public device: DeviceModel) { }
+  constructor(public device: DeviceModel, public isPlaying: boolean) { }
 }
 
 export class ChangeDeviceVolume {

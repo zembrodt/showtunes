@@ -1,10 +1,10 @@
-import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PlaybackModel, TrackModel} from './playback.model';
+import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PlaybackModel, PlaylistModel, TrackModel} from './playback.model';
 import {Injectable} from '@angular/core';
 import {Action, NgxsAfterBootstrap, Selector, State, StateContext} from '@ngxs/store';
 import {ImageResponse} from '../../models/image.model';
 import {
   ChangeAlbum,
-  ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume,
+  ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume, ChangePlaylist,
   ChangeProgress,
   ChangeRepeatState,
   ChangeTrack, GetAvailableDevices, PollCurrentPlayback, SetLiked, SkipNextTrack, SkipPreviousTrack,
@@ -15,9 +15,12 @@ import {
 import {SpotifyService} from '../../services/spotify/spotify.service';
 import {tap} from 'rxjs/operators';
 import {CurrentPlaybackResponse} from '../../models/current-playback.model';
-import {parseAlbum, parseDevice, parseTrack} from '../util';
+import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack} from '../util';
 import {Observable} from 'rxjs';
 import {MultipleDevicesResponse} from '../../models/device.model';
+import {ContextResponse} from '../../models/context.model';
+import {StorageService} from '../../services/storage/storage.service';
+import {PREVIOUS_VOLUME} from '../globals';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
@@ -27,7 +30,7 @@ const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 })
 @Injectable()
 export class PlaybackState implements NgxsAfterBootstrap {
-  constructor(private spotifyService: SpotifyService) { }
+  constructor(private spotifyService: SpotifyService, private storage: StorageService) { }
 
   @Selector()
   static track(state: PlaybackModel): TrackModel {
@@ -37,6 +40,11 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Selector()
   static album(state: PlaybackModel): AlbumModel {
     return state.album;
+  }
+
+  @Selector()
+  static playlist(state: PlaybackModel): PlaylistModel {
+    return state.playlist;
   }
 
   @Selector()
@@ -112,9 +120,22 @@ export class PlaybackState implements NgxsAfterBootstrap {
     ctx.patchState({album: action.album});
   }
 
+  @Action(ChangePlaylist)
+  changePlaylist(ctx: StateContext<PlaybackModel>, action: ChangePlaylist): void {
+    if (action.playlistId) {
+      this.spotifyService.getPlaylist(action.playlistId).subscribe(
+        (response) => {
+          ctx.patchState({playlist: parsePlaylist(response)});
+        }
+      );
+    } else {
+      ctx.patchState({playlist: null});
+    }
+  }
+
   @Action(ChangeDevice)
   changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
-    return this.spotifyService.setDevice(action.device.id).pipe(
+    return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
       tap(res => {
         console.log('Set device response: ' + JSON.stringify(res));
         ctx.patchState({device: action.device});
@@ -267,13 +288,27 @@ export class PlaybackState implements NgxsAfterBootstrap {
             if (track.album.id !== state.album.id) {
               ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
             }
+            // Check if we're in a new playlist and update state
+            if (currentPlayback.context && currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
+              const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
+              if (!state.playlist || state.playlist.id !== playlistId) {
+                ctx.dispatch(new ChangePlaylist(playlistId));
+              }
+            } else if (state.playlist) {
+              // No longer playing a playlist, update if we previously were
+              ctx.dispatch(new ChangePlaylist(null));
+            }
             // check if using a new device
             if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {
-              ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device)));
+              ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing));
             }
             // check all other items that can change during playback
             ctx.dispatch(new ChangeDeviceIsActive(currentPlayback.device.is_active));
             const device = ctx.getState().device;
+            // Check if volume was muted externally to save previous value
+            if (currentPlayback.device.volume_percent === 0 && device.volume > 0) {
+              this.storage.set(PREVIOUS_VOLUME, device.volume.toString());
+            }
             ctx.patchState({
               device: {...device, volume: currentPlayback.device.volume_percent},
               progress: currentPlayback.progress_ms,

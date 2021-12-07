@@ -12,6 +12,7 @@ import {Router} from '@angular/router';
 import {Select, Store} from '@ngxs/store';
 import {AuthState} from '../../core/auth/auth.state';
 import {SetAuthToken} from '../../core/auth/auth.actions';
+import {PlaylistResponse} from '../../models/playlist.model';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -33,6 +34,7 @@ const devicesEndpoint  = playbackEndpoint + '/devices';
 const savedTracksEndpoint = apiUrl + '/me/tracks';
 const checkSavedEndpoint  = savedTracksEndpoint + '/contains';
 
+const playlistsEndpoint = apiUrl + '/playlists';
 
 // Local storage keys
 const tokenKey = 'AUTH_TOKEN';
@@ -230,16 +232,21 @@ export class SpotifyService {
     }
   }
 
+  getPlaylist(id: string): Observable<PlaylistResponse> {
+    this.checkTokenExpiry();
+    return this.http.get<PlaylistResponse>(`${playlistsEndpoint}/${id}`, {headers: this.getHeaders()});
+  }
+
   getDevices(): Observable<MultipleDevicesResponse> {
     this.checkTokenExpiry();
     return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
   }
 
-  setDevice(id: string): Observable<any> {
+  setDevice(id: string, isPlaying: boolean): Observable<any> {
     this.checkTokenExpiry();
     return this.http.put(playbackEndpoint, {
       device_ids: [id],
-      play: true
+      play: isPlaying
     }, {headers: this.getHeaders()});
   }
 

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
 import {Observable, Subject} from 'rxjs';
@@ -8,12 +8,16 @@ import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme, ToggleSmartCodeColor,
+  ChangeTheme, TogglePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
 import {takeUntil} from 'rxjs/operators';
 import {AppConfig} from '../../app.config';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {environment} from '../../../environments/environment';
+import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
+import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -35,6 +39,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
+  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
+  @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
@@ -47,7 +53,9 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   colorPickerResetEvent = new Subject<void>();
 
-  constructor(private store: Store) {}
+  githubIcon = faGithub;
+
+  constructor(private store: Store, public helpDialog: MatDialog) {}
 
   ngOnInit(): void {
     this.theme$
@@ -76,6 +84,14 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ChangeTheme(theme));
   }
 
+  onShowPlayerControlsChange(): void {
+    this.store.dispatch(new TogglePlayerControls());
+  }
+
+  onShowPlaylistNameChange(): void {
+    this.store.dispatch(new TogglePlaylistName());
+  }
+
   onShowBarCodeChange(): void {
     this.store.dispatch(new ToggleSpotifyCode());
   }
@@ -101,5 +117,34 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     if (isValidHex(change)) {
       this.store.dispatch(new ChangeSpotifyCodeBackgroundColor(change));
     }
+  }
+
+  openHelpDialog(): void {
+    this.helpDialog.open(HelpDialogComponent, {
+      width: '90%',
+      data: {
+        version: environment.version,
+        githubIcon: this.githubIcon
+      }
+    });
+  }
+}
+
+export interface HelpDialogData {
+  version: string;
+  githubIcon: IconDefinition;
+}
+
+@Component({
+  selector: 'app-help-dialog',
+  templateUrl: 'help-dialog.component.html',
+  styleUrls: ['./help-dialog.component.css']
+})
+export class HelpDialogComponent {
+  constructor(public dialogRef: MatDialogRef<HelpDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: HelpDialogData) {}
+
+  onClose(): void {
+    this.dialogRef.close();
   }
 }
