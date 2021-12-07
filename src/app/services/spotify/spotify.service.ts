@@ -242,11 +242,11 @@ export class SpotifyService {
     return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
   }
 
-  setDevice(id: string): Observable<any> {
+  setDevice(id: string, isPlaying: boolean): Observable<any> {
     this.checkTokenExpiry();
     return this.http.put(playbackEndpoint, {
       device_ids: [id],
-      play: true
+      play: isPlaying
     }, {headers: this.getHeaders()});
   }
 

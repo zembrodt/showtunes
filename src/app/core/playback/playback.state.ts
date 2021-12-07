@@ -135,7 +135,7 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(ChangeDevice)
   changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
-    return this.spotifyService.setDevice(action.device.id).pipe(
+    return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
       tap(res => {
         console.log('Set device response: ' + JSON.stringify(res));
         ctx.patchState({device: action.device});
@@ -300,7 +300,7 @@ export class PlaybackState implements NgxsAfterBootstrap {
             }
             // check if using a new device
             if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {
-              ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device)));
+              ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing));
             }
             // check all other items that can change during playback
             ctx.dispatch(new ChangeDeviceIsActive(currentPlayback.device.is_active));

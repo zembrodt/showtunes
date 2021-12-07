@@ -18,7 +18,7 @@ export class ChangePlaylist {
 
 export class ChangeDevice {
   static readonly type = '[Playback] Change Device';
-  constructor(public device: DeviceModel) { }
+  constructor(public device: DeviceModel, public isPlaying: boolean) { }
 }
 
 export class ChangeDeviceVolume {
