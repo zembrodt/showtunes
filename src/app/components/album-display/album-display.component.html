@@ -3,7 +3,8 @@
      fxLayoutAlign="space-around center"
      fxLayoutGap="6px"
      >
-  <div *ngIf="(coverArt$ | async) && (coverArt$ | async).url; else albumPlaceholder">
+  <div *ngIf="(coverArt$ | async) && (coverArt$ | async).url; else albumPlaceholder"
+       class="album-image-container">
     <a href="{{(album$ | async).href}}" target="_blank">
       <img src="{{(coverArt$ | async).url}}" class="album-image" [ngClass.lt-md]="'img-sm'" />
     </a>

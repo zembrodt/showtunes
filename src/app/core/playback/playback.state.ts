@@ -289,7 +289,7 @@ export class PlaybackState implements NgxsAfterBootstrap {
               ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
             }
             // Check if we're in a new playlist and update state
-            if (currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
+            if (currentPlayback.context && currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
               const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
               if (!state.playlist || state.playlist.id !== playlistId) {
                 ctx.dispatch(new ChangePlaylist(playlistId));
