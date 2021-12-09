@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "music-display": {
+    "showtunes": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/music-display",
+            "outputPath": "dist/showtunes",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -69,18 +69,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "music-display:build"
+            "browserTarget": "showtunes:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "music-display:build:production"
+              "browserTarget": "showtunes:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "music-display:build"
+            "browserTarget": "showtunes:build"
           }
         },
         "test": {
@@ -105,16 +105,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "music-display:serve"
+            "devServerTarget": "showtunes:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "music-display:serve:production"
+              "devServerTarget": "showtunes:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "music-display"
+  "defaultProject": "showtunes"
 }
