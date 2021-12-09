@@ -6,4 +6,4 @@ Angular web application used to display your currently playing Spotify track wit
 
 Can interface with an external API to hide Spotify client secret. See https://github.com/zembrodt/showtunes-api for an implementation in Go.
 
-Application deployed to https://music.zembrodt.com
+Application deployed to https://showtunes.app
