@@ -1,11 +1,11 @@
-## SpotifyDisplay Dev Information
+## ShowTunes Dev Information
 
-### music-display-api
-An instance of music-display-api must be running.
+### ShowTunes API
+An instance of showtunes-api must be running.
 The url of this instance must be provided in `src/assets/config/config.dev.json`
 under `"auth" / "tokenUrl"`
 
-Example: `"tokenUrl": "https://music-display-api.herokuapp.com/api/auth/tokens"`
+Example: `"tokenUrl": "https://showtunes-api.herokuapp.com/api/auth/tokens"`
 
 ### Spotify Callbacks
 The Spotify API must have a callback URL for authentications. This CAN be done via localhost,

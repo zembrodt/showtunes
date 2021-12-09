@@ -116,7 +116,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   }
 
   private createSpotifyCodeUrl(backgroundColor, barColor: string): string {
-    if (this.track && this.track.uri) {
+    if (backgroundColor && barColor && this.track && this.track.uri) {
       return SPOTIFY_CODES_URL + '?uri='
         + encodeURIComponent('jpeg/'
           + backgroundColor + '/'

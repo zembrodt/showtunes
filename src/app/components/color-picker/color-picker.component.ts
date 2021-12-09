@@ -57,7 +57,6 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
   }
 
   onPresetColorSelect(presetColor: string): void {
-    console.log('Preset color selected: \'' + presetColor + '\'');
     this.setColorChange(presetColor);
   }
 

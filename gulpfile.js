@@ -52,7 +52,7 @@ gulp.task('generate-config', () => {
     }
 
     // Rewrite json config to dist
-    fs.writeFileSync(`./dist/music-display/assets/config/config.${env}.json`, JSON.stringify(configJson));
+    fs.writeFileSync(`./dist/showtunes/assets/config/config.${env}.json`, JSON.stringify(configJson));
     resolve();
   });
 });

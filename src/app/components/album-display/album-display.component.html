@@ -18,7 +18,7 @@
       </div>
     </div>
   </ng-template>
-  <div *ngIf="(showSpotifyCode$ | async) && (!spotifyCodeUrl || !smartBackgroundColor || !smartBarColor); else spotifyCode">
+  <div *ngIf="(showSpotifyCode$ | async) && !spotifyCodeUrl; else spotifyCode">
     <div class="qr-code-image">
       <div class="qr-code-placeholder" [ngClass.lt-md]="'qr-code-placeholder-sm'"
            fxLayout="column"

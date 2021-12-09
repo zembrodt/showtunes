@@ -10,7 +10,7 @@ import {PlaybackService} from '../../core/playback/playback.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'Spotify Display';
+  title = 'ShowTunes';
 
   @Select(SettingsState.theme) theme$: Observable<string>;
 
