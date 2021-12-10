@@ -16,12 +16,12 @@
 
   /* Link styling */
   a:link, a:visited {
-    color: mat-color($accent, text);
+    color: mat-color($accent, text) !important;
     text-decoration: none;
   }
 
   a:hover, a:active {
-    color: mat-color($accent, text);
+    color: mat-color($accent, text) !important;
     text-decoration: underline;
   }
 }

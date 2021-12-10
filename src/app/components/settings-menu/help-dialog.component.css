@@ -6,12 +6,12 @@
   margin-bottom: 24px;
 }
 
-.version-text {
-  color: #9e9e9e;
-}
-
 .help-icon {
   vertical-align: middle;
+}
+
+.footer-item {
+  margin-bottom: -24px;
 }
 
 ::ng-deep .mat-raised-button.mat-primary {

@@ -52,10 +52,13 @@
   </p>
   <div fxLayout="row"
        fxLayoutAlign="space-between center">
-    <div class="mat-title">
+    <div class="footer-item mat-title">
       <a href="https://github.com/zembrodt/showtunes">
         <fa-icon [icon]="data.githubIcon"></fa-icon>
       </a>
+    </div>
+    <div class="copyright-link footer-item">
+      <a href="https://raw.githubusercontent.com/zembrodt/showtunes/main/LICENSE" target="_blank">© {{data.year}} Ryan Zembrodt</a>
     </div>
     <div mat-dialog-actions class="actions">
       <button mat-raised-button color="primary" (click)="onClose()">Close</button>

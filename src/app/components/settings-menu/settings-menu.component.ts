@@ -124,7 +124,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
       width: '90%',
       data: {
         version: environment.version,
-        githubIcon: this.githubIcon
+        githubIcon: this.githubIcon,
+        year: new Date().getFullYear()
       }
     });
   }
@@ -133,6 +134,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 export interface HelpDialogData {
   version: string;
   githubIcon: IconDefinition;
+  year: number;
 }
 
 @Component({

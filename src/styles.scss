@@ -1,10 +1,12 @@
 @import "@angular/material/theming";
 @import "./assets/styles/themes";
 @import "./assets/styles/mat-menu-theme";
-@import "app/components/app/app.component.scss-theme";
-@import "app/components/devices/devices.component.scss-theme";
-@import "app/components/settings-menu/settings-menu.component.scss-theme";
-@import "app/components/track-player/track-player.component.scss-theme";
+@import "app/components/app/app.component.theme";
+@import "app/components/album-display/album-display.component.theme";
+@import "app/components/devices/devices.component.theme";
+@import "app/components/settings-menu/help-dialog.component.theme";
+@import "app/components/settings-menu/settings-menu.component.theme";
+@import "app/components/track-player/track-player.component.theme";
 
 @include mat-core();
 
@@ -13,7 +15,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @mixin custom-components-theme($theme) {
   @include app-component-theme($theme);
+  @include album-display-theme($theme);
   @include devices-menu-theme($theme);
+  @include help-dialog-theme($theme);
   @include settings-menu-theme($theme);
   @include track-player-theme($theme);
 }
@@ -22,8 +26,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   @include angular-material-theme($light-theme);
   @include custom-components-theme($light-theme);
 
+  $primary: map-get($light-theme, primary);
   $foreground: map-get($light-theme, foreground);
   $background: map-get($light-theme, background);
+
   .app-icon {
     color: mat-color($foreground, text);
   }
@@ -41,16 +47,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   }
 
   .playlist-font {
-    color: mat-color($foreground, text);
-  }
-
-  /* Playlist link styling */
-  .playlist-font a:link, a:visited {
-    color: mat-color($foreground, text);
-  }
-
-  .playlist-font a:hover, a:active {
-    color: mat-color($foreground, text);
+    color: mat-color($primary, 500);
   }
 }
 
@@ -61,6 +58,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   $primary: map-get($dark-theme, primary);
   $foreground: map-get($dark-theme, foreground);
   $background: map-get($dark-theme, background);
+
   .app-icon {
     color: mat-color($primary, text);
   }
@@ -78,15 +76,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   }
 
   .playlist-font {
-    color: mat-color($primary, text);
-  }
-
-  /* Playlist link styling */
-  .playlist-font a:link, a:visited {
-    color: mat-color($primary, text);
-  }
-
-  .playlist-font a:hover, a:active {
-    color: mat-color($primary, text);
+    color: mat-color($primary, 500);
   }
 }

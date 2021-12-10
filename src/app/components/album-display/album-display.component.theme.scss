@@ -1,0 +1,9 @@
+@import "@angular/material/theming";
+
+@mixin album-display-theme($theme) {
+  $primary: map-get($theme, primary);
+
+  .album-placeholder, .album-placeholder-sm, .qr-code-placeholder, .qr-code-placeholder-sm {
+    border: 2px dashed mat-color($primary, 500);
+  }
+}

@@ -1,0 +1,9 @@
+@import "@angular/material/theming";
+
+@mixin help-dialog-theme($theme) {
+  $primary: map-get($theme, primary);
+
+  .version-text, .copyright-link a {
+    color: mat-color($primary, 500) !important;
+  }
+}
