@@ -1,4 +1,4 @@
-@use '../../../assets/styles/variables';
+@use '../../../assets/styles/colors';
 
 ::ng-deep .mat-menu-panel {
   max-width: 100% !important;
@@ -18,11 +18,11 @@
 }
 
 .white-unselected-light {
-  border: 2px solid variables.$primary-light !important;
+  border: 2px solid colors.$primary-light !important;
 }
 
 .white-unselected-dark {
-  border: 2px solid variables.$primary-dark !important;
+  border: 2px solid colors.$primary-dark !important;
 }
 
 .selected {
@@ -30,9 +30,9 @@
 }
 
 .white-selected-light {
-  box-shadow: variables.$primary-light 0px 0px 0px 6px inset !important;
+  box-shadow: colors.$primary-light 0px 0px 0px 6px inset !important;
 }
 
 .white-selected-dark {
-  box-shadow: variables.$primary-dark 0px 0px 0px 6px inset !important;
+  box-shadow: colors.$primary-dark 0px 0px 0px 6px inset !important;
 }

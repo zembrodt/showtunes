@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 @use 'sass:map';
 
-@mixin theme($theme) {
+@mixin help-dialog-theme($theme) {
   $primary: map.get($theme, primary);
 
   .version-text, .copyright-link a {

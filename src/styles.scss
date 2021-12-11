@@ -2,12 +2,7 @@
 @use 'sass:map';
 @use 'assets/styles/themes';
 
-@use 'app/components/album-display/album-display.component.theme' as album-display;
-@use 'app/components/app/app.component.theme' as app;
-@use 'app/components/devices/devices.component.theme' as devices;
-@use 'app/components/settings-menu/help-dialog.component.theme' as help-dialog;
-@use 'app/components/settings-menu/settings-menu.component.theme' as settings-menu;
-@use 'app/components/track-player/track-player.component.theme' as track-player;
+@use 'src/app/components';
 
 @include mat.core();
 
@@ -15,12 +10,12 @@ html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @mixin custom-components-theme($theme) {
-  @include album-display.theme($theme);
-  @include app.theme($theme);
-  @include devices.theme($theme);
-  @include help-dialog.theme($theme);
-  @include settings-menu.theme($theme);
-  @include track-player.theme($theme);
+  @include components.album-display-theme($theme);
+  @include components.app-theme($theme);
+  @include components.devices-theme($theme);
+  @include components.help-dialog-theme($theme);
+  @include components.settings-menu-theme($theme);
+  @include components.track-player-theme($theme);
 }
 
 .light-theme {
