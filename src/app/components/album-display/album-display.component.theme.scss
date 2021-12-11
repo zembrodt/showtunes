@@ -1,9 +1,10 @@
-@import "@angular/material/theming";
+@use '@angular/material' as mat;
+@use 'sass:map';
 
-@mixin album-display-theme($theme) {
-  $primary: map-get($theme, primary);
+@mixin theme($theme) {
+  $primary: map.get($theme, primary);
 
   .album-placeholder, .album-placeholder-sm, .qr-code-placeholder, .qr-code-placeholder-sm {
-    border: 2px dashed mat-color($primary, 500);
+    border: 2px dashed mat.get-color-from-palette($primary, 500);
   }
 }

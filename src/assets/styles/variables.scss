@@ -1,10 +1,11 @@
-@import "src/assets/styles/themes";
+@use '@angular/material' as mat;
+@use 'themes';
 
-$-primary-light: mat-color($light-primary);
-$-primary-dark:  mat-color($dark-primary);
+$primary-light: mat.get-color-from-palette(themes.$light-primary);
+$primary-dark:  mat.get-color-from-palette(themes.$dark-primary);
 
-$-accent-light: mat-color($light-accent);
-$-accent-dark:  mat-color($dark-accent);
+$accent-light: mat.get-color-from-palette(themes.$light-accent);
+$accent-dark:  mat.get-color-from-palette(themes.$dark-accent);
 
-$-warn-light: mat-color($light-warn);
-$-warn-dark:  mat-color($dark-warn);
+$warn-light: mat.get-color-from-palette(themes.$light-warn);
+$warn-dark:  mat.get-color-from-palette(themes.$dark-warn);

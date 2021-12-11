@@ -1,22 +1,38 @@
-@import '@angular/material/theming';
+@use '@angular/material' as mat;
 
 // For explanation, see: https://material.angular.io/guide/theming
 
-@include mat-core();
+@include mat.core();
+
+// Add the theme mixin for each Material module used
+@mixin component-themes($theme) {
+  @include mat.core-theme($theme);
+
+  @include mat.button-theme($theme);
+  @include mat.card-theme($theme);
+  @include mat.dialog-theme($theme);
+  @include mat.form-field-theme($theme);
+  @include mat.grid-list-theme($theme);
+  @include mat.icon-theme($theme);
+  @include mat.input-theme($theme);
+  @include mat.menu-theme($theme);
+  @include mat.progress-bar-theme($theme);
+  @include mat.progress-spinner-theme($theme);
+  @include mat.sidenav-theme($theme);
+  @include mat.slider-theme($theme);
+  @include mat.slide-toggle-theme($theme);
+}
 
 // Light theme
-$light-primary: mat-palette($mat-gray);
-$light-accent:  mat-palette($mat-green, A400, A200, A700);
-$light-warn:    mat-palette($mat-deep-orange);
+$light-primary: mat.define-palette(mat.$gray-palette);
+$light-accent:  mat.define-palette(mat.$green-palette, A400, A200, A700);
+$light-warn:    mat.define-palette(mat.$deep-orange-palette);
 
-$light-theme: mat-light-theme($light-primary, $light-accent, $light-warn);
+$light-theme: mat.define-light-theme($light-primary, $light-accent, $light-warn);
 
 // Alternate dark theme
-$dark-primary: mat-palette($mat-gray);
-$dark-accent:  mat-palette($mat-green, A400, A200, A700);
-$dark-warn:    mat-palette($mat-deep-orange);
+$dark-primary: mat.define-palette(mat.$gray-palette);
+$dark-accent:  mat.define-palette(mat.$green-palette, A400, A200, A700);
+$dark-warn:    mat.define-palette(mat.$deep-orange-palette);
 
-$dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn)
-
-//$dark-background: mat-color($mat-blue-gray, 700);
-//$dark-font-color: mat-color($mat-gray, 100);
+$dark-theme: mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn)

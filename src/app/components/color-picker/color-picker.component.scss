@@ -1,4 +1,4 @@
-@import "src/assets/styles/variables";
+@use '../../../assets/styles/variables';
 
 ::ng-deep .mat-menu-panel {
   max-width: 100% !important;
@@ -18,11 +18,11 @@
 }
 
 .white-unselected-light {
-  border: 2px solid $-primary-light !important;
+  border: 2px solid variables.$primary-light !important;
 }
 
 .white-unselected-dark {
-  border: 2px solid $-primary-dark !important;
+  border: 2px solid variables.$primary-dark !important;
 }
 
 .selected {
@@ -30,9 +30,9 @@
 }
 
 .white-selected-light {
-  box-shadow: $-primary-light 0px 0px 0px 6px inset !important;
+  box-shadow: variables.$primary-light 0px 0px 0px 6px inset !important;
 }
 
 .white-selected-dark {
-  box-shadow: $-primary-dark 0px 0px 0px 6px inset !important;
+  box-shadow: variables.$primary-dark 0px 0px 0px 6px inset !important;
 }

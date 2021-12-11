@@ -27,6 +27,13 @@
               "src/assets/styles/themes.scss",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules",
+                "src/assets/styles",
+                "src"
+              ]
+            },
             "scripts": [],
             "vendorChunk": true,
             "extractLicenses": false,
@@ -98,6 +105,13 @@
               "src/assets/styles/themes.scss",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules",
+                "src/assets/styles",
+                "src"
+              ]
+            },
             "scripts": []
           }
         },

@@ -1,14 +1,15 @@
-@import "@angular/material/theming";
+@use '@angular/material' as mat;
+@use 'sass:map';
 
-@mixin settings-menu-theme($theme) {
-  $primary: map-get($theme, primary);
-  $foreground: map-get($theme, foreground);
+@mixin theme($theme) {
+  $primary: map.get($theme, primary);
+  $foreground: map.get($theme, foreground);
 
   .options-icon {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, text);
   }
 
   .foreground-text {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 }

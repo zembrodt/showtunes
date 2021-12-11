@@ -1,81 +1,84 @@
-@import "@angular/material/theming";
-@import "./assets/styles/themes";
-@import "./assets/styles/mat-menu-theme";
-@import "app/components/app/app.component.theme";
-@import "app/components/album-display/album-display.component.theme";
-@import "app/components/devices/devices.component.theme";
-@import "app/components/settings-menu/help-dialog.component.theme";
-@import "app/components/settings-menu/settings-menu.component.theme";
-@import "app/components/track-player/track-player.component.theme";
+@use '@angular/material' as mat;
+@use 'sass:map';
+@use 'assets/styles/themes';
 
-@include mat-core();
+@use 'app/components/album-display/album-display.component.theme' as album-display;
+@use 'app/components/app/app.component.theme' as app;
+@use 'app/components/devices/devices.component.theme' as devices;
+@use 'app/components/settings-menu/help-dialog.component.theme' as help-dialog;
+@use 'app/components/settings-menu/settings-menu.component.theme' as settings-menu;
+@use 'app/components/track-player/track-player.component.theme' as track-player;
+
+@include mat.core();
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @mixin custom-components-theme($theme) {
-  @include app-component-theme($theme);
-  @include album-display-theme($theme);
-  @include devices-menu-theme($theme);
-  @include help-dialog-theme($theme);
-  @include settings-menu-theme($theme);
-  @include track-player-theme($theme);
+  @include album-display.theme($theme);
+  @include app.theme($theme);
+  @include devices.theme($theme);
+  @include help-dialog.theme($theme);
+  @include settings-menu.theme($theme);
+  @include track-player.theme($theme);
 }
 
 .light-theme {
-  @include angular-material-theme($light-theme);
-  @include custom-components-theme($light-theme);
+  //@include mat.angular-material-theme($light-theme);
+  @include themes.component-themes(themes.$light-theme);
+  @include custom-components-theme(themes.$light-theme);
 
-  $primary: map-get($light-theme, primary);
-  $foreground: map-get($light-theme, foreground);
-  $background: map-get($light-theme, background);
+  $primary: map.get(themes.$light-theme, primary);
+  $foreground: map.get(themes.$light-theme, foreground);
+  $background: map.get(themes.$light-theme, background);
 
   .app-icon {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon-foreground {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon-background {
-    background-color: mat-color($background, background) !important;
+    background-color: mat.get-color-from-palette($background, background) !important;
   }
 
   .playlist-font {
-    color: mat-color($primary, 500);
+    color: mat.get-color-from-palette($primary, 500);
   }
 }
 
 .dark-theme {
-  @include angular-material-theme($dark-theme);
-  @include custom-components-theme($dark-theme);
+  //@include mat.angular-material-theme($dark-theme);
+  @include themes.component-themes(themes.$dark-theme);
+  @include custom-components-theme(themes.$dark-theme);
 
-  $primary: map-get($dark-theme, primary);
-  $foreground: map-get($dark-theme, foreground);
-  $background: map-get($dark-theme, background);
+  $primary: map.get(themes.$dark-theme, primary);
+  $foreground: map.get(themes.$dark-theme, foreground);
+  $background: map.get(themes.$dark-theme, background);
 
   .app-icon {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, text);
   }
 
   .track-player-icon {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, text);
   }
 
   .track-player-icon-foreground {
-    color: mat-color($background, text);
+    color: mat.get-color-from-palette($background, text);
   }
 
   .track-player-icon-background {
-    background-color: mat-color($foreground, text) !important;
+    background-color: mat.get-color-from-palette($foreground, text) !important;
   }
 
   .playlist-font {
-    color: mat-color($primary, 500);
+    color: mat.get-color-from-palette($primary, 500);
   }
 }
