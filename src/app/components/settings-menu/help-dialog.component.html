@@ -1,5 +1,5 @@
-<h1 class="help-dialog-title mat-display-2">ShowTunes</h1>
-<div>
+<h1 mat-dialog-title class="help-dialog-title mat-display-2">ShowTunes</h1>
+<mat-dialog-content class="scrollbar scrollbar-{{data.isLightTheme ? 'light' : 'dark'}}">
   <p class="version-text">v{{data.version}}</p>
   <h1 class="help-dialog-title mat-display-1">Info</h1>
   <p>
@@ -64,4 +64,4 @@
       <button mat-raised-button color="primary" (click)="onClose()">Close</button>
     </div>
   </div>
-</div>
+</mat-dialog-content>
