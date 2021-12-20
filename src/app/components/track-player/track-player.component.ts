@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatSliderChange} from '@angular/material/slider';
 import {PREVIOUS_VOLUME} from '../../core/globals';
 import {StorageService} from '../../services/storage/storage.service';
@@ -13,7 +13,7 @@ import {
   TogglePlaying,
   ToggleShuffle
 } from '../../core/playback/playback.actions';
-import {takeUntil} from 'rxjs/operators';
+import {take, takeUntil} from 'rxjs/operators';
 import {SettingsState} from '../../core/settings/settings.state';
 
 // Default values
@@ -40,7 +40,7 @@ const REPEAT_TRACK = 'track';
   templateUrl: './track-player.component.html',
   styleUrls: ['./track-player.component.css']
 })
-export class TrackPlayerComponent implements OnInit, OnDestroy {
+export class TrackPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(PlaybackState.track) track$: Observable<TrackModel>;
@@ -58,6 +58,20 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
 
   private volume: number;
   private repeatState: string;
+  private trackTitleEl: Element;
+
+  // TODO: this seems to have performance issues?
+  private trackTitleObserver = new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      const lineCount = this.trackTitleEl.clientHeight / parseInt(window.getComputedStyle(this.trackTitleEl).lineHeight, 10);
+      if (lineCount > 1) {
+        // Update style to scroll
+        this.trackTitleEl.classList.add('scroll-track-info');
+      } else {
+        // Update style to normal "static"
+      }
+    }
+  });
 
   constructor(private storage: StorageService, private store: Store) { }
 
@@ -70,9 +84,15 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
       .subscribe((repeat) => this.repeatState = repeat);
   }
 
+  ngAfterViewInit(): void {
+    this.trackTitleEl = document.querySelector('.track-title');
+    this.trackTitleObserver.observe(this.trackTitleEl, {attributes: true, childList: true, subtree: true});
+  }
+
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+    this.trackTitleObserver.disconnect();
   }
 
   getProgress(milliseconds: number): string {
