@@ -9,11 +9,11 @@ import {
   ChangeSpotifyCodeBarColor,
   ToggleSmartCodeColor
 } from './settings.actions';
-import {DEFAULT_SETTINGS, SettingsModel} from './settings.model';
+import {DEFAULT_SETTINGS, SETTINGS_STATE_NAME, SettingsModel} from './settings.model';
 import {OverlayContainer} from '@angular/cdk/overlay';
 
 @State<SettingsModel>({
-  name: 'MUSIC_DISPLAY_SETTINGS',
+  name: SETTINGS_STATE_NAME,
   defaults: DEFAULT_SETTINGS
 })
 @Injectable()

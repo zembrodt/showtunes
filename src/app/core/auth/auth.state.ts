@@ -1,15 +1,17 @@
 import {Action, Selector, State, StateContext} from '@ngxs/store';
-import {AuthModel, AuthToken, DEFAULT_AUTH} from './auth.model';
+import {AUTH_STATE_NAME, AuthModel, AuthToken, DEFAULT_AUTH} from './auth.model';
 import {Injectable} from '@angular/core';
-import {SetAuthToken, SetIsAuthenticated} from './auth.actions';
+import {LogoutAuth, SetAuthToken, SetIsAuthenticated} from './auth.actions';
+import {StorageService} from '../../services/storage/storage.service';
+import {SpotifyService} from '../../services/spotify/spotify.service';
 
 @State<AuthModel>({
-  name: 'MUSIC_DISPLAY_AUTH',
+  name: AUTH_STATE_NAME,
   defaults: DEFAULT_AUTH
 })
 @Injectable()
 export class AuthState {
-  constructor() { }
+  constructor(private storage: StorageService) { }
 
   @Selector()
   static token(state: AuthModel): AuthToken {
@@ -32,5 +34,16 @@ export class AuthState {
   @Action(SetIsAuthenticated)
   setIsAuthenticated(ctx: StateContext<AuthModel>, action: SetIsAuthenticated): void {
     ctx.patchState({isAuthenticated: action.isAuthenticated});
+  }
+
+  @Action(LogoutAuth)
+  logoutAuth(ctx: StateContext<AuthModel>, action: LogoutAuth): void {
+    ctx.patchState({
+      token: null,
+      isAuthenticated: false
+    });
+    // Delete local storage variables
+    this.storage.removeAuthToken();
+    this.storage.remove(SpotifyService.stateKey);
   }
 }

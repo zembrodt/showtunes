@@ -20,10 +20,8 @@ export class LoginComponent implements OnInit {
     this.token$.subscribe(token => {
       // Redirect to Spotify OAuth if no token exists
       if (!token) {
-        console.log('PAUSE: redirecting to Spotify OAuth URL');
         window.location.href = this.spotifyService.getAuthorizeRequestUrl();
       } else {
-        console.log('Auth token exists, redirect to /dashboard');
         this.router.navigateByUrl('/dashboard');
       }
     });

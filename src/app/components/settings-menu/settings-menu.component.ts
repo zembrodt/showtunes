@@ -2,7 +2,7 @@ import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
 import {Observable, Subject} from 'rxjs';
-import {isValidHex} from '../../core/util';
+import {isHexColor} from '../../core/util';
 import {SettingsState} from '../../core/settings/settings.state';
 import {Select, Store} from '@ngxs/store';
 import {
@@ -18,6 +18,11 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog
 import {environment} from '../../../environments/environment';
 import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
 import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
+import {StorageService} from '../../services/storage/storage.service';
+import {AUTH_STATE_NAME} from '../../core/auth/auth.model';
+import {SpotifyService} from '../../services/spotify/spotify.service';
+import {Router} from '@angular/router';
+import {LogoutAuth, SetAuthToken} from '../../core/auth/auth.actions';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -55,7 +60,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   githubIcon = faGithub;
 
-  constructor(private store: Store, public helpDialog: MatDialog) {}
+  constructor(private store: Store, private router: Router, public helpDialog: MatDialog) {}
 
   ngOnInit(): void {
     this.theme$
@@ -73,6 +78,11 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  logout(): void {
+    this.store.dispatch(new LogoutAuth());
+    this.router.navigateByUrl('/login');
   }
 
   onMenuClose(close: MenuCloseReason): void {
@@ -114,7 +124,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   }
 
   onColorChange(change: string): void {
-    if (isValidHex(change)) {
+    if (isHexColor(change)) {
       this.store.dispatch(new ChangeSpotifyCodeBackgroundColor(change));
     }
   }

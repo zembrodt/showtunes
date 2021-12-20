@@ -87,12 +87,15 @@
         (click)="$event.stopPropagation();"
         *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
     </div>
-    <div class="menu-help">
+    <div class="menu-help"
+         fxLayout="row"
+         fxLayoutAlign="center start">
+      <button mat-icon-button (click)="logout()" class="track-player-icon">
+        <mat-icon>logout</mat-icon>
+      </button>
       <button mat-icon-button (click)="openHelpDialog()" class="track-player-icon">
         <mat-icon>help_outline</mat-icon>
       </button>
     </div>
   </div>
-
 </mat-menu>
-

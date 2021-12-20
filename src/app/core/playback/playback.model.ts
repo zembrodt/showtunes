@@ -1,3 +1,5 @@
+export const PLAYBACK_STATE_NAME = 'SHOWTUNES_PLAYBACK';
+
 export interface PlaybackModel {
   track: TrackModel;
   album: AlbumModel;

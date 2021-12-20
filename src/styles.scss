@@ -28,14 +28,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   border-radius: 0;
 }
 
-/*body.top-scroll::-webkit-scrollbar-thumb {
-  border-radius: 0 0 4px 4px;
-}
-
-body.bottom-scroll::-webkit-scrollbar-thumb {
-  border-radius: 4px 4px 0 0;
-}*/
-
 /* Themed scrollbar styling */
 @mixin scrollbar-thumb-theme($thumb-color, $track-color) {
   background-color: $thumb-color;

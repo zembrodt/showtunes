@@ -1,3 +1,5 @@
+export const SETTINGS_STATE_NAME = 'SHOWTUNES_SETTINGS';
+
 // Spotify Code options
 export const BAR_COLOR_BLACK = 'black';
 export const BAR_COLOR_WHITE = 'white';
