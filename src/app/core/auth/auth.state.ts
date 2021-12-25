@@ -2,7 +2,6 @@ import {Action, Selector, State, StateContext} from '@ngxs/store';
 import {AUTH_STATE_NAME, AuthModel, AuthToken, DEFAULT_AUTH} from './auth.model';
 import {Injectable} from '@angular/core';
 import {LogoutAuth, SetAuthToken, SetIsAuthenticated} from './auth.actions';
-import {StorageService} from '../../services/storage/storage.service';
 import {SpotifyService} from '../../services/spotify/spotify.service';
 
 @State<AuthModel>({
@@ -11,7 +10,7 @@ import {SpotifyService} from '../../services/spotify/spotify.service';
 })
 @Injectable()
 export class AuthState {
-  constructor(private storage: StorageService) { }
+  constructor(private spotify: SpotifyService) { }
 
   @Selector()
   static token(state: AuthModel): AuthToken {
@@ -42,8 +41,6 @@ export class AuthState {
       token: null,
       isAuthenticated: false
     });
-    // Delete local storage variables
-    this.storage.removeAuthToken();
-    this.storage.remove(SpotifyService.stateKey);
+    this.spotify.logout();
   }
 }

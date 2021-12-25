@@ -176,10 +176,10 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   }
 
   getVolumeIcon(volume: number): string {
-    let icon = VOLUME_MUTE_ICON;
-    if (volume >= 50) {
-      icon = VOLUME_HIGH_ICON;
-    } else if (volume > 0) {
+    let icon = VOLUME_HIGH_ICON;
+    if (volume === 0) {
+      icon = VOLUME_MUTE_ICON;
+    } else if (volume < 50) {
       icon = VOLUME_LOW_ICON;
     }
     return icon;

@@ -13,7 +13,9 @@ import { Select, Store } from '@ngxs/store';
 import { AuthState } from '../../core/auth/auth.state';
 import { SetAuthToken } from '../../core/auth/auth.actions';
 import { PlaylistResponse } from '../../models/playlist.model';
-import {map} from "rxjs/operators";
+import { map } from 'rxjs/operators';
+
+const stateKey = 'STATE';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -49,7 +51,6 @@ const SCOPES = [
 
 @Injectable({providedIn: 'root'})
 export class SpotifyService {
-  static readonly stateKey = 'STATE';
   static initialized = false;
   protected static clientId: string;
   protected static tokenUrl: string;
@@ -276,6 +277,13 @@ export class SpotifyService {
     return this.state && this.state === state;
   }
 
+  logout(): void {
+    this.state = null;
+    this.authToken = null;
+    this.storage.remove(stateKey);
+    this.storage.removeAuthToken();
+  }
+
   private checkTokenExpiry(): void {
     const expiresIn = this.tokenExpiresIn();
     if (expiresIn < 0) {
@@ -309,10 +317,10 @@ export class SpotifyService {
   }
 
   private setState(): void {
-    this.state = this.storage.get(SpotifyService.stateKey);
+    this.state = this.storage.get(stateKey);
     if (this.state === null) {
       this.state = generateRandomString(stateLength);
-      this.storage.set(SpotifyService.stateKey, this.state);
+      this.storage.set(stateKey, this.state);
     }
   }
 
