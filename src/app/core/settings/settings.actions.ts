@@ -1,3 +1,5 @@
+import {PlayerControlsOptions} from './settings.model';
+
 const SETTINGS_ACTION_NAME = '[Settings]';
 
 export class ChangeTheme {
@@ -5,8 +7,9 @@ export class ChangeTheme {
   constructor(public theme: string) {}
 }
 
-export class TogglePlayerControls {
-  static readonly type = `${SETTINGS_ACTION_NAME} Toggle Player Controls`;
+export class ChangePlayerControls {
+  static readonly type = `${SETTINGS_ACTION_NAME} Change Player Controls`;
+  constructor(public option: PlayerControlsOptions) {}
 }
 export class TogglePlaylistName {
   static readonly type = `${SETTINGS_ACTION_NAME} Toggle Playlist Name`;

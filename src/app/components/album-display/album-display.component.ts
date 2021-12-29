@@ -55,7 +55,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   smartBackgroundColor: string;
   smartBarColor: string;
 
-  spotifyIcon = faSpotify;
+  // Template constants
+  readonly spotifyIcon = faSpotify;
 
   constructor(private spotifyService: SpotifyService) {}
 

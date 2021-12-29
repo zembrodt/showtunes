@@ -1,4 +1,3 @@
-<!--<div ngClass="playback-player" [ngClass.xs]="'playback-player-xs'">-->
 <div class="track-player"
      fxLayout="column"
      fxLayoutAlign="space-around stretch">
@@ -28,61 +27,15 @@
        fxLayoutAlign="center start">
     <div class="mat-display-1">No track currently playing</div>
   </div>
-  <div class="track-playback"
-       fxLayout="column"
-       fxLayoutAlign="center center">
-    <div class="track-slider">
-      <mat-slider min="0" [max]="duration$ | async" step="1" [value]="progress$ | async" (change)="onProgressChange($event)"></mat-slider>
-    </div>
-    <div class="mat-subheading-2 time-values"
-         fxLayout="row"
-    fxLayoutAlign="center center">
-      <div class="progress-time">{{getProgress((progress$ | async))}}</div>
-      <div class="duration-time">{{getProgress((duration$ | async))}}</div>
-    </div>
-  </div>
-  <div class="mat-subheading-2 player-buttons"
-       fxLayout="row"
-       fxLayoutAlign="center center"
-       fxLayoutGap="48px"
-       *ngIf="showPlayerControls$ | async">
-    <button mat-icon-button [ngClass]="(isShuffle$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onToggleShuffle()">
-      <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
-    </button>
-    <button mat-icon-button class="track-player-icon" (click)="onSkipPrevious()">
-      <mat-icon class="player-button" aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
-    </button>
-    <button mat-fab class="track-player-icon-background" (click)="onPause()">
-      <mat-icon class="track-player-icon-foreground" aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon((isPlaying$ | async))}}</mat-icon>
-    </button>
-    <button mat-icon-button class="track-player-icon" (click)="onSkipNext()">
-      <mat-icon class="player-button" aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
-    </button>
-    <button mat-icon-button [ngClass]="getRepeatClass((repeat$ | async))" (click)="onRepeatChange()">
-      <mat-icon class="player-button" aria-hidden="false" aria-label="Repeat">{{getRepeatIcon((repeat$ | async))}}</mat-icon>
-    </button>
-  </div>
-  <div class="track-volume"
-       fxLayout="row"
-       fxLayoutAlign="center center"
-       fxLayoutGap="6px"
-       *ngIf="showPlayerControls$ | async">
-    <button mat-icon-button class="mat-subheading-2 track-player-icon" (click)="onVolumeMute()">
-      <mat-icon class="volume-button">{{getVolumeIcon((volume$ | async))}}</mat-icon>
-    </button>
-    <div class="volume-slider">
-      <mat-slider min="0" max="100" step="1" [value]="volume$ | async" (change)="onVolumeChange($event)"></mat-slider>
-    </div>
-    <!--<button mat-icon-button disabled class="mat-subheading-2 volume-filler">
-      <mat-icon class="volume-button">volume_up</mat-icon>
-    </button>-->
-    <app-devices></app-devices>
-    <div class="like-button">
-      <button mat-icon-button [ngClass]="(isLiked$ | async) ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onLikeChange()">
-        <mat-icon>thumb_up</mat-icon>
-      </button>
-    </div>
-  </div>
+  <app-track-player-progress [duration]="duration$ | async" [progress]="progress$ | async"></app-track-player-progress>
+  <app-track-player-controls
+    *ngIf="showPlayerControls"
+    [isShuffle]="isShuffle$ | async"
+    [isPlaying]="isPlaying$ | async"
+    [repeatState]="repeat$ | async"
+    [volume]="volume$ | async"
+    [isLiked]="isLiked$ | async"
+  ></app-track-player-controls>
   <div class="mat-subheading-1 playlist-font"
        *ngIf="(showPlaylistName$ | async) && (playlist$ | async)"
   >Currently playing from:

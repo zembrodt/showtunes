@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
+import {BAR_COLOR_BLACK, BAR_COLOR_WHITE, PlayerControlsOptions} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
 import {Observable, Subject} from 'rxjs';
 import {isHexColor} from '../../core/util';
@@ -8,7 +8,7 @@ import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme, TogglePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
+  ChangeTheme, ChangePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
@@ -18,11 +18,9 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog
 import {environment} from '../../../environments/environment';
 import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
 import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
-import {StorageService} from '../../services/storage/storage.service';
-import {AUTH_STATE_NAME} from '../../core/auth/auth.model';
-import {SpotifyService} from '../../services/spotify/spotify.service';
 import {Router} from '@angular/router';
-import {LogoutAuth, SetAuthToken} from '../../core/auth/auth.actions';
+import {LogoutAuth} from '../../core/auth/auth.actions';
+import {MatButtonToggleChange} from '@angular/material/button-toggle';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -44,7 +42,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
-  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
+  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
@@ -58,7 +56,12 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   colorPickerResetEvent = new Subject<void>();
 
-  githubIcon = faGithub;
+  // Template constants
+  readonly menuItemSpacing = '12px';
+  readonly githubIcon = faGithub;
+  readonly playerControlsOff = PlayerControlsOptions.Off;
+  readonly playerControlsOn = PlayerControlsOptions.On;
+  readonly playerControlsFade = PlayerControlsOptions.Fade;
 
   constructor(private store: Store, private router: Router, public helpDialog: MatDialog) {}
 
@@ -94,8 +97,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ChangeTheme(theme));
   }
 
-  onShowPlayerControlsChange(): void {
-    this.store.dispatch(new TogglePlayerControls());
+  onShowPlayerControlsChange(change: MatButtonToggleChange): void {
+    this.store.dispatch(new ChangePlayerControls(change.value));
   }
 
   onShowPlaylistNameChange(): void {

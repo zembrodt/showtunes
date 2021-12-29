@@ -32,6 +32,9 @@ import {AuthState} from './core/auth/auth.state';
 import {LoadingComponent} from './components/loading/loading.component';
 import {AUTH_STATE_NAME} from './core/auth/auth.model';
 import {SETTINGS_STATE_NAME} from './core/settings/settings.model';
+import {TrackPlayerControlsComponent} from './components/track-player/track-player-controls.component';
+import {TrackPlayerProgressComponent} from './components/track-player/track-player-progress.component';
+import {InactivityService} from './services/inactivity/inactivity.service';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   return () => appConfig.load();
@@ -50,6 +53,8 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     LoginComponent,
     SettingsMenuComponent,
     TrackPlayerComponent,
+    TrackPlayerControlsComponent,
+    TrackPlayerProgressComponent,
   ],
   imports: [
     BrowserModule,
@@ -79,6 +84,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
       deps: [AppConfig],
       multi: true
     },
+    InactivityService,
     StorageService,
     SpotifyService,
     PlaybackService,
