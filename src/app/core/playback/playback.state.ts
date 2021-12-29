@@ -148,9 +148,16 @@ export class PlaybackState implements NgxsAfterBootstrap {
   changeDeviceVolume(ctx: StateContext<PlaybackModel>, action: ChangeDeviceVolume): Observable<any> {
     this.lockState(ctx);
     const device = ctx.getState().device;
-    return this.spotifyService.setVolume(action.volume).pipe(
+    let volume = action.volume;
+    if (volume > 100) {
+      volume = 100;
+    }
+    else if (volume < 0) {
+      volume = 0;
+    }
+    return this.spotifyService.setVolume(volume).pipe(
       tap(res => {
-        ctx.patchState({device: {...device, volume: action.volume}});
+        ctx.patchState({device: {...device, volume}});
         this.unlockState(ctx);
       })
     );
@@ -174,9 +181,17 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Action(ChangeProgress)
   changeProgress(ctx: StateContext<PlaybackModel>, action: ChangeProgress): Observable<any> {
     this.lockState(ctx);
-    return this.spotifyService.setTrackPosition(action.progress).pipe(
+    const state = ctx.getState();
+    let progress = action.progress;
+    if (progress > state.duration) {
+      progress = state.duration;
+    }
+    else if (progress < 0) {
+      progress = 0;
+    }
+    return this.spotifyService.setTrackPosition(progress).pipe(
       tap(res => {
-        ctx.patchState({progress: action.progress});
+        ctx.patchState({progress});
         this.unlockState(ctx);
       })
     );
