@@ -71,7 +71,6 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
     });
 
     this.inactivity.inactive$.subscribe((isInactive) => {
-      console.log(`Inactivity updated: ${isInactive}`);
       if (this.fadePlayerControls) {
         this.fadeControls(isInactive);
       }

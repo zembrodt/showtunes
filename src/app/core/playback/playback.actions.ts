@@ -19,7 +19,7 @@ export class ChangePlaylist {
 
 export class ChangeDevice {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Device`;
-  constructor(public device: DeviceModel, public isPlaying: boolean, public isExternal: boolean) { }
+  constructor(public device: DeviceModel, public isPlaying: boolean) { }
 }
 
 export class ChangeDeviceVolume {

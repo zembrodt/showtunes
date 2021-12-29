@@ -136,16 +136,11 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(ChangeDevice)
   changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
-    if (!action.isExternal) {
-      return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
-        tap(res => {
-          ctx.patchState({device: action.device});
-        })
-      );
-    } else {
-      ctx.patchState({device: action.device});
-      return of(true);
-    }
+    return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
+      tap(res => {
+        ctx.patchState({device: action.device});
+      })
+    );
   }
 
   @Action(ChangeDeviceVolume)
@@ -282,33 +277,32 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(PollCurrentPlayback)
   pollCurrentPlayback(ctx: StateContext<PlaybackModel>, action: PollCurrentPlayback): Observable<any> {
-    const state = ctx.getState();
     // check if another spotify service request is being executed
-    if (!state.locked) {
+    if (!ctx.getState().locked) {
       return this.spotifyService.getCurrentTrack().pipe(
         tap((currentPlayback: CurrentPlaybackResponse) => {
           if (currentPlayback && currentPlayback.item) {
             const track = currentPlayback.item;
 
-            this.checkNewTrack(ctx, state, track);
+            this.checkNewTrack(ctx, track);
 
-            this.checkNewAlbum(ctx, state, track);
+            this.checkNewAlbum(ctx, track);
 
-            this.checkNewPlaylist(ctx, state, currentPlayback);
+            this.checkNewPlaylist(ctx, currentPlayback);
 
-            this.checkNewDevice(ctx, state, currentPlayback);
+            this.checkNewDevice(ctx, currentPlayback);
 
             // Update which device is active
             ctx.dispatch(new ChangeDeviceIsActive(currentPlayback.device.is_active));
 
             // Check if volume was muted externally to save previous value
-            if (currentPlayback.device.volume_percent === 0 && state.device.volume > 0) {
-              this.storage.set(PREVIOUS_VOLUME, state.device.volume.toString());
+            if (currentPlayback.device.volume_percent === 0 && ctx.getState().device.volume > 0) {
+              this.storage.set(PREVIOUS_VOLUME, ctx.getState().device.volume.toString());
             }
 
             // Update playback state
             ctx.patchState({
-              device: {...state.device, volume: currentPlayback.device.volume_percent},
+              device: {...ctx.getState().device, volume: currentPlayback.device.volume_percent},
               progress: currentPlayback.progress_ms,
               isPlaying: currentPlayback.is_playing,
               isShuffle: currentPlayback.shuffle_state,
@@ -322,13 +316,13 @@ export class PlaybackState implements NgxsAfterBootstrap {
         })
       );
     } else {
-      ctx.patchState({progress: state.progress + action.interval});
+      ctx.patchState({progress: ctx.getState().progress + action.interval});
       return null;
     }
   }
 
-  private checkNewTrack(ctx: StateContext<PlaybackModel>, state: PlaybackModel, track: TrackResponse): void {
-    if (track.id !== state.track.id) {
+  private checkNewTrack(ctx: StateContext<PlaybackModel>, track: TrackResponse): void {
+    if (track.id !== ctx.getState().track.id) {
       ctx.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
       // Check status of if new track is saved
       this.spotifyService.isTrackSaved(track.id).pipe(
@@ -341,14 +335,14 @@ export class PlaybackState implements NgxsAfterBootstrap {
     }
   }
 
-  private checkNewAlbum(ctx: StateContext<PlaybackModel>, state: PlaybackModel, track: TrackResponse): void {
-    if (track.album.id !== state.album.id) {
+  private checkNewAlbum(ctx: StateContext<PlaybackModel>, track: TrackResponse): void {
+    if (track.album.id !== ctx.getState().album.id) {
       ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
     }
   }
 
-  private checkNewPlaylist(ctx: StateContext<PlaybackModel>, state: PlaybackModel,
-                           currentPlayback: CurrentPlaybackResponse): void {
+  private checkNewPlaylist(ctx: StateContext<PlaybackModel>, currentPlayback: CurrentPlaybackResponse): void {
+    const state = ctx.getState();
     if (currentPlayback.context && currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
       const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
       if (!state.playlist || state.playlist.id !== playlistId) {
@@ -360,10 +354,9 @@ export class PlaybackState implements NgxsAfterBootstrap {
     }
   }
 
-  private checkNewDevice(ctx: StateContext<PlaybackModel>, state: PlaybackModel,
-                         currentPlayback: CurrentPlaybackResponse): void {
-    if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {
-      ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing, true));
+  private checkNewDevice(ctx: StateContext<PlaybackModel>, currentPlayback: CurrentPlaybackResponse): void {
+    if (currentPlayback.device && currentPlayback.device.id !== ctx.getState().device.id) {
+      ctx.patchState({device: parseDevice(currentPlayback.device)});
     }
   }
 
