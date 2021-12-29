@@ -16,12 +16,11 @@ import {SpotifyService} from '../../services/spotify/spotify.service';
 import {tap} from 'rxjs/operators';
 import {CurrentPlaybackResponse} from '../../models/current-playback.model';
 import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack} from '../util';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {MultipleDevicesResponse} from '../../models/device.model';
-import {ContextResponse} from '../../models/context.model';
 import {StorageService} from '../../services/storage/storage.service';
 import {PREVIOUS_VOLUME} from '../globals';
-import {TrackResponse} from "../../models/track.model";
+import {TrackResponse} from '../../models/track.model';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
@@ -137,11 +136,16 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(ChangeDevice)
   changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
-    return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
-      tap(res => {
-        ctx.patchState({device: action.device});
-      })
-    );
+    if (!action.isExternal) {
+      return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
+        tap(res => {
+          ctx.patchState({device: action.device});
+        })
+      );
+    } else {
+      ctx.patchState({device: action.device});
+      return of(true);
+    }
   }
 
   @Action(ChangeDeviceVolume)
@@ -359,7 +363,7 @@ export class PlaybackState implements NgxsAfterBootstrap {
   private checkNewDevice(ctx: StateContext<PlaybackModel>, state: PlaybackModel,
                          currentPlayback: CurrentPlaybackResponse): void {
     if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {
-      ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing));
+      ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing, true));
     }
   }
 
