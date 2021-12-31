@@ -23,7 +23,7 @@
   <button mat-icon-button [matMenuTriggerFor]="colorPickerMenu">
     <mat-icon class="app-icon">colorize</mat-icon>
   </button>
-  <mat-menu #colorPickerMenu="matMenu"> <!--[ngClass]="getMenuClass()"-->
+  <mat-menu #colorPickerMenu="matMenu" class="color-picker-menu">
     <mat-grid-list cols="6" (click)="$event.stopPropagation()">
       <mat-grid-tile *ngFor="let presetColor of presetColors">
         <button mat-fab
