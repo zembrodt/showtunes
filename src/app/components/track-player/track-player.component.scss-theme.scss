@@ -1,9 +1,0 @@
-@import "@angular/material/theming";
-
-@mixin track-player-theme($theme) {
-  $accent: map-get($theme, accent);
-
-  .track-player-icon-accent {
-    color: mat-color($accent, text);
-  }
-}

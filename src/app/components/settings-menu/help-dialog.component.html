@@ -1,5 +1,5 @@
-<h1 class="help-dialog-title mat-display-2">ShowTunes</h1>
-<div>
+<h1 mat-dialog-title class="help-dialog-title mat-display-2">ShowTunes</h1>
+<mat-dialog-content class="scrollbar scrollbar-{{data.isLightTheme ? 'light' : 'dark'}}">
   <p class="version-text">v{{data.version}}</p>
   <h1 class="help-dialog-title mat-display-1">Info</h1>
   <p>
@@ -25,7 +25,13 @@
       <mat-icon class="help-icon">dark_mode</mat-icon> - Toggle between the light and dark themes
     </li>
     <li>
-      <mat-icon class="help-icon">play_circle</mat-icon> - Toggle the music player controls on and off
+      <mat-icon class="help-icon">play_disabled</mat-icon> - Turn the music player controls off
+    </li>
+    <li>
+      <mat-icon class="help-icon">play_circle_outline</mat-icon> - Turn the music player controls on, but fade after inactivity
+    </li>
+    <li>
+      <mat-icon class="help-icon">play_circle_filled</mat-icon> - Turn the music player controls on
     </li>
     <li>
       <mat-icon class="help-icon">queue_music</mat-icon> - Toggle displaying the current playlist's name
@@ -52,13 +58,16 @@
   </p>
   <div fxLayout="row"
        fxLayoutAlign="space-between center">
-    <div class="mat-title">
+    <div class="footer-item mat-title">
       <a href="https://github.com/zembrodt/showtunes">
         <fa-icon [icon]="data.githubIcon"></fa-icon>
       </a>
+    </div>
+    <div class="copyright-link footer-item">
+      <a href="https://raw.githubusercontent.com/zembrodt/showtunes/main/LICENSE" target="_blank">© {{data.year}} Ryan Zembrodt</a>
     </div>
     <div mat-dialog-actions class="actions">
       <button mat-raised-button color="primary" (click)="onClose()">Close</button>
     </div>
   </div>
-</div>
+</mat-dialog-content>

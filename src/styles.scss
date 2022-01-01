@@ -1,92 +1,129 @@
-@import "@angular/material/theming";
-@import "./assets/styles/themes";
-@import "./assets/styles/mat-menu-theme";
-@import "app/components/app/app.component.scss-theme";
-@import "app/components/devices/devices.component.scss-theme";
-@import "app/components/settings-menu/settings-menu.component.scss-theme";
-@import "app/components/track-player/track-player.component.scss-theme";
+@use '@angular/material' as mat;
+@use 'sass:map';
+@use 'assets/styles/themes';
 
-@include mat-core();
+@use 'src/app/components';
+
+@include mat.core();
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @mixin custom-components-theme($theme) {
-  @include app-component-theme($theme);
-  @include devices-menu-theme($theme);
-  @include settings-menu-theme($theme);
-  @include track-player-theme($theme);
+  @include components.album-display-theme($theme);
+  @include components.app-theme($theme);
+  @include components.devices-theme($theme);
+  @include components.help-dialog-theme($theme);
+  @include components.settings-menu-theme($theme);
+  @include components.track-player-theme($theme);
+}
+
+
+/* General scrollbar styling */
+.scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 0;
+}
+
+/* Themed scrollbar styling */
+@mixin scrollbar-thumb-theme($thumb-color, $track-color) {
+  background-color: $thumb-color;
+  //border: 3px solid $track-color;
+}
+
+@mixin scrollbar-track-theme($track-color) {
+  background: $track-color;
+}
+
+$thumb-color-light: mat.get-color-from-palette(map.get(themes.$light-theme, accent), text);
+$track-color-light: mat.get-color-from-palette(map.get(themes.$light-theme, background), app-bar);
+
+.scrollbar-light {
+  scrollbar-color: $thumb-color-light $track-color-light;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+  @include scrollbar-thumb-theme($thumb-color-light, $track-color-light);
+}
+
+.scrollbar-light::-webkit-scrollbar-track {
+  @include scrollbar-track-theme($track-color-light);
+}
+
+$thumb-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, accent), text);
+$track-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, background), app-bar);
+
+.scrollbar-dark {
+  scrollbar-color: $thumb-color-dark $track-color-dark;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  @include scrollbar-thumb-theme($thumb-color-dark, $track-color-dark);
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  @include scrollbar-track-theme($track-color-dark);
 }
 
 .light-theme {
-  @include angular-material-theme($light-theme);
-  @include custom-components-theme($light-theme);
+  //@include mat.angular-material-theme($light-theme);
+  @include themes.component-themes(themes.$light-theme);
+  @include custom-components-theme(themes.$light-theme);
 
-  $foreground: map-get($light-theme, foreground);
-  $background: map-get($light-theme, background);
+  $primary: map.get(themes.$light-theme, primary);
+  $foreground: map.get(themes.$light-theme, foreground);
+  $background: map.get(themes.$light-theme, background);
+
   .app-icon {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon-foreground {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .track-player-icon-background {
-    background-color: mat-color($background, background) !important;
+    background-color: mat.get-color-from-palette($background, background) !important;
   }
 
   .playlist-font {
-    color: mat-color($foreground, text);
-  }
-
-  /* Playlist link styling */
-  .playlist-font a:link, a:visited {
-    color: mat-color($foreground, text);
-  }
-
-  .playlist-font a:hover, a:active {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($primary, 500);
   }
 }
 
 .dark-theme {
-  @include angular-material-theme($dark-theme);
-  @include custom-components-theme($dark-theme);
+  //@include mat.angular-material-theme($dark-theme);
+  @include themes.component-themes(themes.$dark-theme);
+  @include custom-components-theme(themes.$dark-theme);
 
-  $primary: map-get($dark-theme, primary);
-  $foreground: map-get($dark-theme, foreground);
-  $background: map-get($dark-theme, background);
+  $primary: map.get(themes.$dark-theme, primary);
+  $foreground: map.get(themes.$dark-theme, foreground);
+  $background: map.get(themes.$dark-theme, background);
+
   .app-icon {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, text);
   }
 
   .track-player-icon {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, text);
   }
 
   .track-player-icon-foreground {
-    color: mat-color($background, text);
+    color: mat.get-color-from-palette($background, text);
   }
 
   .track-player-icon-background {
-    background-color: mat-color($foreground, text) !important;
+    background-color: mat.get-color-from-palette($foreground, text) !important;
   }
 
   .playlist-font {
-    color: mat-color($primary, text);
-  }
-
-  /* Playlist link styling */
-  .playlist-font a:link, a:visited {
-    color: mat-color($primary, text);
-  }
-
-  .playlist-font a:hover, a:active {
-    color: mat-color($primary, text);
+    color: mat.get-color-from-palette($primary, 500);
   }
 }

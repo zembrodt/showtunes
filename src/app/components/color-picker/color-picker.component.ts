@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {isValidHex, VALID_HEX} from '../../core/util';
+import {isHexColor, VALID_HEX_COLOR} from '../../core/util';
 import {Observable, Subscription} from 'rxjs';
 import {Select} from '@ngxs/store';
 import {SettingsState} from '../../core/settings/settings.state';
@@ -26,7 +26,7 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
 
   inputControl = new FormControl('', [
     Validators.required,
-    Validators.pattern(VALID_HEX)
+    Validators.pattern(VALID_HEX_COLOR)
   ]);
 
   form = new FormGroup({
@@ -40,7 +40,6 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
     this.setFormValue(this.color);
 
     this.colorResetEventSubscription = this.colorResetEvent.subscribe(() => {
-      console.log('Received color reset request');
       this.setFormValue(this.color);
     });
   }
@@ -50,8 +49,7 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
   }
 
   onColorChange(event): void {
-    console.log('Color changed to: \'' + event.target.value + '\'');
-    if (isValidHex(event.target.value)) {
+    if (isHexColor(event.target.value)) {
       this.setColorChange(event.target.value);
     }
   }

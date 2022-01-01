@@ -2,15 +2,14 @@
   <mat-icon>more_vert</mat-icon>
 </button>
 <mat-menu #menu="matMenu"
-          class="menu"
+          class="settings-menu"
           (closed)="onMenuClose($event)"
           (click)="$event.stopPropagation();">
-  <div fxLayout="row"
-       fxLayoutGap="12px">
+  <div fxLayout="row">
     <div class="setting-inputs">
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="6px">
+           fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
                   [color]="(theme$ | async) === 'dark-theme' ? 'accent' : ''">dark_mode</mat-icon>
         <mat-slide-toggle
@@ -20,20 +19,26 @@
           (click)="$event.stopPropagation();"
         ></mat-slide-toggle>
       </div>
-      <div class="menu-item"
-           fxLayout="row"
-           fxLayoutGap="6px">
-        <mat-icon class="app-icon">play_circle</mat-icon>
-        <mat-slide-toggle
-          [checked]="showPlayerControls$ | async"
-          [color]="'primary'"
-          (toggleChange)="onShowPlayerControlsChange()"
-          (click)="$event.stopPropagation();"
-        ></mat-slide-toggle>
+      <div class="menu-item">
+        <mat-button-toggle-group
+            name="playerControlsOptions"
+            [value]="showPlayerControls$ | async"
+            (change)="onShowPlayerControlsChange($event)"
+            (click)="$event.stopPropagation();">
+          <mat-button-toggle [value]="playerControlsOff">
+            <mat-icon class="app-icon">play_disabled</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="playerControlsFade">
+            <mat-icon class="app-icon">play_circle_outline</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="playerControlsOn">
+            <mat-icon class="app-icon">play_circle_filled</mat-icon>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="6px">
+           fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">queue_music</mat-icon>
         <mat-slide-toggle
           [checked]="showPlaylistName$ | async"
@@ -44,7 +49,7 @@
       </div>
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="6px">
+           fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">qr_code_2</mat-icon>
         <mat-slide-toggle
           [checked]="showSpotifyCode$ | async"
@@ -55,7 +60,7 @@
       </div>
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="6px"
+           fxLayoutGap="{{menuItemSpacing}}"
            *ngIf="showSpotifyCode$ | async">
         <mat-icon class="app-icon">lightbulb</mat-icon>
         <mat-slide-toggle
@@ -68,7 +73,7 @@
       </div>
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="6px"
+           fxLayoutGap="{{menuItemSpacing}}"
            *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)">
         <mat-icon class="app-icon">invert_colors</mat-icon>
         <mat-slide-toggle
@@ -87,12 +92,15 @@
         (click)="$event.stopPropagation();"
         *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
     </div>
-    <div class="menu-help">
+    <div class="menu-help"
+         fxLayout="row"
+         fxLayoutAlign="center start">
+      <button mat-icon-button (click)="logout()" class="track-player-icon">
+        <mat-icon>logout</mat-icon>
+      </button>
       <button mat-icon-button (click)="openHelpDialog()" class="track-player-icon">
         <mat-icon>help_outline</mat-icon>
       </button>
     </div>
   </div>
-
 </mat-menu>
-

@@ -1,0 +1,10 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+@mixin help-dialog-theme($theme) {
+  $primary: map.get($theme, primary);
+
+  .version-text, .copyright-link a {
+    color: mat.get-color-from-palette($primary, 500) !important;
+  }
+}

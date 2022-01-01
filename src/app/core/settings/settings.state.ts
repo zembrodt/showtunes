@@ -2,18 +2,18 @@ import {Action, NgxsOnInit, Selector, State, StateContext} from '@ngxs/store';
 import {Injectable} from '@angular/core';
 import {
   ChangeTheme,
-  TogglePlayerControls,
+  ChangePlayerControls,
   TogglePlaylistName,
   ToggleSpotifyCode,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
   ToggleSmartCodeColor
 } from './settings.actions';
-import {DEFAULT_SETTINGS, SettingsModel} from './settings.model';
+import {DEFAULT_SETTINGS, PlayerControlsOptions, SETTINGS_STATE_NAME, SettingsModel} from './settings.model';
 import {OverlayContainer} from '@angular/cdk/overlay';
 
 @State<SettingsModel>({
-  name: 'MUSIC_DISPLAY_SETTINGS',
+  name: SETTINGS_STATE_NAME,
   defaults: DEFAULT_SETTINGS
 })
 @Injectable()
@@ -26,7 +26,7 @@ export class SettingsState implements NgxsOnInit {
   }
 
   @Selector()
-  static showPlayerControls(state: SettingsModel): boolean {
+  static showPlayerControls(state: SettingsModel): PlayerControlsOptions {
     return state.showPlayerControls;
   }
 
@@ -65,10 +65,10 @@ export class SettingsState implements NgxsOnInit {
     ctx.patchState({theme: action.theme});
   }
 
-  @Action(TogglePlayerControls)
-  togglePlayerControls(ctx: StateContext<SettingsModel>): void {
-    const state = ctx.getState();
-    ctx.patchState({showPlayerControls: !state.showPlayerControls});
+  @Action(ChangePlayerControls)
+  changePlayerControls(ctx: StateContext<SettingsModel>, action: ChangePlayerControls): void {
+    console.log('Player controls updated: ' + action.option);
+    ctx.patchState({showPlayerControls: action.option});
   }
 
   @Action(TogglePlaylistName)

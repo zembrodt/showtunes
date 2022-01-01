@@ -1,3 +1,5 @@
+export const AUTH_STATE_NAME = 'SHOWTUNES_AUTH';
+
 export interface AuthModel {
   token: AuthToken;
   isAuthenticated: boolean;

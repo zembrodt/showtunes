@@ -1,4 +1,4 @@
-import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PlaybackModel, PlaylistModel, TrackModel} from './playback.model';
+import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PLAYBACK_STATE_NAME, PlaybackModel, PlaylistModel, TrackModel} from './playback.model';
 import {Injectable} from '@angular/core';
 import {Action, NgxsAfterBootstrap, Selector, State, StateContext} from '@ngxs/store';
 import {ImageResponse} from '../../models/image.model';
@@ -16,16 +16,16 @@ import {SpotifyService} from '../../services/spotify/spotify.service';
 import {tap} from 'rxjs/operators';
 import {CurrentPlaybackResponse} from '../../models/current-playback.model';
 import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack} from '../util';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {MultipleDevicesResponse} from '../../models/device.model';
-import {ContextResponse} from '../../models/context.model';
 import {StorageService} from '../../services/storage/storage.service';
 import {PREVIOUS_VOLUME} from '../globals';
+import {TrackResponse} from '../../models/track.model';
 
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
 @State<PlaybackModel>({
-  name: 'MUSIC_DISPLAY_PLAYBACK',
+  name: PLAYBACK_STATE_NAME,
   defaults: DEFAULT_PLAYBACK
 })
 @Injectable()
@@ -106,7 +106,8 @@ export class PlaybackState implements NgxsAfterBootstrap {
     if (!SpotifyService.initialized && !SpotifyService.initialize()) {
       console.error('Failed to initialize spotify service');
     } else {
-      // Initialize state?
+      // Set isIdle to false until first playback poll
+      ctx.patchState({isIdle: false});
     }
   }
 
@@ -137,7 +138,6 @@ export class PlaybackState implements NgxsAfterBootstrap {
   changeDevice(ctx: StateContext<PlaybackModel>, action: ChangeDevice): Observable<any> {
     return this.spotifyService.setDevice(action.device.id, action.isPlaying).pipe(
       tap(res => {
-        console.log('Set device response: ' + JSON.stringify(res));
         ctx.patchState({device: action.device});
       })
     );
@@ -147,9 +147,16 @@ export class PlaybackState implements NgxsAfterBootstrap {
   changeDeviceVolume(ctx: StateContext<PlaybackModel>, action: ChangeDeviceVolume): Observable<any> {
     this.lockState(ctx);
     const device = ctx.getState().device;
-    return this.spotifyService.setVolume(action.volume).pipe(
+    let volume = action.volume;
+    if (volume > 100) {
+      volume = 100;
+    }
+    else if (volume < 0) {
+      volume = 0;
+    }
+    return this.spotifyService.setVolume(volume).pipe(
       tap(res => {
-        ctx.patchState({device: {...device, volume: action.volume}});
+        ctx.patchState({device: {...device, volume}});
         this.unlockState(ctx);
       })
     );
@@ -173,9 +180,17 @@ export class PlaybackState implements NgxsAfterBootstrap {
   @Action(ChangeProgress)
   changeProgress(ctx: StateContext<PlaybackModel>, action: ChangeProgress): Observable<any> {
     this.lockState(ctx);
-    return this.spotifyService.setTrackPosition(action.progress).pipe(
+    const state = ctx.getState();
+    let progress = action.progress;
+    if (progress > state.duration) {
+      progress = state.duration;
+    }
+    else if (progress < 0) {
+      progress = 0;
+    }
+    return this.spotifyService.setTrackPosition(progress).pipe(
       tap(res => {
-        ctx.patchState({progress: action.progress});
+        ctx.patchState({progress});
         this.unlockState(ctx);
       })
     );
@@ -195,7 +210,6 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(SkipNextTrack)
   skipNextTrack(ctx: StateContext<PlaybackModel>): Observable<any> {
-    console.log('Skipping to next track');
     this.lockState(ctx);
     return this.spotifyService.skipNext().pipe(
       tap(res => this.unlockState(ctx))
@@ -208,12 +222,10 @@ export class PlaybackState implements NgxsAfterBootstrap {
     this.lockState(ctx);
     const state = ctx.getState();
     if (state.progress > SKIP_PREVIOUS_THRESHOLD && !((SKIP_PREVIOUS_THRESHOLD * 2) >= state.duration)) {
-      console.log('Setting track position back to 0');
       return this.spotifyService.setTrackPosition(0).pipe(
         tap(res => this.unlockState(ctx))
       );
     } else {
-      console.log('Skipping to previous track');
       return this.spotifyService.skipPrevious().pipe(
         tap(res => this.unlockState(ctx))
       );
@@ -265,68 +277,86 @@ export class PlaybackState implements NgxsAfterBootstrap {
 
   @Action(PollCurrentPlayback)
   pollCurrentPlayback(ctx: StateContext<PlaybackModel>, action: PollCurrentPlayback): Observable<any> {
-    const state = ctx.getState();
     // check if another spotify service request is being executed
-    if (!state.locked) {
+    if (!ctx.getState().locked) {
       return this.spotifyService.getCurrentTrack().pipe(
         tap((currentPlayback: CurrentPlaybackResponse) => {
           if (currentPlayback && currentPlayback.item) {
-            // check if we have a new track
             const track = currentPlayback.item;
-            if (track.id !== state.track.id) {
-              ctx.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
-              // Check status of if new track is saved
-              this.spotifyService.isTrackSaved(track.id).pipe(
-                tap((isSaved) => {
-                  if (isSaved.length === 1) {
-                    ctx.dispatch(new SetLiked(isSaved[0]));
-                  }
-                })
-              );
-            }
-            // check if we have a new album
-            if (track.album.id !== state.album.id) {
-              ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
-            }
-            // Check if we're in a new playlist and update state
-            if (currentPlayback.context && currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
-              const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
-              if (!state.playlist || state.playlist.id !== playlistId) {
-                ctx.dispatch(new ChangePlaylist(playlistId));
-              }
-            } else if (state.playlist) {
-              // No longer playing a playlist, update if we previously were
-              ctx.dispatch(new ChangePlaylist(null));
-            }
-            // check if using a new device
-            if (currentPlayback.device && currentPlayback.device.id !== state.device.id) {
-              ctx.dispatch(new ChangeDevice(parseDevice(currentPlayback.device), currentPlayback.is_playing));
-            }
-            // check all other items that can change during playback
+
+            this.checkNewTrack(ctx, track);
+
+            this.checkNewAlbum(ctx, track);
+
+            this.checkNewPlaylist(ctx, currentPlayback);
+
+            this.checkNewDevice(ctx, currentPlayback);
+
+            // Update which device is active
             ctx.dispatch(new ChangeDeviceIsActive(currentPlayback.device.is_active));
-            const device = ctx.getState().device;
+
             // Check if volume was muted externally to save previous value
-            if (currentPlayback.device.volume_percent === 0 && device.volume > 0) {
-              this.storage.set(PREVIOUS_VOLUME, device.volume.toString());
+            if (currentPlayback.device.volume_percent === 0 && ctx.getState().device.volume > 0) {
+              this.storage.set(PREVIOUS_VOLUME, ctx.getState().device.volume.toString());
             }
+
+            // Update playback state
             ctx.patchState({
-              device: {...device, volume: currentPlayback.device.volume_percent},
+              device: {...ctx.getState().device, volume: currentPlayback.device.volume_percent},
               progress: currentPlayback.progress_ms,
               isPlaying: currentPlayback.is_playing,
               isShuffle: currentPlayback.shuffle_state,
               repeatState: currentPlayback.repeat_state
             });
-            // set the playback to not be idling
             ctx.patchState({isIdle: false});
           } else {
-            // Set the playback state to idling
+            // No playback response, set to idling
             ctx.patchState({isIdle: true});
           }
-        })// TODO: check if track has been liked here?
+        })
       );
     } else {
-      ctx.patchState({progress: state.progress + action.interval});
+      ctx.patchState({progress: ctx.getState().progress + action.interval});
       return null;
+    }
+  }
+
+  private checkNewTrack(ctx: StateContext<PlaybackModel>, track: TrackResponse): void {
+    if (track.id !== ctx.getState().track.id) {
+      ctx.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
+      // Check status of if new track is saved
+      this.spotifyService.isTrackSaved(track.id).pipe(
+        tap((isSaved) => {
+          if (isSaved.length === 1) {
+            ctx.dispatch(new SetLiked(isSaved[0]));
+          }
+        })
+      );
+    }
+  }
+
+  private checkNewAlbum(ctx: StateContext<PlaybackModel>, track: TrackResponse): void {
+    if (track.album.id !== ctx.getState().album.id) {
+      ctx.dispatch(new ChangeAlbum(parseAlbum(track.album)));
+    }
+  }
+
+  private checkNewPlaylist(ctx: StateContext<PlaybackModel>, currentPlayback: CurrentPlaybackResponse): void {
+    const state = ctx.getState();
+    if (currentPlayback.context && currentPlayback.context.type && currentPlayback.context.type === 'playlist') {
+      const playlistId = getIdFromSpotifyUri(currentPlayback.context.uri);
+      if (!state.playlist || state.playlist.id !== playlistId) {
+        ctx.dispatch(new ChangePlaylist(playlistId));
+      }
+    } else if (state.playlist) {
+      // No longer playing a playlist, update if we previously were
+      ctx.dispatch(new ChangePlaylist(null));
+    }
+  }
+
+  private checkNewDevice(ctx: StateContext<PlaybackModel>, currentPlayback: CurrentPlaybackResponse): void {
+    if (currentPlayback.device && currentPlayback.device.id !== ctx.getState().device.id) {
+      ctx.patchState({device: parseDevice(currentPlayback.device)});
     }
   }
 

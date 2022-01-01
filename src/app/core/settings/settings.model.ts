@@ -1,12 +1,20 @@
+export const SETTINGS_STATE_NAME = 'SHOWTUNES_SETTINGS';
+
 // Spotify Code options
 export const BAR_COLOR_BLACK = 'black';
 export const BAR_COLOR_WHITE = 'white';
 export const DEFAULT_CODE_COLOR = '24E07D';
 export const DEFAULT_BAR_CODE_COLOR = BAR_COLOR_BLACK;
 
+export enum PlayerControlsOptions {
+  Off,
+  Fade,
+  On
+}
+
 export interface SettingsModel {
   theme: string;
-  showPlayerControls: boolean;
+  showPlayerControls: PlayerControlsOptions;
   showPlaylistName: boolean;
   showSpotifyCode: boolean;
   useSmartCodeColor: boolean;
@@ -18,7 +26,7 @@ export interface SettingsModel {
 
 export const DEFAULT_SETTINGS: SettingsModel = {
   theme: 'light-theme',
-  showPlayerControls: true,
+  showPlayerControls: PlayerControlsOptions.On,
   showPlaylistName: true,
   showSpotifyCode: true,
   useSmartCodeColor: false,

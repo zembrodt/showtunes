@@ -6,7 +6,7 @@
 
 /* Track info link styling */
 .track-info a {
-  color: inherit;
+  color: inherit !important;
 }
 
 .track-info a:link, a:visited {
@@ -92,10 +92,12 @@
 /* Playlist link styling */
 .playlist-font a:link, a:visited {
   text-decoration: none;
+  color: inherit !important;;
 }
 
 .playlist-font a:hover, a:active {
   text-decoration: underline;
+  color: inherit !important;
 }
 
 .playlist-name {

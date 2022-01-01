@@ -1,14 +1,14 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {BAR_COLOR_BLACK, BAR_COLOR_WHITE} from '../../core/settings/settings.model';
+import {BAR_COLOR_BLACK, BAR_COLOR_WHITE, PlayerControlsOptions} from '../../core/settings/settings.model';
 import {MenuCloseReason} from '@angular/material/menu/menu';
 import {Observable, Subject} from 'rxjs';
-import {isValidHex} from '../../core/util';
+import {isHexColor} from '../../core/util';
 import {SettingsState} from '../../core/settings/settings.state';
 import {Select, Store} from '@ngxs/store';
 import {
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme, TogglePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
+  ChangeTheme, ChangePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
 import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
@@ -18,6 +18,9 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog
 import {environment} from '../../../environments/environment';
 import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
 import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
+import {Router} from '@angular/router';
+import {LogoutAuth} from '../../core/auth/auth.actions';
+import {MatButtonToggleChange} from '@angular/material/button-toggle';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -39,7 +42,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
-  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<boolean>;
+  @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
@@ -53,9 +56,14 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   colorPickerResetEvent = new Subject<void>();
 
-  githubIcon = faGithub;
+  // Template constants
+  readonly menuItemSpacing = '12px';
+  readonly githubIcon = faGithub;
+  readonly playerControlsOff = PlayerControlsOptions.Off;
+  readonly playerControlsOn = PlayerControlsOptions.On;
+  readonly playerControlsFade = PlayerControlsOptions.Fade;
 
-  constructor(private store: Store, public helpDialog: MatDialog) {}
+  constructor(private store: Store, private router: Router, public helpDialog: MatDialog) {}
 
   ngOnInit(): void {
     this.theme$
@@ -75,6 +83,11 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
+  logout(): void {
+    this.store.dispatch(new LogoutAuth());
+    this.router.navigateByUrl('/login');
+  }
+
   onMenuClose(close: MenuCloseReason): void {
     this.colorPickerResetEvent.next();
   }
@@ -84,8 +97,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ChangeTheme(theme));
   }
 
-  onShowPlayerControlsChange(): void {
-    this.store.dispatch(new TogglePlayerControls());
+  onShowPlayerControlsChange(change: MatButtonToggleChange): void {
+    this.store.dispatch(new ChangePlayerControls(change.value));
   }
 
   onShowPlaylistNameChange(): void {
@@ -114,7 +127,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   }
 
   onColorChange(change: string): void {
-    if (isValidHex(change)) {
+    if (isHexColor(change)) {
       this.store.dispatch(new ChangeSpotifyCodeBackgroundColor(change));
     }
   }
@@ -124,7 +137,9 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
       width: '90%',
       data: {
         version: environment.version,
-        githubIcon: this.githubIcon
+        githubIcon: this.githubIcon,
+        year: new Date().getFullYear(),
+        isLightTheme: this.currentTheme === LIGHT_THEME
       }
     });
   }
@@ -133,6 +148,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 export interface HelpDialogData {
   version: string;
   githubIcon: IconDefinition;
+  year: number;
+  isLightTheme: boolean;
 }
 
 @Component({

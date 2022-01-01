@@ -1,0 +1,10 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+@mixin track-player-theme($theme) {
+  $accent: map.get($theme, accent);
+
+  .track-player-icon-accent {
+    color: mat.get-color-from-palette($accent, text);
+  }
+}

@@ -1,19 +1,16 @@
 import { Injectable } from '@angular/core';
+import {AUTH_STATE_NAME} from '../../core/auth/auth.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
-  static prefix = 'MUSIC_DISPLAY';
+  static readonly prefix = 'SHOWTUNES';
 
   constructor() { }
 
   get(key: string): string {
-    const item = window.localStorage.getItem(this.getKey(key));
-    if (item) {
-      return item;
-    }
-    return null;
+    return window.localStorage.getItem(this.getKey(key));
   }
 
   set(key: string, value: string): void {
@@ -22,6 +19,10 @@ export class StorageService {
 
   remove(key: string): void {
     window.localStorage.removeItem(this.getKey(key));
+  }
+
+  removeAuthToken(): void {
+    window.localStorage.removeItem(AUTH_STATE_NAME);
   }
 
   private getKey(key: string): string {

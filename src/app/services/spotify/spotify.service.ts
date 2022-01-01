@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { TokenResponse } from '../../models/token.model';
 import { generateRandomString } from '../../core/crypto';
@@ -8,11 +8,14 @@ import { AppConfig } from '../../app.config';
 import { StorageService } from '../storage/storage.service';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { AuthToken } from '../../core/auth/auth.model';
-import {Router} from '@angular/router';
-import {Select, Store} from '@ngxs/store';
-import {AuthState} from '../../core/auth/auth.state';
-import {SetAuthToken} from '../../core/auth/auth.actions';
-import {PlaylistResponse} from '../../models/playlist.model';
+import { Router } from '@angular/router';
+import { Select, Store } from '@ngxs/store';
+import { AuthState } from '../../core/auth/auth.state';
+import { SetAuthToken } from '../../core/auth/auth.actions';
+import { PlaylistResponse } from '../../models/playlist.model';
+import { map } from 'rxjs/operators';
+
+const stateKey = 'STATE';
 
 // Spotify endpoints
 const accountsUrl  = 'https://accounts.spotify.com';
@@ -36,10 +39,6 @@ const checkSavedEndpoint  = savedTracksEndpoint + '/contains';
 
 const playlistsEndpoint = apiUrl + '/playlists';
 
-// Local storage keys
-const tokenKey = 'AUTH_TOKEN';
-const stateKey = 'STATE';
-
 // Configurable values
 const stateLength = 40;
 const expiryThreshold = 30 * 1000; // 30s
@@ -61,7 +60,7 @@ export class SpotifyService {
 
   @Select(AuthState.token) token$: Observable<AuthToken>;
   private authToken: AuthToken = null;
-  private readonly state: string = null;
+  private state: string = null;
   private isAuthenticating = false;
 
   static initialize(): boolean {
@@ -80,20 +79,14 @@ export class SpotifyService {
   }
 
   constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
-    this.state = this.storage.get(stateKey);
-    if (this.state === null) {
-      this.state = generateRandomString(stateLength);
-      this.storage.set(stateKey, this.state);
-    }
+    this.setState();
 
     this.token$.subscribe(token => {
       this.authToken = token;
-      console.log('SpotifyService: Auth token updated: ' + JSON.stringify(this.authToken));
     });
   }
 
   requestAuthToken(code: string, isRefresh: boolean): Promise<AuthToken> {
-    console.log('Requesting new auth token');
     // Create request body
     const body = new URLSearchParams();
     body.set('code', code);
@@ -107,16 +100,14 @@ export class SpotifyService {
       'Content-Type', 'application/x-www-form-urlencoded'
     );
     if (SpotifyService.isDirectSpotifyRequest) {
-      headers.set('Authorization', 'Basic ' + btoa(SpotifyService.clientId + ':' + AppConfig.settings.auth.clientSecret));
+      headers.set('Authorization', `Basic ${btoa(`${SpotifyService.clientId}:${AppConfig.settings.auth.clientSecret}`)}`);
     }
 
     return new Promise<AuthToken>((resolve, reject) => {
-      let clientResponse: Observable<HttpResponse<TokenResponse>>;
-      if (!isRefresh) {
-        clientResponse = this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
-      } else {
-        clientResponse = this.http.put<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
-      }
+      const clientResponse = !isRefresh ?
+        this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'}) :
+        this.http.put<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
+
       clientResponse.subscribe((response) => {
           const token = response.body;
           const authToken: AuthToken = {
@@ -126,19 +117,31 @@ export class SpotifyService {
             scope: token.scope,
             refreshToken: token.refresh_token
           };
-          console.log('Returning new token: ' + JSON.stringify(authToken));
           resolve(authToken);
         },
           (error) => {
-          console.error('Error requesting token: ' + JSON.stringify(error));
-          reject(`Error requesting token: ${JSON.stringify(error)}`);
+          const errStr = `Error requesting token: ${JSON.stringify(error)}`;
+          console.error(errStr);
+          reject(errStr);
         });
     });
   }
 
   getCurrentTrack(): Observable<CurrentPlaybackResponse> {
     this.checkTokenExpiry();
-    return this.http.get<CurrentPlaybackResponse>(playbackEndpoint, {headers: this.getHeaders()});
+    return this.http.get<CurrentPlaybackResponse>(playbackEndpoint, {headers: this.getHeaders(), observe: 'response'})
+      .pipe(
+        map((res: HttpResponse<CurrentPlaybackResponse>) => {
+          if (res.status === 200) {
+            return res.body;
+          }
+          else if (res.status === 204) {
+            // Playback not available or active
+            return null;
+          } else {
+            console.error(`Received unhandled playback response ${res.status}`);
+          }
+      }));
   }
 
   setTrackPosition(position: number): Observable<any> {
@@ -154,12 +157,9 @@ export class SpotifyService {
 
   setPlaying(isPlaying: boolean): Observable<any> {
     this.checkTokenExpiry();
-    if (isPlaying) {
-      // TODO: this has optional parameters for JSON body
-      return this.http.put(playEndpoint, {}, {headers: this.getHeaders()});
-    } else {
-      return this.http.put(pauseEndpoint, {}, {headers: this.getHeaders()});
-    }
+    const endpoint = isPlaying ? playEndpoint : pauseEndpoint;
+    // TODO: this has optional parameters for JSON body
+    return this.http.put(endpoint, {}, {headers: this.getHeaders()});
   }
 
   skipNext(): Observable<any> {
@@ -251,13 +251,14 @@ export class SpotifyService {
   }
 
   getAuthorizeRequestUrl(): string {
-    const request = authEndpoint +
-      '?response_type=code' +
-      '&client_id=' + SpotifyService.clientId +
-      (SCOPES ? '&scope=' + encodeURIComponent(SCOPES.join(' ')) : '') +
-      '&redirect_uri=' + SpotifyService.redirectUri +
-      '&state=' + this.state;
-    return request;
+    if (!this.state) {
+      this.setState();
+    }
+    return `${authEndpoint}?response_type=code` +
+      `&client_id=${SpotifyService.clientId}` +
+      (SCOPES ? `&scope=${encodeURIComponent(SCOPES.join(' '))}` : '') +
+      `&redirect_uri=${SpotifyService.redirectUri}` +
+      `&state=${this.state}&show_dialog=true`;
   }
 
   getAlbumColor(coverArtUrl: string): Observable<string> {
@@ -273,7 +274,14 @@ export class SpotifyService {
   }
 
   compareState(state: string): boolean {
-    return this.state !== null && this.state === state;
+    return this.state && this.state === state;
+  }
+
+  logout(): void {
+    this.state = null;
+    this.authToken = null;
+    this.storage.remove(stateKey);
+    this.storage.removeAuthToken();
   }
 
   private checkTokenExpiry(): void {
@@ -287,7 +295,7 @@ export class SpotifyService {
         .then((res) => {
           this.store.dispatch(new SetAuthToken(res));
         }).catch((reason) => {
-          console.error('Spotify request failed: ' + reason);
+          console.error(`Spotify request failed: ${reason}`);
         });
     }
   }
@@ -302,15 +310,21 @@ export class SpotifyService {
       if (expiresIn >= 0) {
         return expiresIn;
       } else {
-        console.log('Loaded auth token has expired.');
         return 0;
       }
     }
     return -1; // no auth token exists
   }
 
+  private setState(): void {
+    this.state = this.storage.get(stateKey);
+    if (this.state === null) {
+      this.state = generateRandomString(stateLength);
+      this.storage.set(stateKey, this.state);
+    }
+  }
+
   private getHeaders(): HttpHeaders {
-    // this.authToken = null; // test
     if (this.authToken) {
       return new HttpHeaders({
         Authorization: `${this.authToken.tokenType} ${this.authToken.accessToken}`

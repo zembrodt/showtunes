@@ -1,0 +1,22 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+@mixin devices-theme($theme) {
+  $accent: map.get($theme, accent);
+
+  .devices-menu {
+    .active {
+      color: mat.get-color-from-palette($accent, default-contrast);
+      background-color: mat.get-color-from-palette($accent);
+
+      .app-icon {
+        color: mat.get-color-from-palette($accent, default-contrast);
+      }
+
+      &:hover {
+        color: mat.get-color-from-palette($accent, default-contrast);
+        background-color: mat.get-color-from-palette($accent);
+      }
+    }
+  }
+}

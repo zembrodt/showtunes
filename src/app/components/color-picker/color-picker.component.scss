@@ -1,6 +1,6 @@
-@import "src/assets/styles/variables";
+@use '../../../assets/styles/colors';
 
-::ng-deep .mat-menu-panel {
+::ng-deep .color-picker-menu {
   max-width: 100% !important;
   width: calc(48px * 6) !important;
 }
@@ -18,11 +18,11 @@
 }
 
 .white-unselected-light {
-  border: 2px solid $-primary-light !important;
+  border: 2px solid colors.$primary-light !important;
 }
 
 .white-unselected-dark {
-  border: 2px solid $-primary-dark !important;
+  border: 2px solid colors.$primary-dark !important;
 }
 
 .selected {
@@ -30,9 +30,9 @@
 }
 
 .white-selected-light {
-  box-shadow: $-primary-light 0px 0px 0px 6px inset !important;
+  box-shadow: colors.$primary-light 0px 0px 0px 6px inset !important;
 }
 
 .white-selected-dark {
-  box-shadow: $-primary-dark 0px 0px 0px 6px inset !important;
+  box-shadow: colors.$primary-dark 0px 0px 0px 6px inset !important;
 }

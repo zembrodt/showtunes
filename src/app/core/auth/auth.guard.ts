@@ -16,11 +16,10 @@ export class AuthGuard implements CanActivate, OnDestroy {
   constructor(private router: Router) {
     this.token$
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((token) => this.accessToken = token.accessToken);
+      .subscribe((token) => this.accessToken = token ? token.accessToken : null);
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    console.log('AuthGuard: checking if access token exists: ' + JSON.stringify(this.accessToken));
     if (this.accessToken) {
       return true;
     } else {

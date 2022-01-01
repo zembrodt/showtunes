@@ -25,13 +25,7 @@ export class PlaybackService implements OnDestroy {
     this.intervalSubject
      .pipe(
        switchMap(value => {
-         if (this.isAuthenticated) {
-           console.log('Authenticated, starting playback');
-           return interval(value);
-         } else {
-           console.log('Not authenticated, pausing playback');
-           return NEVER;
-         }
+         return this.isAuthenticated ? interval(value) : NEVER;
        }),
        takeUntil(this.ngUnsubscribe))
      .subscribe((pollingInterval) => {
@@ -41,13 +35,7 @@ export class PlaybackService implements OnDestroy {
     this.isIdle$
      .pipe(takeUntil(this.ngUnsubscribe))
      .subscribe(isIdle => {
-       if (isIdle) {
-         console.log('Switching to idle polling');
-         this.intervalSubject.next(IDLE_POLLING);
-       } else {
-         console.log('Switching to playback polling');
-         this.intervalSubject.next(PLAYBACK_POLLING);
-       }
+       this.intervalSubject.next(isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
      });
 
     this.isAuthenticated$

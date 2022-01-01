@@ -37,6 +37,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   @Select(PlaybackState.album) album$: Observable<AlbumModel>;
 
+  @Select(PlaybackState.isIdle) isIdle$: Observable<boolean>;
+
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   private useSmartCodeColor: boolean;
 
@@ -53,7 +55,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   smartBackgroundColor: string;
   smartBarColor: string;
 
-  spotifyIcon = faSpotify;
+  // Template constants
+  readonly spotifyIcon = faSpotify;
 
   constructor(private spotifyService: SpotifyService) {}
 

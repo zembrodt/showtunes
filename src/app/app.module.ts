@@ -30,6 +30,11 @@ import {NgxsStoragePluginModule} from '@ngxs/storage-plugin';
 import {NgxsReduxDevtoolsPluginModule} from '@ngxs/devtools-plugin';
 import {AuthState} from './core/auth/auth.state';
 import {LoadingComponent} from './components/loading/loading.component';
+import {AUTH_STATE_NAME} from './core/auth/auth.model';
+import {SETTINGS_STATE_NAME} from './core/settings/settings.model';
+import {TrackPlayerControlsComponent} from './components/track-player/track-player-controls.component';
+import {TrackPlayerProgressComponent} from './components/track-player/track-player-progress.component';
+import {InactivityService} from './services/inactivity/inactivity.service';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   return () => appConfig.load();
@@ -48,6 +53,8 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     LoginComponent,
     SettingsMenuComponent,
     TrackPlayerComponent,
+    TrackPlayerControlsComponent,
+    TrackPlayerProgressComponent,
   ],
   imports: [
     BrowserModule,
@@ -63,7 +70,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
       {developmentMode: !environment.production}
       ),
     NgxsStoragePluginModule.forRoot({
-      key: ['MUSIC_DISPLAY_AUTH', 'MUSIC_DISPLAY_SETTINGS']
+      key: [AUTH_STATE_NAME, SETTINGS_STATE_NAME]
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.production
@@ -77,6 +84,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
       deps: [AppConfig],
       multi: true
     },
+    InactivityService,
     StorageService,
     SpotifyService,
     PlaybackService,

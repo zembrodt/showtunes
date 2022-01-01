@@ -14,7 +14,10 @@
       <div class="album-placeholder" [ngClass.lt-md]="'album-placeholder-sm'"
            fxLayout="column"
            fxLayoutAlign="center center">
-        <mat-spinner class="album-placeholder-spinner"></mat-spinner>
+        <mat-spinner *ngIf="!(isIdle$ | async); else noMusicMessage" class="album-placeholder-spinner"></mat-spinner>
+        <ng-template #noMusicMessage>
+          <span class="mat-h1" style="margin: 0">Start Spotify to display music!</span>
+        </ng-template>
       </div>
     </div>
   </ng-template>
@@ -28,7 +31,7 @@
              fxLayoutAlign="center center"
              fxLayoutGap="12px">
           <fa-icon [icon]="spotifyIcon" style="font-size: 20px"></fa-icon>
-          <mat-progress-bar style="width: 33%" mode="indeterminate"></mat-progress-bar>
+          <mat-progress-bar *ngIf="!(isIdle$ | async)" style="width: 33%" mode="indeterminate"></mat-progress-bar>
         </div>
       </div>
     </div>
