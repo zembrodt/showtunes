@@ -2,7 +2,7 @@ import {Component, ElementRef, OnDestroy, OnInit, Renderer2} from '@angular/core
 import {Observable, Subject} from 'rxjs';
 import {Select} from '@ngxs/store';
 import {SettingsState} from '../../core/settings/settings.state';
-import {PlaybackService} from '../../core/playback/playback.service';
+import {PlaybackService} from '../../services/playback/playback.service';
 import {InactivityService} from '../../services/inactivity/inactivity.service';
 import {PlayerControlsOptions} from '../../core/settings/settings.model';
 

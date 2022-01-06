@@ -25,7 +25,7 @@ import {SettingsState} from './core/settings/settings.state';
 import {PlaybackState} from './core/playback/playback.state';
 import {environment} from '../environments/environment';
 import {SpotifyService} from './services/spotify/spotify.service';
-import {PlaybackService} from './core/playback/playback.service';
+import {PlaybackService} from './services/playback/playback.service';
 import {NgxsStoragePluginModule} from '@ngxs/storage-plugin';
 import {NgxsReduxDevtoolsPluginModule} from '@ngxs/devtools-plugin';
 import {AuthState} from './core/auth/auth.state';
