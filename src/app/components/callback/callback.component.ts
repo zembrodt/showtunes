@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {SpotifyService} from '../../services/spotify/spotify.service';
-import {Select, Store} from '@ngxs/store';
-import {SetAuthToken} from '../../core/auth/auth.actions';
-import {AuthState} from '../../core/auth/auth.state';
-import {Observable} from 'rxjs';
-import {AuthToken} from '../../core/auth/auth.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Select, Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { SetAuthToken } from '../../core/auth/auth.actions';
+import { AuthToken } from '../../core/auth/auth.model';
+import { AuthState } from '../../core/auth/auth.state';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 const codeKey = 'code';
 const errorKey = 'error';
@@ -40,18 +40,26 @@ export class CallbackComponent implements OnInit {
       const error = params.get(errorKey);
       const state = params.get(stateKey);
 
-      if (code && this.spotify.compareState(state)) {
+      if (!error && code && this.spotify.compareState(state)) {
         // use code to get auth tokens
         this.spotify.requestAuthToken(code, false)
           .then((res) => {
             this.store.dispatch(new SetAuthToken(res));
           })
           .catch((reason) => {
-            console.error('Spotify request failed: ' + reason);
+            console.error(`Spotify request failed: ${reason}`);
           });
       } else {
-        console.error('Error with OAuth: ' + error);
-        console.log('Redirect to /login here...?');
+        console.error(`Error with OAuth${error ? `: ${error}` : ''}`);
+        if (!error) {
+          if (!code) {
+            console.error('No code value given for callback');
+          }
+          else if (!this.spotify.compareState(state)) {
+            console.error(`State value is not correct: ${state}`);
+          }
+        }
+        // TODO: Redirect to /login here?
         // this.router.navigateByUrl('/login');
       }
     });
