@@ -1,9 +1,9 @@
-import {Component} from '@angular/core';
-import {Observable} from 'rxjs';
-import {Select, Store} from '@ngxs/store';
-import {PlaybackState} from '../../core/playback/playback.state';
-import {DeviceModel} from '../../core/playback/playback.model';
-import {ChangeDevice, GetAvailableDevices} from '../../core/playback/playback.actions';
+import { Component } from '@angular/core';
+import { Select, Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { ChangeDevice, GetAvailableDevices } from '../../core/playback/playback.actions';
+import { DeviceModel } from '../../core/playback/playback.model';
+import { PlaybackState } from '../../core/playback/playback.state';
 
 @Component({
   selector: 'app-devices',
@@ -27,24 +27,26 @@ export class DevicesComponent {
 
   getDeviceIcon(deviceType: string): string {
     let icon = 'device_unknown';
-    switch (deviceType.toLowerCase()) {
-      case 'computer':
-        icon = 'laptop_windows';
-        break;
-      case 'tv':
-        icon = 'tv';
-        break;
-      case 'smartphone':
-        icon = 'smartphone';
-        break;
-      case 'speaker':
-        icon = 'speaker';
-        break;
-      case 'castaudio':
-        icon = 'cast';
-        break;
-      default:
-        console.log(`Unsupported device type: '${deviceType}'`);
+    if (deviceType) {
+      switch (deviceType.toLowerCase()) {
+        case 'computer':
+          icon = 'laptop_windows';
+          break;
+        case 'tv':
+          icon = 'tv';
+          break;
+        case 'smartphone':
+          icon = 'smartphone';
+          break;
+        case 'speaker':
+          icon = 'speaker';
+          break;
+        case 'castaudio':
+          icon = 'cast';
+          break;
+        default:
+          console.log(`Unsupported device type: '${deviceType}'`);
+      }
     }
     return icon;
   }
