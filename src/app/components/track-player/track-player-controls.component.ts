@@ -1,4 +1,7 @@
-import {Component, ElementRef, HostListener, Input, OnDestroy, OnInit} from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { MatSliderChange } from '@angular/material/slider';
+import { Select, Store } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
 import {
   ChangeDeviceVolume,
   ChangeRepeatState,
@@ -8,14 +11,11 @@ import {
   TogglePlaying,
   ToggleShuffle
 } from '../../core/playback/playback.actions';
-import {MatSliderChange} from '@angular/material/slider';
-import {PREVIOUS_VOLUME} from '../../core/globals';
-import {Select, Store} from '@ngxs/store';
-import {StorageService} from '../../services/storage/storage.service';
-import {InactivityService} from '../../services/inactivity/inactivity.service';
-import {SettingsState} from '../../core/settings/settings.state';
-import {Observable, Subject} from 'rxjs';
-import {PlayerControlsOptions} from '../../core/settings/settings.model';
+import { PREVIOUS_VOLUME } from '../../core/playback/playback.state';
+import { PlayerControlsOptions } from '../../core/settings/settings.model';
+import { SettingsState } from '../../core/settings/settings.state';
+import { InactivityService } from '../../services/inactivity/inactivity.service';
+import { StorageService } from '../../services/storage/storage.service';
 
 // Default values
 const DEFAULT_VOLUME = 50;

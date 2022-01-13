@@ -1,27 +1,35 @@
-import {AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PLAYBACK_STATE_NAME, PlaybackModel, PlaylistModel, TrackModel} from './playback.model';
-import {Injectable} from '@angular/core';
-import {Action, NgxsAfterBootstrap, Selector, State, StateContext} from '@ngxs/store';
-import {ImageResponse} from '../../models/image.model';
+import { Injectable } from '@angular/core';
+import { Action, NgxsAfterBootstrap, Selector, State, StateContext } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { CurrentPlaybackResponse } from '../../models/current-playback.model';
+import { MultipleDevicesResponse } from '../../models/device.model';
+import { ImageResponse } from '../../models/image.model';
+import { TrackResponse } from '../../models/track.model';
+import { SpotifyService } from '../../services/spotify/spotify.service';
+import { StorageService } from '../../services/storage/storage.service';
+import { getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack } from '../util';
 import {
   ChangeAlbum,
-  ChangeDevice, ChangeDeviceIsActive, ChangeDeviceVolume, ChangePlaylist,
+  ChangeDevice,
+  ChangeDeviceIsActive,
+  ChangeDeviceVolume,
+  ChangePlaylist,
   ChangeProgress,
   ChangeRepeatState,
-  ChangeTrack, GetAvailableDevices, PollCurrentPlayback, SetLiked, SkipNextTrack, SkipPreviousTrack,
+  ChangeTrack,
+  GetAvailableDevices,
+  PollCurrentPlayback,
+  SetLiked,
+  SkipNextTrack,
+  SkipPreviousTrack,
   ToggleLiked,
   TogglePlaying,
   ToggleShuffle
 } from './playback.actions';
-import {SpotifyService} from '../../services/spotify/spotify.service';
-import {tap} from 'rxjs/operators';
-import {CurrentPlaybackResponse} from '../../models/current-playback.model';
-import {getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack} from '../util';
-import {Observable, of} from 'rxjs';
-import {MultipleDevicesResponse} from '../../models/device.model';
-import {StorageService} from '../../services/storage/storage.service';
-import {PREVIOUS_VOLUME} from '../globals';
-import {TrackResponse} from '../../models/track.model';
+import { AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PLAYBACK_STATE_NAME, PlaybackModel, PlaylistModel, TrackModel } from './playback.model';
 
+export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
 @State<PlaybackModel>({
