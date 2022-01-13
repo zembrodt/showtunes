@@ -1,9 +1,10 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {isHexColor, VALID_HEX_COLOR} from '../../core/util';
-import {Observable, Subscription} from 'rxjs';
-import {Select} from '@ngxs/store';
-import {SettingsState} from '../../core/settings/settings.state';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Select } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { SettingsState } from '../../core/settings/settings.state';
+import { isHexColor, VALID_HEX_COLOR } from '../../core/util';
 
 const WHITE_HEX = 'FFFFFF';
 
@@ -13,15 +14,15 @@ const WHITE_HEX = 'FFFFFF';
   styleUrls: ['./color-picker.component.scss']
 })
 export class ColorPickerComponent implements OnInit, OnDestroy {
-
-  private colorResetEventSubscription: Subscription;
+  private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
+  theme: string;
 
   @Input() color: string;
   @Input() placeholderColor: string;
   @Input() presetColors: string[];
-  @Input() colorResetEvent: Observable<void>;
+  @Input() colorReset$: Observable<void>;
   @Output() colorChange = new EventEmitter<string>();
 
   inputControl = new FormControl('', [
@@ -39,18 +40,26 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
     this.color = this.color.toUpperCase();
     this.setFormValue(this.color);
 
-    this.colorResetEventSubscription = this.colorResetEvent.subscribe(() => {
+    this.theme$.pipe(
+      takeUntil(this.ngUnsubscribe)
+    ).subscribe((theme) => this.theme = theme);
+
+    this.colorReset$.pipe(
+      takeUntil(this.ngUnsubscribe)
+    ).subscribe(() => {
       this.setFormValue(this.color);
     });
   }
 
   ngOnDestroy(): void {
-    this.colorResetEventSubscription.unsubscribe();
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
-  onColorChange(event): void {
-    if (isHexColor(event.target.value)) {
-      this.setColorChange(event.target.value);
+  onColorChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (isHexColor(target.value)) {
+      this.setColorChange(target.value);
     }
   }
 
@@ -58,12 +67,12 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
     this.setColorChange(presetColor);
   }
 
-  calculateButtonClass(presetColor: string, theme: string): string[] {
+  calculateButtonClass(presetColor: string): string[] {
     const classes: string[] = [];
     if (this.color === presetColor.toUpperCase()) {
       classes.push('selected');
       if (this.color === WHITE_HEX) {
-        if (theme === 'light-theme') {
+        if (this.theme === 'light-theme') {
           classes.push('white-selected-light');
         } else {
           classes.push('white-selected-dark');
@@ -72,7 +81,7 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
     } else {
       if (presetColor.toUpperCase() === WHITE_HEX) {
         classes.push('white-unselected');
-        if (theme === 'light-theme') {
+        if (this.theme === 'light-theme') {
           classes.push('white-unselected-light');
         } else {
           classes.push('white-unselected-dark');
