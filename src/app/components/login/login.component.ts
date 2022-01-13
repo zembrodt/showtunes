@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
-import {SpotifyService} from '../../services/spotify/spotify.service';
-import {Observable} from 'rxjs';
-import {AuthToken} from '../../core/auth/auth.model';
-import {AuthState} from '../../core/auth/auth.state';
-import {Select} from '@ngxs/store';
-import {Router} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Select } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { AuthToken } from '../../core/auth/auth.model';
+import { AuthState } from '../../core/auth/auth.state';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-login',
@@ -20,12 +20,17 @@ export class LoginComponent implements OnInit {
     this.token$.subscribe(token => {
       // Redirect to Spotify OAuth if no token exists
       if (!token) {
-        window.location.href = this.spotifyService.getAuthorizeRequestUrl();
+        this.navigateToUrl(this.spotifyService.getAuthorizeRequestUrl());
       } else {
         this.router.navigateByUrl('/dashboard');
       }
     });
   }
+
+  private navigateToUrl(url: string): void {
+    window.location.href = url;
+  }
+
   // TODO: how do we also check if a token is expired?
   // WIP code for OAuth pop-up:
   /*
