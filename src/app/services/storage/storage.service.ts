@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {AUTH_STATE_NAME} from '../../core/auth/auth.model';
+import { AUTH_STATE_NAME } from '../../core/auth/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,9 @@ export class StorageService {
   }
 
   private getKey(key: string): string {
-    return `${StorageService.prefix}_${key}`;
+    if (key) {
+      return `${StorageService.prefix}_${key.toUpperCase()}`;
+    }
+    return null;
   }
 }
