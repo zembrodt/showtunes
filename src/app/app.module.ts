@@ -12,10 +12,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
 import { AlbumDisplayComponent } from './components/album-display/album-display.component';
 import { MaterialModule } from './modules/material.module';
-import {HelpDialogComponent, SettingsMenuComponent} from './components/settings-menu/settings-menu.component';
+import {SettingsMenuComponent} from './components/settings-menu/settings-menu.component';
 import { ColorPickerComponent } from './components/color-picker/color-picker.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DevicesComponent } from './components/devices/devices.component';
@@ -32,8 +33,8 @@ import {AuthState} from './core/auth/auth.state';
 import {LoadingComponent} from './components/loading/loading.component';
 import {AUTH_STATE_NAME} from './core/auth/auth.model';
 import {SETTINGS_STATE_NAME} from './core/settings/settings.model';
-import {TrackPlayerControlsComponent} from './components/track-player/track-player-controls.component';
-import {TrackPlayerProgressComponent} from './components/track-player/track-player-progress.component';
+import {TrackPlayerControlsComponent} from './components/track-player/track-player-controls/track-player-controls.component';
+import {TrackPlayerProgressComponent} from './components/track-player/track-player-progress/track-player-progress.component';
 import {InactivityService} from './services/inactivity/inactivity.service';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {

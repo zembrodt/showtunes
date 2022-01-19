@@ -1,0 +1,23 @@
+.track-playback {
+  width: 100%;
+}
+
+.track-slider {
+  width: 100%;
+}
+
+.time-values {
+  width: 100%;
+}
+
+.progress-time {
+  width: 100%;
+  text-align: left;
+  margin-left: 12px;
+}
+
+.duration-time {
+  width: 100%;
+  text-align: right;
+  margin-right: 12px;
+}

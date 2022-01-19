@@ -1,12 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
 import { Store } from '@ngxs/store';
-import { ChangeProgress } from '../../core/playback/playback.actions';
+import { ChangeProgress } from '../../../core/playback/playback.actions';
 
 @Component({
   selector: 'app-track-player-progress',
   templateUrl: './track-player-progress.component.html',
-  styleUrls: ['./track-player.component.css']
+  styleUrls: ['./track-player-progress.component.css']
 })
 export class TrackPlayerProgressComponent {
 

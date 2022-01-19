@@ -2,7 +2,7 @@
      fxLayout="column"
      fxLayoutAlign="center center">
   <div class="track-slider">
-    <mat-slider min="0" [max]="duration" step="1" [value]="progress" (change)="onProgressChange($event)"></mat-slider>
+    <mat-slider class="track-slider" min="0" [max]="duration" step="1" [value]="progress" (change)="onProgressChange($event)"></mat-slider>
   </div>
   <div class="mat-subheading-2 time-values"
        fxLayout="row"

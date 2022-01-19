@@ -1,26 +1,28 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {BAR_COLOR_BLACK, BAR_COLOR_WHITE, PlayerControlsOptions} from '../../core/settings/settings.model';
-import {MenuCloseReason} from '@angular/material/menu/menu';
-import {Observable, Subject} from 'rxjs';
-import {isHexColor} from '../../core/util';
-import {SettingsState} from '../../core/settings/settings.state';
-import {Select, Store} from '@ngxs/store';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import { MatDialog } from '@angular/material/dialog';
+import { MenuCloseReason } from '@angular/material/menu/menu';
+import { Router } from '@angular/router';
+import { faGithub } from '@fortawesome/free-brands-svg-icons/faGithub';
+import { Select, Store } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { AppConfig } from '../../app.config';
+import { LogoutAuth } from '../../core/auth/auth.actions';
 import {
+  ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
-  ChangeTheme, ChangePlayerControls, TogglePlaylistName, ToggleSmartCodeColor,
+  ChangeTheme,
+  TogglePlaylistName,
+  ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
-import {DEFAULT_SETTINGS} from '../../core/settings/settings.model';
-import {takeUntil} from 'rxjs/operators';
-import {AppConfig} from '../../app.config';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {environment} from '../../../environments/environment';
-import {faGithub} from '@fortawesome/free-brands-svg-icons/faGithub';
-import {IconDefinition} from '@fortawesome/free-brands-svg-icons';
-import {Router} from '@angular/router';
-import {LogoutAuth} from '../../core/auth/auth.actions';
-import {MatButtonToggleChange} from '@angular/material/button-toggle';
+import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DEFAULT_SETTINGS, PlayerControlsOptions } from '../../core/settings/settings.model';
+import { SettingsState } from '../../core/settings/settings.state';
+import { isHexColor } from '../../core/util';
+import { HelpDialogComponent } from './help-dialog/help-dialog.component';
 
 const LIGHT_THEME = 'light-theme';
 const DARK_THEME = 'dark-theme';
@@ -142,26 +144,5 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
         isLightTheme: this.currentTheme === LIGHT_THEME
       }
     });
-  }
-}
-
-export interface HelpDialogData {
-  version: string;
-  githubIcon: IconDefinition;
-  year: number;
-  isLightTheme: boolean;
-}
-
-@Component({
-  selector: 'app-help-dialog',
-  templateUrl: 'help-dialog.component.html',
-  styleUrls: ['./help-dialog.component.css']
-})
-export class HelpDialogComponent {
-  constructor(public dialogRef: MatDialogRef<HelpDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: HelpDialogData) {}
-
-  onClose(): void {
-    this.dialogRef.close();
   }
 }
