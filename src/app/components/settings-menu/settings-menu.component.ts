@@ -64,6 +64,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   readonly playerControlsOff = PlayerControlsOptions.Off;
   readonly playerControlsOn = PlayerControlsOptions.On;
   readonly playerControlsFade = PlayerControlsOptions.Fade;
+  readonly placeholderColor = DEFAULT_SETTINGS.spotifyCode.backgroundColor;
+  readonly presetColors = PRESET_COLORS;
 
   constructor(private store: Store, private router: Router, public helpDialog: MatDialog) {}
 
@@ -118,14 +120,6 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   onBarColorChange(): void {
     const barColor = this.currentBarColor === BAR_COLOR_BLACK ? BAR_COLOR_WHITE : BAR_COLOR_BLACK;
     this.store.dispatch(new ChangeSpotifyCodeBarColor(barColor));
-  }
-
-  getPlaceholderColor(): string {
-    return DEFAULT_SETTINGS.spotifyCode.backgroundColor;
-  }
-
-  getPresetColors(): string[] {
-    return PRESET_COLORS;
   }
 
   onColorChange(change: string): void {
