@@ -1,10 +1,10 @@
-import {AlbumModel, DeviceModel, PlaylistModel, TrackModel} from './playback/playback.model';
-import {TrackResponse} from '../models/track.model';
-import {AlbumResponse} from '../models/album.model';
-import {DeviceResponse} from '../models/device.model';
-import {PlaylistResponse} from '../models/playlist.model';
+import { AlbumResponse } from '../models/album.model';
+import { DeviceResponse } from '../models/device.model';
+import { PlaylistResponse } from '../models/playlist.model';
+import { TrackResponse } from '../models/track.model';
+import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback/playback.model';
 
-export const VALID_HEX_COLOR = '^[A-Za-z0-9]{6}$';
+export const VALID_HEX_COLOR = '^[A-Fa-f0-9]{6}$';
 
 const validHexRegex = new RegExp(VALID_HEX_COLOR);
 export function isHexColor(hex: string): boolean {
@@ -26,6 +26,15 @@ export function hexToRgb(hex: string): Color {
     };
   }
   return null;
+}
+
+const validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+export function generateRandomString(length: number): string {
+  let arr = new Uint8Array(length);
+  window.crypto.getRandomValues(arr);
+  arr = arr.map(x => validChars.charCodeAt(x % validChars.length));
+  return String.fromCharCode.apply(null, arr);
 }
 
 export function parseTrack(track: TrackResponse): TrackModel {

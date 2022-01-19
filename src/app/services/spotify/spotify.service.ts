@@ -1,19 +1,19 @@
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { CurrentPlaybackResponse } from '../../models/current-playback.model';
-import { TokenResponse } from '../../models/token.model';
-import { generateRandomString } from '../../core/crypto';
-import { AppConfig } from '../../app.config';
-import { StorageService } from '../storage/storage.service';
-import { MultipleDevicesResponse } from '../../models/device.model';
-import { AuthToken } from '../../core/auth/auth.model';
 import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
-import { AuthState } from '../../core/auth/auth.state';
-import { SetAuthToken } from '../../core/auth/auth.actions';
-import { PlaylistResponse } from '../../models/playlist.model';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AppConfig } from '../../app.config';
+import { SetAuthToken } from '../../core/auth/auth.actions';
+import { AuthToken } from '../../core/auth/auth.model';
+import { AuthState } from '../../core/auth/auth.state';
+import { generateRandomString } from '../../core/util';
+import { CurrentPlaybackResponse } from '../../models/current-playback.model';
+import { MultipleDevicesResponse } from '../../models/device.model';
+import { PlaylistResponse } from '../../models/playlist.model';
+import { TokenResponse } from '../../models/token.model';
+import { StorageService } from '../storage/storage.service';
 
 const stateKey = 'STATE';
 
