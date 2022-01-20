@@ -1,7 +1,7 @@
 <div class="track-player"
      fxLayout="column"
      fxLayoutAlign="space-around stretch">
-  <div *ngIf="(track$ | async)" class="track-info"
+  <div *ngIf="track$ | async" class="track-info"
      fxLayout="column"
      fxLayoutAlign="space-around start"
      fxLayoutGap="24px">
@@ -16,9 +16,9 @@
         <span *ngIf="i + 1 < (track$ | async).artists.length">, </span>
       </ng-container>
     </div>
-    <div class="mat-display-1 track-album">
-      <a href="{{(album$ | async) ? (album$ | async).href : ''}}" target="_blank">
-        {{(album$ | async) ? (album$ | async).name : ''}}
+    <div *ngIf="album$ | async" class="mat-display-1 track-album">
+      <a href="{{(album$ | async).href}}" target="_blank">
+        {{(album$ | async).name}}
       </a>
     </div>
   </div>

@@ -1,10 +1,11 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Select} from '@ngxs/store';
-import {PlaybackState} from '../../core/playback/playback.state';
-import {Observable, Subject} from 'rxjs';
-import {AlbumModel, PlaylistModel, TrackModel} from '../../core/playback/playback.model';
-import {SettingsState} from '../../core/settings/settings.state';
-import {PlayerControlsOptions} from '../../core/settings/settings.model';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Select } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { AlbumModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
+import { PlaybackState } from '../../core/playback/playback.state';
+import { PlayerControlsOptions } from '../../core/settings/settings.model';
+import { SettingsState } from '../../core/settings/settings.state';
 
 @Component({
   selector: 'app-track-player',
@@ -27,14 +28,16 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
 
-  showPlayerControls: boolean;
+  showPlayerControls = true;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.showPlayerControls$.subscribe((option) => {
-      this.showPlayerControls = option !== PlayerControlsOptions.Off;
-    });
+    this.showPlayerControls$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((option) => {
+        this.showPlayerControls = option !== PlayerControlsOptions.Off;
+      });
   }
 
   ngOnDestroy(): void {
