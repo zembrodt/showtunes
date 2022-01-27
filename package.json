@@ -1,6 +1,6 @@
 {
   "name": "showtunes",
-  "version": "0.4.1",
+  "version": "0.4.2-dev",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -32,7 +32,6 @@
     "@ngxs/store": "^3.7.1",
     "component": "^1.1.0",
     "gulp": "^4.0.2",
-    "ngx-color-picker": "^11.0.0",
     "postcss": "^8.4.4",
     "rxjs": "~6.6.6",
     "tslib": "^2.0.0",

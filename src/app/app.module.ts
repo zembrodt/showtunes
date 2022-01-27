@@ -1,3 +1,5 @@
+// TODO: possible circular dependency error when imports are reorganized
+
 import { APP_INITIALIZER } from '@angular/core';
 import { AppConfig } from './app.config';
 import { BrowserModule } from '@angular/platform-browser';
@@ -10,7 +12,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { CallbackComponent } from './components/callback/callback.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { ColorPickerModule } from 'ngx-color-picker';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
@@ -64,14 +65,13 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     AppRoutingModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
-    ColorPickerModule,
     FontAwesomeModule,
     NgxsModule.forRoot(
-      [AuthState, PlaybackState, SettingsState],
-      {developmentMode: !environment.production}
+      [ AuthState, PlaybackState, SettingsState ],
+      { developmentMode: !environment.production }
       ),
     NgxsStoragePluginModule.forRoot({
-      key: [AUTH_STATE_NAME, SETTINGS_STATE_NAME]
+      key: [ AUTH_STATE_NAME, SETTINGS_STATE_NAME ]
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.production
@@ -82,7 +82,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
-      deps: [AppConfig],
+      deps: [ AppConfig ],
       multi: true
     },
     InactivityService,
@@ -90,6 +90,6 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     SpotifyService,
     PlaybackService,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [ AppComponent ]
 })
 export class AppModule { }
