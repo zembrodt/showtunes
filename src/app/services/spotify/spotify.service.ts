@@ -142,6 +142,7 @@ export class SpotifyService {
             return null;
           } else {
             console.error(`Received unhandled playback response ${res.status}`);
+            return null;
           }
       }));
   }
@@ -276,7 +277,7 @@ export class SpotifyService {
   }
 
   compareState(state: string): boolean {
-    return this.state && this.state === state;
+    return !!this.state && this.state === state;
   }
 
   logout(): void {
@@ -284,6 +285,10 @@ export class SpotifyService {
     this.authToken = null;
     this.storage.remove(stateKey);
     this.storage.removeAuthToken();
+  }
+
+  toggleIsAuthenticating(): void {
+    this.isAuthenticating = !this.isAuthenticating;
   }
 
   private checkTokenExpiry(): void {
@@ -298,12 +303,10 @@ export class SpotifyService {
           this.store.dispatch(new SetAuthToken(res));
         }).catch((reason) => {
           console.error(`Spotify request failed: ${reason}`);
+          this.logout();
+          this.router.navigateByUrl('/login');
         });
     }
-  }
-
-  toggleIsAuthenticating(): void {
-    this.isAuthenticating = !this.isAuthenticating;
   }
 
   private tokenExpiresIn(): number {
