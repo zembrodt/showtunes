@@ -1,13 +1,13 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {Select, Store} from '@ngxs/store';
-import {BehaviorSubject, interval, NEVER, Observable, Subject} from 'rxjs';
-import {switchMap, takeUntil} from 'rxjs/operators';
-import {PlaybackState} from '../../core/playback/playback.state';
-import {PollCurrentPlayback} from '../../core/playback/playback.actions';
-import {AuthState} from '../../core/auth/auth.state';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Select, Store } from '@ngxs/store';
+import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { AuthState } from '../../core/auth/auth.state';
+import { PollCurrentPlayback } from '../../core/playback/playback.actions';
+import { PlaybackState } from '../../core/playback/playback.state';
 
-const IDLE_POLLING = 3000; // ms
-const PLAYBACK_POLLING = 1000; // ms
+export const IDLE_POLLING = 3000; // ms
+export const PLAYBACK_POLLING = 1000; // ms
 
 @Injectable({providedIn: 'root'})
 export class PlaybackService implements OnDestroy {
