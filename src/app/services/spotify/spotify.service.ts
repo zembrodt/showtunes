@@ -80,7 +80,9 @@ export class SpotifyService {
 
   constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
     this.setState();
+  }
 
+  initSubscriptions(): void {
     this.token$.subscribe(token => {
       this.authToken = token;
     });

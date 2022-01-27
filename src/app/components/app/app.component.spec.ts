@@ -10,6 +10,7 @@ import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
@@ -36,7 +37,8 @@ describe('AppComponent', () => {
         MockProvider(InactivityService, {
           inactive$: inactiveProducer
         }),
-        MockProvider(PlaybackService)
+        MockProvider(PlaybackService),
+        MockProvider(SpotifyService)
       ]
     }).compileComponents();
   });
@@ -62,6 +64,15 @@ describe('AppComponent', () => {
     const injector = injectorFixture.point.injector;
     injectorFixture.detectChanges();
     expect(injector.get(PlaybackService).initialize).toHaveBeenCalled();
+  });
+
+  it('should initialize the spotifyService', () => {
+    // Use ng-mocks MockRender to check injected service call
+    ngMocks.flushTestBed();
+    const injectorFixture = MockRender(AppComponent);
+    const injector = injectorFixture.point.injector;
+    injectorFixture.detectChanges();
+    expect(injector.get(SpotifyService).initSubscriptions).toHaveBeenCalled();
   });
 
   it('should use the light-theme class when light theme', () => {

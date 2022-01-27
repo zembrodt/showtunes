@@ -6,6 +6,7 @@ import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-root',
@@ -23,10 +24,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     private inactivity: InactivityService,
-    private playbackService: PlaybackService) {}
+    private playbackService: PlaybackService,
+    private spotifyService: SpotifyService) {}
 
   ngOnInit(): void {
     this.playbackService.initialize();
+    this.spotifyService.initSubscriptions();
 
     this.inactivity.inactive$
       .pipe(takeUntil(this.ngUnsubscribe))
