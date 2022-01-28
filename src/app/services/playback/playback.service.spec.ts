@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Store } from '@ngxs/store';
+import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { PollCurrentPlayback } from '../../core/playback/playback.actions';
@@ -16,6 +16,9 @@ describe('PlaybackService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [
+        NgxsModule.forRoot([], { developmentMode: true })
+      ],
       providers: [ MockProvider(Store) ]
     });
     service = TestBed.inject(PlaybackService);

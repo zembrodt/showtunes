@@ -19,33 +19,41 @@ export class PlaybackService implements OnDestroy {
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
-  constructor(private store: Store) { }
+  constructor(private store: Store) {
+    this.initialize();
+  }
 
   initialize(): void {
-    this.interval$
-     .pipe(
-       switchMap(value => {
-         return this.isAuthenticated ? interval(value) : NEVER;
-       }),
-       takeUntil(this.ngUnsubscribe))
-     .subscribe((pollingInterval) => {
-       this.store.dispatch(new PollCurrentPlayback(pollingInterval)).subscribe();
-     });
+    if (this.interval$) {
+      this.interval$
+        .pipe(
+          switchMap(value => {
+            return this.isAuthenticated ? interval(value) : NEVER;
+          }),
+          takeUntil(this.ngUnsubscribe))
+        .subscribe((pollingInterval) => {
+          this.store.dispatch(new PollCurrentPlayback(pollingInterval)).subscribe();
+        });
+    }
 
-    this.isIdle$
-     .pipe(takeUntil(this.ngUnsubscribe))
-     .subscribe(isIdle => {
-       this.isIdle = isIdle;
-       this.interval$.next(isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
-     });
+    if (this.isIdle$) {
+      this.isIdle$
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe(isIdle => {
+          this.isIdle = isIdle;
+          this.interval$.next(isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+        });
+    }
 
-    this.isAuthenticated$
-     .pipe(takeUntil(this.ngUnsubscribe))
-     .subscribe(isAuthenticated => {
-       this.isAuthenticated = isAuthenticated;
-       // Send a new polling value to either start or stop playback
-       this.interval$.next(this.isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
-     });
+    if (this.isAuthenticated$) {
+      this.isAuthenticated$
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe(isAuthenticated => {
+          this.isAuthenticated = isAuthenticated;
+          // Send a new polling value to either start or stop playback
+          this.interval$.next(this.isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+        });
+    }
   }
 
   ngOnDestroy(): void {

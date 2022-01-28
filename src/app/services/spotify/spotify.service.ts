@@ -80,12 +80,15 @@ export class SpotifyService {
 
   constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
     this.setState();
+    this.initSubscriptions();
   }
 
   initSubscriptions(): void {
-    this.token$.subscribe(token => {
-      this.authToken = token;
-    });
+    if (this.token$) {
+      this.token$.subscribe(token => {
+        this.authToken = token;
+      });
+    }
   }
 
   requestAuthToken(code: string, isRefresh: boolean): Promise<AuthToken> {
