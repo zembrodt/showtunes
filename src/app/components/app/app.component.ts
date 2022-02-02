@@ -5,6 +5,8 @@ import { takeUntil } from 'rxjs/operators';
 import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
+import { PlaybackService } from '../../services/playback/playback.service';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +22,17 @@ export class AppComponent implements OnInit, OnDestroy {
   fadePlayerControls = false;
   fadeCursor = false;
 
-  constructor(private inactivity: InactivityService) {}
+  constructor(private spotify: SpotifyService, private playback: PlaybackService, private inactivity: InactivityService) {}
 
   ngOnInit(): void {
+    if (!SpotifyService.initialized && !SpotifyService.initialize()) {
+      console.error('Failed to initialize Spotify service');
+    }
+
+    this.spotify.initSubscriptions();
+
+    this.playback.initialize();
+
     this.inactivity.inactive$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((isInactive) => {

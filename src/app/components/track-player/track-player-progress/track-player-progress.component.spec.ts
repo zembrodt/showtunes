@@ -5,16 +5,16 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatSlider, MatSliderChange, MatSliderModule } from '@angular/material/slider';
 import { MatSliderHarness } from '@angular/material/slider/testing';
 import { By } from '@angular/platform-browser';
-import { NgxsModule, Store } from '@ngxs/store';
+import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
-import { ChangeProgress } from '../../../core/playback/playback.actions';
+import { SpotifyService } from '../../../services/spotify/spotify.service';
 import { TrackPlayerProgressComponent } from './track-player-progress.component';
 
 describe('TrackPlayerProgressComponent', () => {
   let component: TrackPlayerProgressComponent;
   let fixture: ComponentFixture<TrackPlayerProgressComponent>;
   let loader: HarnessLoader;
-  let store: Store;
+  let spotify: SpotifyService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,9 +23,9 @@ describe('TrackPlayerProgressComponent', () => {
         MatSliderModule,
         NgxsModule.forRoot([], { developmentMode: true })
       ],
-      providers: [ MockProvider(Store) ]
+      providers: [ MockProvider(SpotifyService) ]
     }).compileComponents();
-    store = TestBed.inject(Store);
+    spotify = TestBed.inject(SpotifyService);
   });
 
   beforeEach(() => {
@@ -82,11 +82,11 @@ describe('TrackPlayerProgressComponent', () => {
     expect(component.onProgressChange).toHaveBeenCalled();
   });
 
-  it('should dispatch ChangeProgress from onProgressChange', () => {
+  it('should call Spotify setTrackPosition', () => {
     const change = new MatSliderChange();
     change.value = 10;
     component.onProgressChange(change);
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(ChangeProgress));
+    expect(spotify.setTrackPosition).toHaveBeenCalledWith(10);
   });
 
   it('should display single seconds digit progress correctly', () => {

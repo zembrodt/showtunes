@@ -1,10 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Select, Store } from '@ngxs/store';
+import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AuthState } from '../../core/auth/auth.state';
-import { PollCurrentPlayback } from '../../core/playback/playback.actions';
 import { PlaybackState } from '../../core/playback/playback.state';
+import { SpotifyService } from '../spotify/spotify.service';
 
 export const IDLE_POLLING = 3000; // ms
 export const PLAYBACK_POLLING = 1000; // ms
@@ -19,9 +19,7 @@ export class PlaybackService implements OnDestroy {
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
-  constructor(private store: Store) {
-    this.initialize();
-  }
+  constructor(private spotify: SpotifyService) { }
 
   initialize(): void {
     if (this.interval$) {
@@ -32,7 +30,7 @@ export class PlaybackService implements OnDestroy {
           }),
           takeUntil(this.ngUnsubscribe))
         .subscribe((pollingInterval) => {
-          this.store.dispatch(new PollCurrentPlayback(pollingInterval)).subscribe();
+          this.spotify.pollCurrentPlayback(pollingInterval);
         });
     }
 

@@ -5,7 +5,6 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/ro
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { SetAuthToken } from '../../core/auth/auth.actions';
 import { AuthToken } from '../../core/auth/auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { SpotifyService } from '../../services/spotify/spotify.service';
@@ -110,13 +109,6 @@ describe('CallbackComponent', () => {
     paramMapProducer.next(convertToParamMap({ code: 'test_code', state: 'bad_state' }));
     expect(console.error).toHaveBeenCalledTimes(2);
   });
-
-  it('should dispatch updated auth token with successful request', fakeAsync(() => {
-    paramMapProducer.next(convertToParamMap({ code: 'test_code', state: 'test_state' }));
-    expect(spotify.requestAuthToken).toHaveBeenCalled();
-    tick();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(SetAuthToken));
-  }));
 
   it('should give an error for a failed auth token request', fakeAsync(() => {
     spotify.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.reject('test_error'));

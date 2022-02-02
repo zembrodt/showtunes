@@ -1,4 +1,8 @@
-import {AlbumModel, DeviceModel, TrackModel} from './playback.model';
+import { AlbumResponse } from '../../models/album.model';
+import { ContextResponse } from '../../models/context.model';
+import { DeviceResponse } from '../../models/device.model';
+import { TrackResponse } from '../../models/track.model';
+import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback.model';
 
 const PLAYBACK_ACTION_NAME = '[Playback]';
 
@@ -14,12 +18,12 @@ export class ChangeAlbum {
 
 export class ChangePlaylist {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Playlist`;
-  constructor(public playlistId: string) { }
+  constructor(public playlist: PlaylistModel) { }
 }
 
 export class ChangeDevice {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Device`;
-  constructor(public device: DeviceModel, public isPlaying: boolean) { }
+  constructor(public device: DeviceModel) { }
 }
 
 export class ChangeDeviceVolume {
@@ -32,29 +36,24 @@ export class ChangeDeviceIsActive {
   constructor(public isActive: boolean) { }
 }
 
-export class GetAvailableDevices {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Get Available Devices`;
+export class SetAvailableDevices {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Available Devices`;
+  constructor(public devices: DeviceModel[]) { }
 }
 
-export class ChangeProgress {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Change Progress`;
+export class SetProgress {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Progress`;
   constructor(public progress: number) { }
 }
 
-export class TogglePlaying {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Toggle Playing`;
+export class SetPlaying {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Playing`;
+  constructor(public isPlaying: boolean) { }
 }
 
-export class SkipNextTrack {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Skip Next Track`;
-}
-
-export class SkipPreviousTrack {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Skip Previous Track`;
-}
-
-export class ToggleShuffle {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Toggle Shuffle`;
+export class SetShuffle {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Shuffle`;
+  constructor(public isShuffle: boolean) { }
 }
 
 export class ChangeRepeatState {
@@ -62,16 +61,12 @@ export class ChangeRepeatState {
   constructor(public repeatState: string) { }
 }
 
-export class ToggleLiked {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Toggle Liked`;
-}
-
 export class SetLiked {
   static readonly type = `${PLAYBACK_ACTION_NAME} Set Liked`;
   constructor(public isLiked: boolean) { }
 }
 
-export class PollCurrentPlayback {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Poll Current Playback`;
-  constructor(public interval: number) { }
+export class SetIdle {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Idle`;
+  constructor(public isIdle: boolean) { }
 }

@@ -9,22 +9,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatIconHarness } from '@angular/material/icon/testing';
 import { MatSlider, MatSliderChange, MatSliderModule } from '@angular/material/slider';
 import { By } from '@angular/platform-browser';
-import { NgxsModule, Store } from '@ngxs/store';
+import { NgxsModule } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import {
-  ChangeDeviceVolume,
-  ChangeRepeatState,
-  SkipNextTrack,
-  SkipPreviousTrack,
-  ToggleLiked,
-  TogglePlaying,
-  ToggleShuffle
-} from '../../../core/playback/playback.actions';
-import { PREVIOUS_VOLUME } from '../../../core/playback/playback.state';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
+import { PREVIOUS_VOLUME, SpotifyService } from '../../../services/spotify/spotify.service';
 import { StorageService } from '../../../services/storage/storage.service';
 import { DevicesComponent } from '../../devices/devices.component';
 import { TrackPlayerControlsComponent } from './track-player-controls.component';
@@ -43,7 +34,7 @@ describe('TrackPlayerControlsComponent', () => {
   let component: TrackPlayerControlsComponent;
   let fixture: ComponentFixture<TrackPlayerControlsComponent>;
   let loader: HarnessLoader;
-  let store: Store;
+  let spotify: SpotifyService;
   let storage: StorageService;
 
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
@@ -63,7 +54,7 @@ describe('TrackPlayerControlsComponent', () => {
         NgxsModule.forRoot([], {developmentMode: true})
       ],
       providers: [
-        MockProvider(Store),
+        MockProvider(SpotifyService),
         MockProvider(StorageService),
         MockProvider(InactivityService, {
           inactive$: inactivityProducer
@@ -71,7 +62,7 @@ describe('TrackPlayerControlsComponent', () => {
         MockProvider(ElementRef)
       ]
     }).compileComponents();
-    store = TestBed.inject(Store);
+    spotify = TestBed.inject(SpotifyService);
     storage = TestBed.inject(StorageService);
   });
 
@@ -396,91 +387,91 @@ describe('TrackPlayerControlsComponent', () => {
     expect(fixture.debugElement.nativeElement.animate).not.toHaveBeenCalled();
   });
 
-  it('should dispatch TogglePlaying on pause', () => {
+  it('should toggle Spotify playing on pause', () => {
     component.onPause();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(TogglePlaying));
+    expect(spotify.togglePlaying).toHaveBeenCalled();
   });
 
-  it('should dispatch SkipPreviousTrack on skip previous', () => {
+  it('should call Spotify skip on skip previous', () => {
     component.onSkipPrevious();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(SkipPreviousTrack));
+    expect(spotify.skipPrevious).toHaveBeenCalledWith(false);
   });
 
-  it('should dispatch SkipNextTrack on skip previous', () => {
+  it('should call Spotify skip on skip next', () => {
     component.onSkipNext();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(SkipNextTrack));
+    expect(spotify.skipNext).toHaveBeenCalled();
   });
 
-  it('should dispatch ChangeDeviceVolume on volume change', () => {
+  it('should change Spotify device volume on volume change', () => {
     const change = new MatSliderChange();
     change.value = 10;
     component.onVolumeChange(change);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(10));
+    expect(spotify.setVolume).toHaveBeenCalledWith(10);
   });
 
-  it('should dispatch ChangeDeviceVolume to 0 on volume mute when volume > 0', () => {
+  it('should change Spotify volume to 0 on volume mute when volume > 0', () => {
     component.volume = 1;
     component.onVolumeMute();
     expect(storage.set).toHaveBeenCalledWith(PREVIOUS_VOLUME, '1');
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(0));
+    expect(spotify.setVolume).toHaveBeenCalledWith(0);
   });
 
-  it('should dispatch ChangeDeviceVolume to previous volume on volume mute when volume = 0', () => {
+  it('should change Spotify volume to previous volume on volume mute when volume = 0', () => {
     storage.get = jasmine.createSpy().and.returnValue('10');
     component.volume = 0;
     component.onVolumeMute();
     expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(10));
+    expect(spotify.setVolume).toHaveBeenCalledWith(10);
   });
 
-  it('should dispatch ChangeDeviceVolume to default volume on volume mute when volume = 0 and previous NaN', () => {
+  it('should change Spotify volume to default volume on volume mute when volume = 0 and previous NaN', () => {
     storage.get = jasmine.createSpy().and.returnValue('abc');
     component.volume = 0;
     component.onVolumeMute();
     expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(50));
+    expect(spotify.setVolume).toHaveBeenCalledWith(50);
   });
 
-  it('should dispatch ChangeDeviceVolume to default volume on volume mute when volume = 0 and previous = 0', () => {
+  it('should change Spotify volume to default volume on volume mute when volume = 0 and previous = 0', () => {
     storage.get = jasmine.createSpy().and.returnValue('0');
     component.volume = 0;
     component.onVolumeMute();
     expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(50));
+    expect(spotify.setVolume).toHaveBeenCalledWith(50);
   });
 
-  it('should dispatch ToggleShuffle on toggle shuffle', () => {
+  it('should call Spotify shuffle on toggle shuffle', () => {
     component.onToggleShuffle();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(ToggleShuffle));
+    expect(spotify.toggleShuffle).toHaveBeenCalled();
   });
 
-  it('should dispatch ChangeRepeatState to \'context\' on repeat change when state is off', () => {
+  it('should change Spotify repeat state to \'context\' on repeat change when state is off', () => {
     component.repeatState = 'off';
     component.onRepeatChange();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeRepeatState('context'));
+    expect(spotify.setRepeatState).toHaveBeenCalledWith('context');
   });
 
-  it('should dispatch ChangeRepeatState to \'track\' on repeat change when state is context', () => {
+  it('should change Spotify repeat state to \'track\' on repeat change when state is context', () => {
     component.repeatState = 'context';
     component.onRepeatChange();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeRepeatState('track'));
+    expect(spotify.setRepeatState).toHaveBeenCalledWith('track');
   });
 
-  it('should dispatch ChangeRepeatState to \'off\' on repeat change when state is track', () => {
+  it('should change Spotify repeat state to \'off\' on repeat change when state is track', () => {
     component.repeatState = 'track';
     component.onRepeatChange();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeRepeatState('off'));
+    expect(spotify.setRepeatState).toHaveBeenCalledWith('off');
   });
 
-  it('should dispatch ChangeRepeatState to \'off\' on repeat change when state is null', () => {
+  it('should change Spotify repeat state to \'off\' on repeat change when state is null', () => {
     component.repeatState = null;
     component.onRepeatChange();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeRepeatState('off'));
+    expect(spotify.setRepeatState).toHaveBeenCalledWith('off');
   });
 
-  it('should dispatch ToggleLiked on like change', () => {
+  it('should toggle Spotify liked on like change', () => {
     component.onLikeChange();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(ToggleLiked));
+    expect(spotify.toggleLiked).toHaveBeenCalled();
   });
 
   it('should return the pause icon name when playing', () => {

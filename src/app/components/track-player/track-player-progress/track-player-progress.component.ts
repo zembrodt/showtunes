@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
-import { Store } from '@ngxs/store';
-import { ChangeProgress } from '../../../core/playback/playback.actions';
+import { SpotifyService } from '../../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-track-player-progress',
@@ -13,10 +12,10 @@ export class TrackPlayerProgressComponent {
   @Input() progress = 0;
   @Input() duration = 100;
 
-  constructor(private store: Store) {}
+  constructor(private spotify: SpotifyService) {}
 
   onProgressChange(change: MatSliderChange): void {
-    this.store.dispatch(new ChangeProgress(change.value));
+    this.spotify.setTrackPosition(change.value);
   }
 
   getProgress(milliseconds: number): string {

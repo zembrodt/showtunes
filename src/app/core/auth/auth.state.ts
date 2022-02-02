@@ -1,8 +1,7 @@
-import {Action, Selector, State, StateContext} from '@ngxs/store';
-import {AUTH_STATE_NAME, AuthModel, AuthToken, DEFAULT_AUTH} from './auth.model';
-import {Injectable} from '@angular/core';
-import {LogoutAuth, SetAuthToken, SetIsAuthenticated} from './auth.actions';
-import {SpotifyService} from '../../services/spotify/spotify.service';
+import { Injectable } from '@angular/core';
+import { Action, Selector, State, StateContext } from '@ngxs/store';
+import { SetAuthToken, SetIsAuthenticated } from './auth.actions';
+import { AUTH_STATE_NAME, AuthModel, AuthToken, DEFAULT_AUTH } from './auth.model';
 
 @State<AuthModel>({
   name: AUTH_STATE_NAME,
@@ -10,7 +9,7 @@ import {SpotifyService} from '../../services/spotify/spotify.service';
 })
 @Injectable()
 export class AuthState {
-  constructor(private spotify: SpotifyService) { }
+  constructor() { }
 
   @Selector()
   static token(state: AuthModel): AuthToken {
@@ -33,14 +32,5 @@ export class AuthState {
   @Action(SetIsAuthenticated)
   setIsAuthenticated(ctx: StateContext<AuthModel>, action: SetIsAuthenticated): void {
     ctx.patchState({isAuthenticated: action.isAuthenticated});
-  }
-
-  @Action(LogoutAuth)
-  logoutAuth(ctx: StateContext<AuthModel>, action: LogoutAuth): void {
-    ctx.patchState({
-      token: null,
-      isAuthenticated: false
-    });
-    this.spotify.logout();
   }
 }

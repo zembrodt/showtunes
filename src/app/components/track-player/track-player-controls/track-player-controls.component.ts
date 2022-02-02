@@ -1,21 +1,12 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
-import { Select, Store } from '@ngxs/store';
+import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ChangeDeviceVolume,
-  ChangeRepeatState,
-  SkipNextTrack,
-  SkipPreviousTrack,
-  ToggleLiked,
-  TogglePlaying,
-  ToggleShuffle
-} from '../../../core/playback/playback.actions';
-import { PREVIOUS_VOLUME } from '../../../core/playback/playback.state';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { SettingsState } from '../../../core/settings/settings.state';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
+import { PREVIOUS_VOLUME, SpotifyService } from '../../../services/spotify/spotify.service';
 import { StorageService } from '../../../services/storage/storage.service';
 
 // Default values
@@ -59,7 +50,7 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
 
   fadePlayerControls: boolean;
 
-  constructor(private store: Store,
+  constructor(private spotify: SpotifyService,
               private storage: StorageService,
               private inactivity: InactivityService,
               private element: ElementRef) {}
@@ -91,55 +82,54 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   }
 
   onPause(): void {
-    this.store.dispatch(new TogglePlaying());
+    this.spotify.togglePlaying();
   }
 
   onSkipPrevious(): void {
-    this.store.dispatch(new SkipPreviousTrack());
+    this.spotify.skipPrevious(false);
   }
 
   onSkipNext(): void {
-    this.store.dispatch(new SkipNextTrack());
+    this.spotify.skipNext();
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    this.store.dispatch(new ChangeDeviceVolume(change.value));
+    this.spotify.setVolume(change.value);
   }
 
   onVolumeMute(): void {
+    let volumeChange = DEFAULT_VOLUME;
     if (this.volume > 0) {
       this.storage.set(PREVIOUS_VOLUME, this.volume.toString());
-      this.store.dispatch(new ChangeDeviceVolume(0));
+      volumeChange = 0;
     } else {
       const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
       if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
-        this.store.dispatch(new ChangeDeviceVolume(previousVolume));
-      } else {
-        // Emit a default volume
-        this.store.dispatch(new ChangeDeviceVolume(DEFAULT_VOLUME));
+        volumeChange = previousVolume;
       }
     }
+    this.spotify.setVolume(volumeChange);
   }
 
   onToggleShuffle(): void {
-    this.store.dispatch(new ToggleShuffle());
+    this.spotify.toggleShuffle();
   }
 
   onRepeatChange(): void {
+    let repeatState = REPEAT_OFF;
     switch (this.repeatState) {
       case REPEAT_OFF:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_CONTEXT));
+        repeatState = REPEAT_CONTEXT;
         break;
       case REPEAT_CONTEXT:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_TRACK));
+        repeatState = REPEAT_TRACK;
         break;
-      default:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_OFF));
     }
+    this.spotify.setRepeatState(repeatState);
   }
 
   onLikeChange(): void {
-    this.store.dispatch(new ToggleLiked());
+    this.spotify.toggleLiked();
   }
 
   getPlayIcon(isPlaying: boolean): string {

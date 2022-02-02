@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { SetAuthToken } from '../../core/auth/auth.actions';
 import { AuthToken } from '../../core/auth/auth.model';
 import { AuthState } from '../../core/auth/auth.state';
 import { SpotifyService } from '../../services/spotify/spotify.service';
@@ -43,9 +42,6 @@ export class CallbackComponent implements OnInit {
       if (!error && code && this.spotify.compareState(state)) {
         // use code to get auth tokens
         this.spotify.requestAuthToken(code, false)
-          .then((res) => {
-            this.store.dispatch(new SetAuthToken(res));
-          })
           .catch((reason) => {
             console.error(`Spotify request failed: ${reason}`);
           });

@@ -7,12 +7,12 @@ import { MatMenuItem, MatMenuModule } from '@angular/material/menu';
 import { MatMenuHarness, MatMenuItemHarness } from '@angular/material/menu/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxsModule, Store } from '@ngxs/store';
+import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { ChangeDevice, GetAvailableDevices } from '../../core/playback/playback.actions';
 import { DeviceModel } from '../../core/playback/playback.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 import { DevicesComponent } from './devices.component';
 
@@ -42,7 +42,7 @@ describe('DevicesComponent', () => {
   let fixture: ComponentFixture<DevicesComponent>;
   let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
-  let store: Store;
+  let spotify: SpotifyService;
 
   let currentDeviceProducer: BehaviorSubject<DeviceModel>;
   let availableDevicesProducer: BehaviorSubject<DeviceModel[]>;
@@ -56,9 +56,9 @@ describe('DevicesComponent', () => {
         MatMenuModule,
         NgxsModule.forRoot([], { developmentMode: true })
       ],
-      providers: [ MockProvider(Store) ]
+      providers: [ MockProvider(SpotifyService) ]
     }).compileComponents();
-    store = TestBed.inject(Store);
+    spotify = TestBed.inject(SpotifyService);
   });
 
   beforeEach(() => {
@@ -132,16 +132,15 @@ describe('DevicesComponent', () => {
 
   it('should retrieve available devices on menu open', () => {
     fixture.debugElement.nativeElement.querySelector('button').click();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(GetAvailableDevices));
+    expect(spotify.fetchAvailableDevices).toHaveBeenCalled();
   });
 
-  it('should update device state on select', () => {
+  it('should update device on select', () => {
     availableDevicesProducer.next([TEST_DEVICE_1, TEST_DEVICE_2]);
     fixture.debugElement.nativeElement.querySelector('button').click();
     fixture.detectChanges();
     const device = fixture.debugElement.query(By.directive(MatMenuItem));
     device.triggerEventHandler('click', new MouseEvent('button'));
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(GetAvailableDevices));
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(ChangeDevice));
+    expect(spotify.setDevice).toHaveBeenCalledWith(TEST_DEVICE_1, true);
   });
 });

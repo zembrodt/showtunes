@@ -9,7 +9,6 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AppConfig } from '../../app.config';
-import { LogoutAuth } from '../../core/auth/auth.actions';
 import {
   ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
@@ -22,6 +21,7 @@ import {
 import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DEFAULT_SETTINGS, PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { isHexColor } from '../../core/util';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 import { HelpDialogComponent } from './help-dialog/help-dialog.component';
 
 const LIGHT_THEME = 'light-theme';
@@ -67,7 +67,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   readonly placeholderColor = DEFAULT_SETTINGS.spotifyCode.backgroundColor;
   readonly presetColors = PRESET_COLORS;
 
-  constructor(private store: Store, private router: Router, public helpDialog: MatDialog) {}
+  constructor(private store: Store, private spotify: SpotifyService, private router: Router, public helpDialog: MatDialog) {}
 
   ngOnInit(): void {
     this.theme$
@@ -88,7 +88,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.store.dispatch(new LogoutAuth());
+    this.spotify.logout();
     this.router.navigateByUrl('/login');
   }
 

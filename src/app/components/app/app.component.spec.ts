@@ -12,15 +12,19 @@ import { InactivityService } from '../../services/inactivity/inactivity.service'
 import { PlaybackService } from '../../services/playback/playback.service';
 import { SpotifyService } from '../../services/spotify/spotify.service';
 import { AppComponent } from './app.component';
+import Spy = jasmine.Spy;
 
 describe('AppComponent', () => {
   const mockSelectors = new NgxsSelectorMock<AppComponent>();
   let app: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
+  let spotify: SpotifyService;
+  let playback: PlaybackService;
 
   let themeProducer: BehaviorSubject<string>;
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
   let inactiveProducer: BehaviorSubject<boolean>;
+  let spotifyInitSpy: Spy<() => boolean>;
 
   beforeEach(async () => {
     inactiveProducer = new BehaviorSubject<boolean>(null);
@@ -41,6 +45,8 @@ describe('AppComponent', () => {
         MockProvider(SpotifyService)
       ]
     }).compileComponents();
+    spotify = TestBed.inject(SpotifyService);
+    playback = TestBed.inject(PlaybackService);
   });
 
   beforeEach(() => {
@@ -50,6 +56,8 @@ describe('AppComponent', () => {
     themeProducer = mockSelectors.defineNgxsSelector<string>(app, 'theme$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(app, 'showPlayerControls$');
 
+    spotifyInitSpy = spyOn(SpotifyService, 'initialize').and.returnValue(true);
+
     fixture.detectChanges();
   });
 
@@ -57,22 +65,26 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should initialize the playbackService', () => {
-    // Use ng-mocks MockRender to check injected service call
-    ngMocks.flushTestBed();
-    const injectorFixture = MockRender(AppComponent);
-    const injector = injectorFixture.point.injector;
-    injectorFixture.detectChanges();
-    expect(injector.get(PlaybackService).initialize).toHaveBeenCalled();
+  it('should initialize the Spotify service', () => {
+    expect(SpotifyService.initialize).toHaveBeenCalled();
   });
 
-  it('should initialize the spotifyService', () => {
-    // Use ng-mocks MockRender to check injected service call
+  it('should print error if Spotify service not initialized', () => {
+    spotifyInitSpy.and.returnValue(false);
+    spyOn(console, 'error');
     ngMocks.flushTestBed();
     const injectorFixture = MockRender(AppComponent);
-    const injector = injectorFixture.point.injector;
     injectorFixture.detectChanges();
-    expect(injector.get(SpotifyService).initSubscriptions).toHaveBeenCalled();
+    expect(SpotifyService.initialize).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should initialize the Spotify service subscriptions', () => {
+    expect(spotify.initSubscriptions).toHaveBeenCalled();
+  });
+
+  it('should initialize the playbackService', () => {
+    expect(playback.initialize).toHaveBeenCalled();
   });
 
   it('should use the light-theme class when light theme', () => {

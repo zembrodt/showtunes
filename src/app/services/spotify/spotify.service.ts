@@ -1,19 +1,37 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
 import { SetAuthToken } from '../../core/auth/auth.actions';
 import { AuthToken } from '../../core/auth/auth.model';
 import { AuthState } from '../../core/auth/auth.state';
-import { generateRandomString } from '../../core/util';
+import {
+  ChangeAlbum,
+  ChangeDevice,
+  ChangeDeviceIsActive,
+  ChangeDeviceVolume,
+  ChangePlaylist,
+  ChangeRepeatState,
+  ChangeTrack,
+  SetAvailableDevices,
+  SetIdle,
+  SetLiked,
+  SetPlaying,
+  SetProgress,
+  SetShuffle
+} from '../../core/playback/playback.actions';
+import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
+import { PlaybackState } from '../../core/playback/playback.state';
+import { generateRandomString, getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack } from '../../core/util';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { PlaylistResponse } from '../../models/playlist.model';
 import { TokenResponse } from '../../models/token.model';
 import { StorageService } from '../storage/storage.service';
+
+export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
 
 const stateKey = 'STATE';
 
@@ -48,6 +66,7 @@ const SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state'
 ];
+const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
 @Injectable({providedIn: 'root'})
 export class SpotifyService {
@@ -58,10 +77,36 @@ export class SpotifyService {
   protected static isDirectSpotifyRequest: boolean;
   protected static redirectUri: string;
 
-  @Select(AuthState.token) token$: Observable<AuthToken>;
+  @Select(AuthState.token) private authToken$: BehaviorSubject<AuthToken>;
   private authToken: AuthToken = null;
   private state: string = null;
-  private isAuthenticating = false;
+
+  @Select(PlaybackState.track) private track$: BehaviorSubject<TrackModel>;
+  private track: TrackModel = null;
+
+  @Select(PlaybackState.album) private album$: BehaviorSubject<AlbumModel>;
+  private album: AlbumModel = null;
+
+  @Select(PlaybackState.playlist) private playlist$: BehaviorSubject<PlaylistModel>;
+  private playlist: PlaylistModel = null;
+
+  @Select(PlaybackState.device) private device$: BehaviorSubject<DeviceModel>;
+  private device: DeviceModel = null;
+
+  @Select(PlaybackState.isPlaying) private isPlaying$: BehaviorSubject<boolean>;
+  private isPlaying = false;
+
+  @Select(PlaybackState.isShuffle) private isShuffle$: BehaviorSubject<boolean>;
+  private isShuffle = false;
+
+  @Select(PlaybackState.progress) private progress$: BehaviorSubject<number>;
+  private progress = 0;
+
+  @Select(PlaybackState.duration) private duration$: BehaviorSubject<number>;
+  private duration = 0;
+
+  @Select(PlaybackState.isLiked) private isLiked$: BehaviorSubject<boolean>;
+  private isLiked = false;
 
   static initialize(): boolean {
     try {
@@ -78,20 +123,24 @@ export class SpotifyService {
     return true;
   }
 
-  constructor(private http: HttpClient, private storage: StorageService, private router: Router, private store: Store) {
+  constructor(private http: HttpClient, private storage: StorageService, private store: Store) {
     this.setState();
-    this.initSubscriptions();
   }
 
   initSubscriptions(): void {
-    if (this.token$) {
-      this.token$.subscribe(token => {
-        this.authToken = token;
-      });
-    }
+    this.authToken$.subscribe((authToken) => this.authToken = authToken);
+    this.track$.subscribe((track) => this.track = track);
+    this.album$.subscribe((album) => this.album = album);
+    this.playlist$.subscribe((playlist) => this.playlist = playlist);
+    this.device$.subscribe((device) => this.device = device);
+    this.isPlaying$.subscribe((isPlaying) => this.isPlaying = isPlaying);
+    this.isShuffle$.subscribe((isShuffle) => this.isShuffle = isShuffle);
+    this.progress$.subscribe((progress) => this.progress = progress);
+    this.duration$.subscribe((duration) => this.duration = duration);
+    this.isLiked$.subscribe((isLiked) => this.isLiked = isLiked);
   }
 
-  requestAuthToken(code: string, isRefresh: boolean): Promise<AuthToken> {
+  requestAuthToken(code: string, isRefresh: boolean): Promise<void> {
     // Create request body
     const body = new URLSearchParams();
     body.set('code', code);
@@ -108,7 +157,7 @@ export class SpotifyService {
       headers.set('Authorization', `Basic ${btoa(`${SpotifyService.clientId}:${AppConfig.settings.auth.clientSecret}`)}`);
     }
 
-    return new Promise<AuthToken>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const clientResponse = !isRefresh ?
         this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'}) :
         this.http.put<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
@@ -122,7 +171,8 @@ export class SpotifyService {
             scope: token.scope,
             refreshToken: token.refresh_token
           };
-          resolve(authToken);
+          this.store.dispatch(new SetAuthToken(authToken));
+          resolve();
         },
           (error) => {
           const errStr = `Error requesting token: ${JSON.stringify(error)}`;
@@ -132,9 +182,9 @@ export class SpotifyService {
     });
   }
 
-  getCurrentTrack(): Observable<CurrentPlaybackResponse> {
+  pollCurrentPlayback(pollingInterval: number): void {
     this.checkTokenExpiry();
-    return this.http.get<CurrentPlaybackResponse>(playbackEndpoint, {headers: this.getHeaders(), observe: 'response'})
+    this.http.get<CurrentPlaybackResponse>(playbackEndpoint, {headers: this.getHeaders(), observe: 'response'})
       .pipe(
         map((res: HttpResponse<CurrentPlaybackResponse>) => {
           if (res.status === 200) {
@@ -147,67 +197,166 @@ export class SpotifyService {
             console.error(`Received unhandled playback response ${res.status}`);
             return null;
           }
-      }));
-  }
+      })).subscribe((playback) => {
+        // if not locked?
+        if (playback && playback.item) {
+          const track = playback.item;
 
-  setTrackPosition(position: number): Observable<any> {
-    this.checkTokenExpiry();
-    let requestParams = new HttpParams();
-    requestParams = requestParams.append('position_ms', position.toString());
+          // Check for new track
+          if (track && track.id !== this.track.id) {
+            this.store.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
+            // Check if new track is saved
+            this.isTrackSaved(track.id);
+          }
 
-    return this.http.put(seekEndpoint, {}, {
-      headers: this.getHeaders(),
-      params: requestParams
+          // Check for new album
+          if (track && track.album && track.album.id !== this.album.id) {
+            this.store.dispatch(new ChangeAlbum(parseAlbum(track.album)));
+          }
+
+          // Check for new playlist
+          if (playback.context && playback.context.type && playback.context.type === 'playlist') {
+            const playlistId = getIdFromSpotifyUri(playback.context.uri);
+            if (!this.playlist || this.playlist.id !== playlistId) {
+              // Retrieve new playlist
+              this.getPlaylist(playlistId).subscribe((res) => {
+                this.store.dispatch(new ChangePlaylist(parsePlaylist(res)));
+              });
+            }
+          } else if (this.playlist) {
+            // No longer playing a playlist, update if we previously were
+            this.store.dispatch(new ChangePlaylist(null));
+          }
+
+          // Check if volume was muted externally to save previous value
+          if (playback.device && playback.device.volume_percent === 0 && this.device.volume > 0) {
+            this.storage.set(PREVIOUS_VOLUME, this.device.volume.toString());
+          }
+
+          // Get device changes
+          if (playback.device) {
+            // Check for new device
+            if (playback.device && playback.device.id !== this.device.id) {
+              this.store.dispatch(new ChangeDevice(parseDevice(playback.device)));
+            }
+
+            // Update which device is active
+            this.store.dispatch(new ChangeDeviceIsActive(playback.device.is_active));
+            this.store.dispatch(new ChangeDeviceVolume(playback.device.volume_percent));
+          }
+
+          // Update remaining playback values
+          this.store.dispatch(new SetProgress(playback.progress_ms));
+          this.store.dispatch(new SetPlaying(playback.is_playing));
+          this.store.dispatch(new SetShuffle(playback.shuffle_state));
+          this.store.dispatch(new ChangeRepeatState(playback.repeat_state));
+          this.store.dispatch(new SetIdle(false));
+        } else {
+          this.store.dispatch(new SetIdle(true));
+        }
+      // else locked
+        // update progress to current + pollingInterval
     });
   }
 
-  setPlaying(isPlaying: boolean): Observable<any> {
+  setTrackPosition(position: number): void {
+    this.checkTokenExpiry();
+
+    if (position > this.duration) {
+      position = this.duration;
+    }
+    else if (position < 0) {
+      position = 0;
+    }
+
+    let requestParams = new HttpParams();
+    requestParams = requestParams.append('position_ms', position.toString());
+
+    this.http.put(seekEndpoint, {}, {
+      headers: this.getHeaders(),
+      params: requestParams
+    }).subscribe((res) => {
+      this.store.dispatch(new SetProgress(position));
+    });
+  }
+
+  setPlaying(isPlaying: boolean): void {
     this.checkTokenExpiry();
     const endpoint = isPlaying ? playEndpoint : pauseEndpoint;
     // TODO: this has optional parameters for JSON body
-    return this.http.put(endpoint, {}, {headers: this.getHeaders()});
+    this.http.put(endpoint, {}, {headers: this.getHeaders()})
+      .subscribe((res) => {
+        this.store.dispatch(new SetPlaying(isPlaying));
+      });
   }
 
-  skipNext(): Observable<any> {
+  togglePlaying(): void {
+    this.setPlaying(!this.isPlaying);
+  }
+
+  skipPrevious(forcePrevious: boolean): void {
     this.checkTokenExpiry();
-    return this.http.post(nextEndpoint, {}, {headers: this.getHeaders()});
+    // Check if we should skip to previous track or start of current
+    if (!forcePrevious && this.progress > SKIP_PREVIOUS_THRESHOLD && !((SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
+      this.setTrackPosition(0);
+    } else {
+      this.http.post(previousEndpoint, {}, {headers: this.getHeaders()}).subscribe();
+    }
   }
 
-  skipPrevious(): Observable<any> {
+  skipNext(): void {
     this.checkTokenExpiry();
-    return this.http.post(previousEndpoint, {}, {headers: this.getHeaders()});
+    this.http.post(nextEndpoint, {}, {headers: this.getHeaders()}).subscribe();
   }
 
-  toggleShuffle(isShuffle: boolean): Observable<any> {
+  setShuffle(isShuffle: boolean): void {
     this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('state', (isShuffle ? 'true' : 'false'));
 
-    return this.http.put(shuffleEndpoint, {}, {
+    this.http.put(shuffleEndpoint, {}, {
       headers: this.getHeaders(),
       params: requestParams
+    }).subscribe((res) => {
+      this.store.dispatch(new SetShuffle(isShuffle));
     });
   }
 
-  setVolume(volume: number): Observable<any> {
+  toggleShuffle(): void {
+    this.setShuffle(!this.isShuffle);
+  }
+
+  setVolume(volume: number): void {
     this.checkTokenExpiry();
+
+    if (volume > 100) {
+      volume = 100;
+    }
+    else if (volume < 0) {
+      volume = 0;
+    }
+
     let requestParams = new HttpParams();
     requestParams = requestParams.append('volume_percent', volume.toString());
 
-    return this.http.put(volumeEndpoint, {}, {
+    this.http.put(volumeEndpoint, {}, {
       headers: this.getHeaders(),
       params: requestParams
+    }).subscribe((res) => {
+      this.store.dispatch(new ChangeDeviceVolume(volume));
     });
   }
 
-  setRepeatState(repeatState: string): Observable<any> {
+  setRepeatState(repeatState: string): void {
     this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('state', repeatState);
 
-    return this.http.put(repeatEndpoint, {}, {
+    this.http.put(repeatEndpoint, {}, {
       headers: this.getHeaders(),
       params: requestParams
+    }).subscribe((res) => {
+      this.store.dispatch(new ChangeRepeatState(repeatState));
     });
   }
 
@@ -222,7 +371,7 @@ export class SpotifyService {
     });
   }
 
-  setSavedTrack(id: string, isSaved: boolean): Observable<any> {
+  setSavedTrack(id: string, isSaved: boolean): void {
     this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('ids', id);
@@ -232,10 +381,18 @@ export class SpotifyService {
     };
 
     if (isSaved) {
-      return this.http.put(savedTracksEndpoint, {}, options);
+      this.http.put(savedTracksEndpoint, {}, options).subscribe((res) => {
+        this.store.dispatch(new SetLiked(true));
+      });
     } else {
-      return this.http.delete(savedTracksEndpoint, options);
+      this.http.delete(savedTracksEndpoint, options).subscribe((res) => {
+        this.store.dispatch(new SetLiked(false));
+      });
     }
+  }
+
+  toggleLiked(): void {
+    this.setSavedTrack(this.track.id, !this.isLiked);
   }
 
   getPlaylist(id: string): Observable<PlaylistResponse> {
@@ -248,12 +405,21 @@ export class SpotifyService {
     return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
   }
 
-  setDevice(id: string, isPlaying: boolean): Observable<any> {
+  fetchAvailableDevices(): void {
+    this.getDevices().subscribe((res) => {
+      const devices = res.devices.map(device => parseDevice(device));
+      this.store.dispatch(new SetAvailableDevices(devices));
+    });
+  }
+
+  setDevice(device: DeviceModel, isPlaying: boolean): void {
     this.checkTokenExpiry();
-    return this.http.put(playbackEndpoint, {
-      device_ids: [id],
+    this.http.put(playbackEndpoint, {
+      device_ids: [device.id],
       play: isPlaying
-    }, {headers: this.getHeaders()});
+    }, {headers: this.getHeaders()}).subscribe((res) => {
+      this.store.dispatch(new ChangeDevice(device));
+    });
   }
 
   getAuthorizeRequestUrl(): string {
@@ -284,32 +450,30 @@ export class SpotifyService {
   }
 
   logout(): void {
+    this.store.dispatch(new SetAuthToken(null));
     this.state = null;
     this.authToken = null;
     this.storage.remove(stateKey);
     this.storage.removeAuthToken();
   }
 
-  toggleIsAuthenticating(): void {
-    this.isAuthenticating = !this.isAuthenticating;
-  }
-
-  private checkTokenExpiry(): void {
+  private checkTokenExpiry(): AuthToken {
     const expiresIn = this.tokenExpiresIn();
     if (expiresIn < 0) {
       // Need to authorize a new login, redirect to authorization
-      this.router.navigateByUrl('/login');
+      // this.router.navigateByUrl('/login');
     } else if (expiresIn < expiryThreshold) {
       // Token is expiring soon or has expired. Refresh the token
       this.requestAuthToken(this.authToken.refreshToken, true)
         .then((res) => {
-          this.store.dispatch(new SetAuthToken(res));
+          return res;
         }).catch((reason) => {
           console.error(`Spotify request failed: ${reason}`);
           this.logout();
-          this.router.navigateByUrl('/login');
+          // this.router.navigateByUrl('/login');
         });
     }
+    return null;
   }
 
   private tokenExpiresIn(): number {

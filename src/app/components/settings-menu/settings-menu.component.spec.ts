@@ -19,7 +19,6 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
-import { LogoutAuth } from '../../core/auth/auth.actions';
 import {
   ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
@@ -32,6 +31,7 @@ import {
 import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { SettingsMenuComponent } from './settings-menu.component';
 
@@ -61,6 +61,7 @@ describe('SettingsMenuComponent', () => {
   let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
   let store: Store;
+  let spotify: SpotifyService;
   let router: Router;
 
   let themeProducer: BehaviorSubject<string>;
@@ -89,6 +90,7 @@ describe('SettingsMenuComponent', () => {
       ],
       providers: [
         MockProvider(Store),
+        MockProvider(SpotifyService),
         MockProvider(Router),
         {
           provide: AppConfig,
@@ -97,6 +99,7 @@ describe('SettingsMenuComponent', () => {
       ]
     }).compileComponents();
     store = TestBed.inject(Store);
+    spotify = TestBed.inject(SpotifyService);
     router = TestBed.inject(Router);
   });
 
@@ -794,9 +797,9 @@ describe('SettingsMenuComponent', () => {
     expect(component.smartCodeColorUrlSet).toBeTrue();
   });
 
-  it('should dispatch LogoutAuth event and navigate to /login on logout', () => {
+  it('should logout of Spotify service and navigate to /login on logout', () => {
     component.logout();
-    expect(store.dispatch).toHaveBeenCalledWith(jasmine.any(LogoutAuth));
+    expect(spotify.logout).toHaveBeenCalled();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
