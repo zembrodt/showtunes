@@ -1,10 +1,10 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot} from '@angular/router';
-import {Select} from '@ngxs/store';
-import {Observable, Subject} from 'rxjs';
-import {AuthState} from './auth.state';
-import {takeUntil} from 'rxjs/operators';
-import {AuthToken} from './auth.model';
+import { Injectable, OnDestroy } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { Select } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { AuthToken } from './auth.model';
+import { AuthState } from './auth.state';
 
 @Injectable()
 export class AuthGuard implements CanActivate, OnDestroy {
@@ -14,6 +14,10 @@ export class AuthGuard implements CanActivate, OnDestroy {
   private accessToken: string = null;
 
   constructor(private router: Router) {
+    this.initSubscriptions();
+  }
+
+  initSubscriptions(): void {
     this.token$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((token) => this.accessToken = token ? token.accessToken : null);
