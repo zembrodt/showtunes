@@ -148,6 +148,7 @@ describe('util package', () => {
       const model = parseTrack(response);
       expect(model.id).toEqual(response.id);
       expect(model.title).toEqual(response.name);
+      expect(model.duration).toEqual(response.duration_ms);
       expect(model.artists).toEqual([{
           name: ARTIST_RESPONSE_1.name,
           href: ARTIST_RESPONSE_1.external_urls.spotify

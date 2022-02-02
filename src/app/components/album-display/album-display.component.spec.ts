@@ -41,6 +41,7 @@ const TEST_ALBUM_MODEL: AlbumModel = {
 const TEST_TRACK_MODEL: TrackModel = {
   id: 'id',
   title: 'title',
+  duration: 100,
   href: 'track-href',
   artists: null,
   uri: 'track-uri'

@@ -1,14 +1,10 @@
-import { AlbumResponse } from '../../models/album.model';
-import { ContextResponse } from '../../models/context.model';
-import { DeviceResponse } from '../../models/device.model';
-import { TrackResponse } from '../../models/track.model';
 import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback.model';
 
 const PLAYBACK_ACTION_NAME = '[Playback]';
 
 export class ChangeTrack {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Track`;
-  constructor(public track: TrackModel, public duration: number) { }
+  constructor(public track: TrackModel) { }
 }
 
 export class ChangeAlbum {

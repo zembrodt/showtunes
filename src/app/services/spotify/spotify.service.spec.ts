@@ -337,7 +337,7 @@ describe('SpotifyService', () => {
     trackProducer.next(currentTrack);
 
     service.pollCurrentPlayback(1000);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeTrack(parseTrack(TEST_TRACK_RESPONSE), TEST_TRACK_RESPONSE.duration_ms));
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeTrack(parseTrack(TEST_TRACK_RESPONSE)));
     expect(service.isTrackSaved).toHaveBeenCalledOnceWith(TEST_TRACK_RESPONSE.id);
   }));
 

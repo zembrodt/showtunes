@@ -42,6 +42,7 @@ export function parseTrack(track: TrackResponse): TrackModel {
     return {
       id: track.id,
       title: track.name,
+      duration: track.duration_ms,
       artists: track.artists.map((artist) => {
         return {
           name: artist.name,

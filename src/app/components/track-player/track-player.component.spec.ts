@@ -14,6 +14,7 @@ import { TrackPlayerComponent } from './track-player.component';
 const TEST_TRACK: TrackModel = {
   id: 'track-id',
   title: 'test track',
+  duration: 100,
   uri: 'track-uri',
   href: 'track-href',
   artists: [

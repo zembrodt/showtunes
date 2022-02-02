@@ -68,7 +68,7 @@ export class PlaybackState {
 
   @Selector()
   static duration(state: PlaybackModel): number {
-    return state.duration;
+    return state.track.duration;
   }
 
   @Selector()
@@ -98,7 +98,7 @@ export class PlaybackState {
 
   @Action(ChangeTrack)
   changeTrack(ctx: StateContext<PlaybackModel>, action: ChangeTrack): void {
-    ctx.patchState({track: action.track, duration: action.duration});
+    ctx.patchState({track: action.track});
   }
 
   @Action(ChangeAlbum)
@@ -108,11 +108,7 @@ export class PlaybackState {
 
   @Action(ChangePlaylist)
   changePlaylist(ctx: StateContext<PlaybackModel>, action: ChangePlaylist): void {
-    if (action.playlist) {
-      ctx.patchState({playlist: action.playlist});
-    } else {
-      ctx.patchState({playlist: null});
-    }
+    ctx.patchState({playlist: action.playlist});
   }
 
   @Action(ChangeDevice)

@@ -204,7 +204,7 @@ export class SpotifyService {
 
           // Check for new track
           if (track && track.id !== this.track.id) {
-            this.store.dispatch(new ChangeTrack(parseTrack(track), track.duration_ms));
+            this.store.dispatch(new ChangeTrack(parseTrack(track)));
             // Check if new track is saved
             this.isTrackSaved(track.id);
           }
