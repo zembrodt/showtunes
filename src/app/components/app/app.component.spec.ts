@@ -56,6 +56,7 @@ describe('AppComponent', () => {
     themeProducer = mockSelectors.defineNgxsSelector<string>(app, 'theme$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(app, 'showPlayerControls$');
 
+    SpotifyService.initialized = false;
     spotifyInitSpy = spyOn(SpotifyService, 'initialize').and.returnValue(true);
 
     fixture.detectChanges();
@@ -65,16 +66,23 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should initialize the Spotify service', () => {
+  it('should initialize the Spotify service if not initialized', () => {
     expect(SpotifyService.initialize).toHaveBeenCalled();
+  });
+
+  it('should not initialize the Spotify service if already initialized', () => {
+    SpotifyService.initialized = true;
+    spyOn(console, 'error');
+    spotifyInitSpy.calls.reset();
+    app.ngOnInit();
+    expect(SpotifyService.initialize).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it('should print error if Spotify service not initialized', () => {
     spotifyInitSpy.and.returnValue(false);
     spyOn(console, 'error');
-    ngMocks.flushTestBed();
-    const injectorFixture = MockRender(AppComponent);
-    injectorFixture.detectChanges();
+    app.ngOnInit();
     expect(SpotifyService.initialize).toHaveBeenCalled();
     expect(console.error).toHaveBeenCalled();
   });
