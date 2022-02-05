@@ -18,11 +18,8 @@ jobs:
           paths:
             - "node_modules"
       - run:
-          name: "Run unit tests"
-          command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
-      - run:
-          name: "Run test coverage"
-          command: npm run coverage
+          name: "Run unit tests and code coverage"
+          command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
       - store_artifacts:
           path: coverage
       - codecov/upload:
