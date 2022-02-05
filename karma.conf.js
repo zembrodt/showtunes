@@ -15,12 +15,14 @@ module.exports = function (config) {
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
-    coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/showtunes'),
-      reporters: ['html', 'lcovonly', 'text-summary'],
-      fixWebpackSourcePaths: true
+    preprocessor: {
+      'src/**/*.ts': ['coverage']
     },
-    reporters: ['progress', 'kjhtml'],
+    coverageReporter: {
+      type: 'json',
+      dir:'./coverage'
+    },
+    reporters: ['progress', 'coverage'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
@@ -29,7 +31,8 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
+        flags: ['--no-sandbox'],
+        displayName: 'ChromeHeadless'
       }
     },
     singleRun: false,
