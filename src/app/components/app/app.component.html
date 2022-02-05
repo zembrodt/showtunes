@@ -1,5 +1,6 @@
 <div class="showtunes-app"
-     [class]="theme$ | async">
+     [class]="theme$ | async"
+     [style]="{ cursor: fadeCursor ? 'none' : 'inherit' }">
     <mat-sidenav-container class="container">
       <router-outlet></router-outlet>
     </mat-sidenav-container>

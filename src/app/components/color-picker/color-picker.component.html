@@ -29,7 +29,7 @@
         <button mat-fab
                 class="color-button"
                 [ngStyle]="calculateButtonStyle(presetColor)"
-                [ngClass]="calculateButtonClass(presetColor, (theme$ | async))"
+                [ngClass]="calculateButtonClass(presetColor)"
                 (click)="onPresetColorSelect(presetColor); $event.stopPropagation();"></button>
       </mat-grid-tile>
     </mat-grid-list>

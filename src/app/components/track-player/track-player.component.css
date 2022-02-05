@@ -20,69 +20,11 @@
 .track-title {
   font-weight: bold;
 }
+
 .track-artist {
 }
 
 .track-album {
-}
-
-.track-slider {
-  width: 100%;
-}
-
-.track-playback {
-  width: 100%;
-}
-
-.time-values {
-  width: 100%;
-}
-
-.progress-time {
-  width: 100%;
-  text-align: left;
-  margin-left: 12px;
-}
-
-.duration-time {
-  width: 100%;
-  text-align: right;
-  margin-right: 12px;
-}
-
-.player-buttons {
-}
-
-.player-button {
-  /*height: 48px !important;*/
-  /*width: 48px !important;*/
-  /*font-size: 48px !important;*/
-  /*line-height: 48px !important;*/
-  /*vertical-align: center !important;*/
-}
-
-.play-button-icon {
-}
-
-.volume-slider {
-  width: 100%;
-  max-width: 40%;
-}
-
-.volume-filler {
-  visibility: hidden;
-}
-
-.volume-button {
-  height: 32px !important;
-  width: 32px !important;
-  font-size: 32px !important;
-  line-height: 32px !important;
-  vertical-align: center !important;
-}
-
-.mat-slider-horizontal {
-  width: 100%;
 }
 
 .playlist-font {

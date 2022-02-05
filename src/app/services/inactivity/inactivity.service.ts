@@ -1,22 +1,29 @@
-import {Injectable} from '@angular/core';
-import {fromEvent, Subject} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, fromEvent } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InactivityService {
   static readonly INACTIVITY_TIME = 3500; // ms
+  private static readonly INACTIVITY_RESET_EVENTS = [
+    'keydown',
+    'mousemove',
+    'mousedown',
+    'wheel',
+    'touchstart'
+  ];
 
-  inactive$: Subject<boolean> = new Subject();
-
+  private inactivityTimer: NodeJS.Timeout;
   private isInactive = false;
-  private inactivityTimer;
+
+  inactive$: BehaviorSubject<boolean> = new BehaviorSubject(this.isInactive);
 
   constructor() {
     this.setInactivityTimer();
-    fromEvent(document, 'keydown').subscribe(() => this.resetInactivity());
-    fromEvent(document, 'mousemove').subscribe(() => this.resetInactivity());
-    fromEvent(document, 'touchstart').subscribe(() => this.resetInactivity());
+    InactivityService.INACTIVITY_RESET_EVENTS.forEach((eventName) => {
+      fromEvent(document, eventName).subscribe(() => this.resetInactivity());
+    });
   }
 
   private setInactivity(isInactive: boolean): void {

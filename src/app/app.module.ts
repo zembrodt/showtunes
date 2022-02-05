@@ -1,40 +1,39 @@
-import { APP_INITIALIZER } from '@angular/core';
-import { AppConfig } from './app.config';
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
+import { NgxsModule } from '@ngxs/store';
+import { environment } from '../environments/environment';
+import { AppRoutingModule } from './app-routing.module';
+import { AppConfig } from './app.config';
+import { AlbumDisplayComponent } from './components/album-display/album-display.component';
 
 import { AppComponent } from './components/app/app.component';
-import { LoginComponent } from './components/login/login.component';
-import { AppRoutingModule } from './app-routing.module';
 import { CallbackComponent } from './components/callback/callback.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { ColorPickerModule } from 'ngx-color-picker';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { TrackPlayerComponent } from './components/track-player/track-player.component';
-import { AlbumDisplayComponent } from './components/album-display/album-display.component';
-import { MaterialModule } from './modules/material.module';
-import {HelpDialogComponent, SettingsMenuComponent} from './components/settings-menu/settings-menu.component';
 import { ColorPickerComponent } from './components/color-picker/color-picker.component';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DevicesComponent } from './components/devices/devices.component';
+import { LoadingComponent } from './components/loading/loading.component';
+import { LoginComponent } from './components/login/login.component';
+import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
+import { SettingsMenuComponent } from './components/settings-menu/settings-menu.component';
+import { TrackPlayerControlsComponent } from './components/track-player/track-player-controls/track-player-controls.component';
+import { TrackPlayerProgressComponent } from './components/track-player/track-player-progress/track-player-progress.component';
+import { TrackPlayerComponent } from './components/track-player/track-player.component';
+import { AUTH_STATE_NAME } from './core/auth/auth.model';
+import { AuthState } from './core/auth/auth.state';
+import { PlaybackState } from './core/playback/playback.state';
+import { SETTINGS_STATE_NAME } from './core/settings/settings.model';
+import { SettingsState } from './core/settings/settings.state';
+import { MaterialModule } from './modules/material.module';
+import { InactivityService } from './services/inactivity/inactivity.service';
+import { PlaybackService } from './services/playback/playback.service';
+import { SpotifyService } from './services/spotify/spotify.service';
 import { StorageService } from './services/storage/storage.service';
-import {NgxsModule} from '@ngxs/store';
-import {SettingsState} from './core/settings/settings.state';
-import {PlaybackState} from './core/playback/playback.state';
-import {environment} from '../environments/environment';
-import {SpotifyService} from './services/spotify/spotify.service';
-import {PlaybackService} from './services/playback/playback.service';
-import {NgxsStoragePluginModule} from '@ngxs/storage-plugin';
-import {NgxsReduxDevtoolsPluginModule} from '@ngxs/devtools-plugin';
-import {AuthState} from './core/auth/auth.state';
-import {LoadingComponent} from './components/loading/loading.component';
-import {AUTH_STATE_NAME} from './core/auth/auth.model';
-import {SETTINGS_STATE_NAME} from './core/settings/settings.model';
-import {TrackPlayerControlsComponent} from './components/track-player/track-player-controls.component';
-import {TrackPlayerProgressComponent} from './components/track-player/track-player-progress.component';
-import {InactivityService} from './services/inactivity/inactivity.service';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   return () => appConfig.load();
@@ -63,14 +62,13 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     AppRoutingModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
-    ColorPickerModule,
     FontAwesomeModule,
     NgxsModule.forRoot(
-      [AuthState, PlaybackState, SettingsState],
-      {developmentMode: !environment.production}
+      [ AuthState, PlaybackState, SettingsState ],
+      { developmentMode: !environment.production }
       ),
     NgxsStoragePluginModule.forRoot({
-      key: [AUTH_STATE_NAME, SETTINGS_STATE_NAME]
+      key: [ AUTH_STATE_NAME, SETTINGS_STATE_NAME ]
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.production
@@ -81,7 +79,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
-      deps: [AppConfig],
+      deps: [ AppConfig ],
       multi: true
     },
     InactivityService,
@@ -89,6 +87,6 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     SpotifyService,
     PlaybackService,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [ AppComponent ]
 })
 export class AppModule { }

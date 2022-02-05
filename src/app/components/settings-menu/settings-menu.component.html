@@ -5,13 +5,13 @@
           class="settings-menu"
           (closed)="onMenuClose($event)"
           (click)="$event.stopPropagation();">
-  <div fxLayout="row">
+  <div fxLayout="row" (click)="$event.stopPropagation();">
     <div class="setting-inputs">
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
-                  [color]="(theme$ | async) === 'dark-theme' ? 'accent' : ''">dark_mode</mat-icon>
+                  [color]="(theme$ | async) === 'dark-theme' ? 'accent' : null">dark_mode</mat-icon>
         <mat-slide-toggle
           [checked]="(theme$ | async) === 'dark-theme'"
           [color]="'primary'"
@@ -85,9 +85,9 @@
       </div>
       <app-color-picker
         [color]="backgroundColor$ | async"
-        [placeholderColor]="getPlaceholderColor()"
-        [presetColors]="getPresetColors()"
-        [colorResetEvent]="colorPickerResetEvent.asObservable()"
+        [placeholderColor]="placeholderColor"
+        [presetColors]="presetColors"
+        [colorReset$]="colorPickerResetEvent.asObservable()"
         (colorChange)="onColorChange($event)"
         (click)="$event.stopPropagation();"
         *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>

@@ -67,7 +67,6 @@ export class SettingsState implements NgxsOnInit {
 
   @Action(ChangePlayerControls)
   changePlayerControls(ctx: StateContext<SettingsModel>, action: ChangePlayerControls): void {
-    console.log('Player controls updated: ' + action.option);
     ctx.patchState({showPlayerControls: action.option});
   }
 

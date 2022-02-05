@@ -1,21 +1,21 @@
-<div class="mat-subheading-2 player-buttons"
+<div class="mat-subheading-2"
      fxLayout="row"
      fxLayoutAlign="center center"
      fxLayoutGap="48px">
   <button mat-icon-button [ngClass]="isShuffle ? 'track-player-icon-accent' : 'track-player-icon'" (click)="onToggleShuffle()">
-    <mat-icon class="player-button" aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
+    <mat-icon aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
   </button>
   <button mat-icon-button class="track-player-icon" (click)="onSkipPrevious()">
-    <mat-icon class="player-button" aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
+    <mat-icon aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
   </button>
   <button mat-fab class="track-player-icon-background" (click)="onPause()">
     <mat-icon class="track-player-icon-foreground" aria-hidden="false" aria-label="Play/Pause">{{getPlayIcon(isPlaying)}}</mat-icon>
   </button>
   <button mat-icon-button class="track-player-icon" (click)="onSkipNext()">
-    <mat-icon class="player-button" aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
+    <mat-icon aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
   </button>
   <button mat-icon-button [ngClass]="getRepeatClass(repeatState)" (click)="onRepeatChange()">
-    <mat-icon class="player-button" aria-hidden="false" aria-label="Repeat">{{getRepeatIcon(repeatState)}}</mat-icon>
+    <mat-icon aria-hidden="false" aria-label="Repeat">{{getRepeatIcon(repeatState)}}</mat-icon>
   </button>
 </div>
 <div class="track-volume"
@@ -26,7 +26,7 @@
     <mat-icon class="volume-button">{{getVolumeIcon(volume)}}</mat-icon>
   </button>
   <div class="volume-slider">
-    <mat-slider min="0" max="100" step="1" [value]="volume" (change)="onVolumeChange($event)"></mat-slider>
+    <mat-slider style="width: 100%" min="0" max="100" step="1" [value]="volume" (change)="onVolumeChange($event)"></mat-slider>
   </div>
   <app-devices></app-devices>
   <div class="like-button">

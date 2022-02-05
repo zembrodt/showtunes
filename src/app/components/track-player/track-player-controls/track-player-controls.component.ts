@@ -1,21 +1,13 @@
-import {Component, ElementRef, HostListener, Input, OnDestroy, OnInit} from '@angular/core';
-import {
-  ChangeDeviceVolume,
-  ChangeRepeatState,
-  SkipNextTrack,
-  SkipPreviousTrack,
-  ToggleLiked,
-  TogglePlaying,
-  ToggleShuffle
-} from '../../core/playback/playback.actions';
-import {MatSliderChange} from '@angular/material/slider';
-import {PREVIOUS_VOLUME} from '../../core/globals';
-import {Select, Store} from '@ngxs/store';
-import {StorageService} from '../../services/storage/storage.service';
-import {InactivityService} from '../../services/inactivity/inactivity.service';
-import {SettingsState} from '../../core/settings/settings.state';
-import {Observable, Subject} from 'rxjs';
-import {PlayerControlsOptions} from '../../core/settings/settings.model';
+import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { MatSliderChange } from '@angular/material/slider';
+import { Select } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { PlayerControlsOptions } from '../../../core/settings/settings.model';
+import { SettingsState } from '../../../core/settings/settings.state';
+import { InactivityService } from '../../../services/inactivity/inactivity.service';
+import { PREVIOUS_VOLUME, SpotifyService } from '../../../services/spotify/spotify.service';
+import { StorageService } from '../../../services/storage/storage.service';
 
 // Default values
 const DEFAULT_VOLUME = 50;
@@ -32,6 +24,9 @@ const VOLUME_HIGH_ICON = 'volume_up';
 const VOLUME_LOW_ICON = 'volume_down';
 const VOLUME_MUTE_ICON = 'volume_off';
 
+const ICON_CLASS_PRIMARY = 'track-player-icon';
+const ICON_CLASS_ACCENT = 'track-player-icon-accent';
+
 // Keys
 const REPEAT_OFF = 'off';
 const REPEAT_CONTEXT = 'context';
@@ -40,7 +35,7 @@ const REPEAT_TRACK = 'track';
 @Component({
   selector: 'app-track-player-controls',
   templateUrl: './track-player-controls.component.html',
-  styleUrls: ['./track-player.component.css']
+  styleUrls: ['./track-player-controls.component.css']
 })
 export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
@@ -55,26 +50,30 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
 
   fadePlayerControls: boolean;
 
-  constructor(private store: Store,
+  constructor(private spotify: SpotifyService,
               private storage: StorageService,
               private inactivity: InactivityService,
               private element: ElementRef) {}
 
   ngOnInit(): void {
-    this.showPlayerControls$.subscribe((option) => {
-      const isFading = option === PlayerControlsOptions.Fade;
-      // Make sure we display player controls if previously off
-      if (this.fadePlayerControls && !isFading) {
-        this.fadeControls(false);
-      }
-      this.fadePlayerControls = isFading;
-    });
+    this.showPlayerControls$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((option) => {
+        const isFading = option === PlayerControlsOptions.Fade;
+        // Make sure we display player controls if previously off
+        if (this.fadePlayerControls && !isFading) {
+          this.fadeControls(false);
+        }
+        this.fadePlayerControls = isFading;
+      });
 
-    this.inactivity.inactive$.subscribe((isInactive) => {
-      if (this.fadePlayerControls) {
-        this.fadeControls(isInactive);
-      }
-    });
+    this.inactivity.inactive$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((isInactive) => {
+        if (this.fadePlayerControls) {
+          this.fadeControls(isInactive);
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -83,55 +82,54 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   }
 
   onPause(): void {
-    this.store.dispatch(new TogglePlaying());
+    this.spotify.togglePlaying();
   }
 
   onSkipPrevious(): void {
-    this.store.dispatch(new SkipPreviousTrack());
+    this.spotify.skipPrevious(false);
   }
 
   onSkipNext(): void {
-    this.store.dispatch(new SkipNextTrack());
+    this.spotify.skipNext();
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    this.store.dispatch(new ChangeDeviceVolume(change.value));
+    this.spotify.setVolume(change.value);
   }
 
   onVolumeMute(): void {
+    let volumeChange = DEFAULT_VOLUME;
     if (this.volume > 0) {
       this.storage.set(PREVIOUS_VOLUME, this.volume.toString());
-      this.store.dispatch(new ChangeDeviceVolume(0));
+      volumeChange = 0;
     } else {
       const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
       if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
-        this.store.dispatch(new ChangeDeviceVolume(previousVolume));
-      } else {
-        // Emit a default volume
-        this.store.dispatch(new ChangeDeviceVolume(DEFAULT_VOLUME));
+        volumeChange = previousVolume;
       }
     }
+    this.spotify.setVolume(volumeChange);
   }
 
   onToggleShuffle(): void {
-    this.store.dispatch(new ToggleShuffle());
+    this.spotify.toggleShuffle();
   }
 
   onRepeatChange(): void {
+    let repeatState = REPEAT_OFF;
     switch (this.repeatState) {
       case REPEAT_OFF:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_CONTEXT));
+        repeatState = REPEAT_CONTEXT;
         break;
       case REPEAT_CONTEXT:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_TRACK));
+        repeatState = REPEAT_TRACK;
         break;
-      default:
-        this.store.dispatch(new ChangeRepeatState(REPEAT_OFF));
     }
+    this.spotify.setRepeatState(repeatState);
   }
 
   onLikeChange(): void {
-    this.store.dispatch(new ToggleLiked());
+    this.spotify.toggleLiked();
   }
 
   getPlayIcon(isPlaying: boolean): string {
@@ -147,10 +145,11 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   }
 
   getRepeatClass(repeatState: string): string {
-    if (repeatState === REPEAT_OFF) {
-      return 'track-player-icon';
+    let repeatClass = ICON_CLASS_PRIMARY;
+    if (repeatState !== REPEAT_OFF) {
+      repeatClass = ICON_CLASS_ACCENT;
     }
-    return 'track-player-icon-accent';
+    return repeatClass;
   }
 
   getVolumeIcon(volume: number): string {
@@ -166,8 +165,9 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   private fadeControls(isFaded: boolean): void {
     if (this.element.nativeElement) {
       this.element.nativeElement.animate(
-        {opacity: isFaded ? 0 : 1},
         {
+          opacity: isFaded ? 0 : 1
+        }, {
           duration: FADE_DURATION,
           fill: 'forwards',
           easing: 'ease-out'
