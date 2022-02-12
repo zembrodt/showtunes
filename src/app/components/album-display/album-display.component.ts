@@ -1,21 +1,16 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
-import {Select} from '@ngxs/store';
-import {faSpotify} from '@fortawesome/free-brands-svg-icons';
-import {SettingsState} from '../../core/settings/settings.state';
-import {PlaybackState} from '../../core/playback/playback.state';
-import {AlbumModel, TrackModel} from '../../core/playback/playback.model';
-import {ImageResponse} from '../../models/image.model';
-import {takeUntil} from 'rxjs/operators';
-import {SpotifyService} from '../../services/spotify/spotify.service';
-import {
-  BAR_COLOR_BLACK,
-  BAR_COLOR_WHITE,
-  DEFAULT_BAR_CODE_COLOR,
-  DEFAULT_CODE_COLOR
-} from '../../core/settings/settings.model';
-import {hexToRgb, isHexColor} from '../../core/util';
-import {AppConfig} from '../../app.config';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { faSpotify } from '@fortawesome/free-brands-svg-icons';
+import { Select } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { AppConfig } from '../../app.config';
+import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
+import { PlaybackState } from '../../core/playback/playback.state';
+import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DEFAULT_BAR_CODE_COLOR, DEFAULT_CODE_COLOR } from '../../core/settings/settings.model';
+import { SettingsState } from '../../core/settings/settings.state';
+import { expandHexColor, hexToRgb, isHexColor } from '../../core/util';
+import { ImageResponse } from '../../models/image.model';
+import { SpotifyService } from '../../services/spotify/spotify.service';
 
 const SPOTIFY_CODES_URL = 'https://www.spotifycodes.com/downloadCode.php';
 const MAX_CODE_WIDTH = 512;
@@ -122,7 +117,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
     if (backgroundColor && barColor && this.track && this.track.uri) {
       return SPOTIFY_CODES_URL + '?uri='
         + encodeURIComponent('jpeg/'
-          + backgroundColor + '/'
+          + expandHexColor(backgroundColor) + '/'
           + barColor + '/'
           + MAX_CODE_WIDTH + '/'
           + this.track.uri

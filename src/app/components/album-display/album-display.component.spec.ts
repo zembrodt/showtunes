@@ -246,6 +246,15 @@ describe('AlbumDisplayComponent', () => {
       `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2Fbg-color%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
   });
 
+  it('should create a Spotify code URL with expanded background color of length 3', () => {
+    backgroundColorProducer.next('ABC');
+    barColorProducer.next('bar-color');
+    trackProducer.next(TEST_TRACK_MODEL);
+    fixture.detectChanges();
+    expect(component.spotifyCodeUrl).toEqual(
+      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2FAABBCC%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
+  });
+
   it('should not create Spotify code URL with no background color', () => {
     barColorProducer.next('bar-color');
     trackProducer.next(TEST_TRACK_MODEL);

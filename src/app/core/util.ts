@@ -4,7 +4,7 @@ import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
 import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback/playback.model';
 
-export const VALID_HEX_COLOR = '^[A-Fa-f0-9]{6}$';
+export const VALID_HEX_COLOR = '^[A-Fa-f0-9]{3}$|^[A-Fa-f0-9]{6}$';
 
 const validHexRegex = new RegExp(VALID_HEX_COLOR);
 export function isHexColor(hex: string): boolean {
@@ -17,8 +17,18 @@ export interface Color {
   b: number;
 }
 
+export function expandHexColor(hex: string): string {
+  if (hex.length === 3) {
+    return hex.substring(0, 1).repeat(2) + hex.substring(1, 2).repeat(2) + hex.substring(2, 3).repeat(2);
+  }
+  return hex;
+}
+
 export function hexToRgb(hex: string): Color {
   if (isHexColor(hex)) {
+    if (hex.length === 3) {
+      hex = expandHexColor(hex);
+    }
     return {
       r: parseInt(hex.substring(0, 2), 16),
       g: parseInt(hex.substring(2, 4), 16),

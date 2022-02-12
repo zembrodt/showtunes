@@ -5,7 +5,7 @@ import { DeviceResponse } from '../models/device.model';
 import { ImageResponse } from '../models/image.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
-import { generateRandomString, hexToRgb, isHexColor, parseAlbum, parseDevice, parsePlaylist, parseTrack } from './util';
+import { expandHexColor, generateRandomString, hexToRgb, isHexColor, parseAlbum, parseDevice, parsePlaylist, parseTrack } from './util';
 
 const ARTIST_RESPONSE_1: ArtistResponse = {
   id: 'artist-id-1',
@@ -62,7 +62,13 @@ const ALBUM_RESPONSE: AlbumResponse = {
 
 describe('util package', () => {
   describe('isHexColor', () => {
-    it('should return true for valid hex color string', () => {
+    it('should return true for valid hex color string of length 3', () => {
+      expect(isHexColor('000')).toBeTrue();
+      expect(isHexColor('FFF')).toBeTrue();
+      expect(isHexColor('ABC')).toBeTrue();
+    });
+
+    it('should return true for valid hex color string of length 6', () => {
       expect(isHexColor('000000')).toBeTrue();
       expect(isHexColor('FFFFFF')).toBeTrue();
       expect(isHexColor('ABC123')).toBeTrue();
@@ -86,8 +92,27 @@ describe('util package', () => {
     });
   });
 
+  describe('expandHexColor', () => {
+    it('should return expanded hex when hex color length of 3', () => {
+      expect(expandHexColor('000')).toEqual('000000');
+      expect(expandHexColor('123')).toEqual('112233');
+      expect(expandHexColor('AAB')).toEqual('AAAABB');
+      expect(expandHexColor('ABB')).toEqual('AABBBB');
+    });
+
+    it('should return passed hex value when hex color not length of 3', () => {
+      expect(expandHexColor('0')).toEqual('0');
+      expect(expandHexColor('FFFFFF')).toEqual('FFFFFF');
+    });
+  });
+
   describe('hexToRgb', () => {
-    it('should return a Color object with valid hex color', () => {
+    it('should return a Color object with valid hex color of length 3', () => {
+      expect(hexToRgb('000')).toEqual({r: 0, g: 0, b: 0});
+      expect(hexToRgb('FFF')).toEqual({r: 255, g: 255, b: 255});
+    });
+
+    it('should return a Color object with valid hex color of length 6', () => {
       expect(hexToRgb('000000')).toEqual({r: 0, g: 0, b: 0});
       expect(hexToRgb('FFFFFF')).toEqual({r: 255, g: 255, b: 255});
       expect(hexToRgb('ABC123')).toEqual({r: 171, g: 193, b: 35});
