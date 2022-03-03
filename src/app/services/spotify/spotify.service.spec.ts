@@ -373,7 +373,7 @@ describe('SpotifyService', () => {
   }));
 
   it('should change playlist if new playlist', fakeAsync(() => {
-    spyOn(service, 'getPlaylist').and.returnValue(of(TEST_PLAYLIST_RESPONSE));
+    spyOn(service, 'setPlaylist');
     const currentPlaylist = {
       ...parsePlaylist(TEST_PLAYLIST_RESPONSE),
       id: 'old-id'
@@ -383,29 +383,30 @@ describe('SpotifyService', () => {
     playlistProducer.next(currentPlaylist);
 
     service.pollCurrentPlayback(1000);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangePlaylist(parsePlaylist(TEST_PLAYLIST_RESPONSE)));
+    expect(service.setPlaylist).toHaveBeenCalledWith(TEST_PLAYLIST_RESPONSE.id);
   }));
 
   it('should change to playback playlist if no current playlist', fakeAsync(() => {
-    spyOn(service, 'getPlaylist').and.returnValue(of(TEST_PLAYLIST_RESPONSE));
+    spyOn(service, 'setPlaylist');
     const response = generateResponse<CurrentPlaybackResponse>(TEST_PLAYBACK_RESPONSE, 200);
     http.get = jasmine.createSpy().and.returnValue(of(response));
     playlistProducer.next(null);
 
     service.pollCurrentPlayback(1000);
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangePlaylist(parsePlaylist(TEST_PLAYLIST_RESPONSE)));
+    expect(service.setPlaylist).toHaveBeenCalledWith(TEST_PLAYLIST_RESPONSE.id);
   }));
 
   it('should not change playlist if playback playlist is current playlist', fakeAsync(() => {
-    spyOn(service, 'getPlaylist').and.returnValue(of(TEST_PLAYLIST_RESPONSE));
+    spyOn(service, 'setPlaylist');
     const response = generateResponse<CurrentPlaybackResponse>(TEST_PLAYBACK_RESPONSE, 200);
     http.get = jasmine.createSpy().and.returnValue(of(response));
 
     service.pollCurrentPlayback(1000);
-    expect(store.dispatch).not.toHaveBeenCalledWith(jasmine.any(ChangePlaylist));
+    expect(service.setPlaylist).not.toHaveBeenCalled();
   }));
 
   it('should remove playlist if context is null and previously had playlist', fakeAsync(() => {
+    spyOn(service, 'setPlaylist');
     const playbackResponse = {
       ...TEST_PLAYBACK_RESPONSE,
       context: null
@@ -599,14 +600,16 @@ describe('SpotifyService', () => {
   }));
 
   it('should set track position when valid', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setTrackPosition(50);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/seek',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -615,63 +618,70 @@ describe('SpotifyService', () => {
   }));
 
   it('should set track position to duration when greater than', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     durationProducer.next(100);
     service.setTrackPosition(101);
     expect(store.dispatch).toHaveBeenCalledWith(new SetProgress(100));
   }));
 
   it('should set track position to 0 when negative', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setTrackPosition(-1);
     expect(store.dispatch).toHaveBeenCalledWith(new SetProgress(0));
   }));
 
   it('should send play request when isPlaying', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setPlaying(true);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/play',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(true));
   }));
 
   it('should send pause request when not isPlaying', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setPlaying(false);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/pause',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(false));
   }));
 
   it('should toggle playing off', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     isPlayingProducer.next(true);
     service.togglePlaying();
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(false));
   }));
 
   it('should toggle playing on', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     isPlayingProducer.next(false);
     service.togglePlaying();
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(true));
   }));
 
   it('should send skip previous request when within threshold', fakeAsync(() => {
-    http.post = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.post = jasmine.createSpy().and.returnValue(of(response));
     progressProducer.next(2999);
     durationProducer.next(6001);
     service.skipPrevious(false);
     expect(http.post).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/previous',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
   }));
 
@@ -685,48 +695,53 @@ describe('SpotifyService', () => {
   }));
 
   it('should send skip previous request when duration is less than double the threshold', fakeAsync(() => {
-    http.post = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.post = jasmine.createSpy().and.returnValue(of(response));
     progressProducer.next(3001);
     durationProducer.next(5999);
     service.skipPrevious(false);
     expect(http.post).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/previous',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
   }));
 
   it('should send skip previous request when forced', fakeAsync(() => {
-    http.post = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.post = jasmine.createSpy().and.returnValue(of(response));
     progressProducer.next(2999);
     durationProducer.next(6001);
     service.skipPrevious(true);
     expect(http.post).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/previous',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
   }));
 
   it('should send skip next request', fakeAsync(() => {
-    http.post = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.post = jasmine.createSpy().and.returnValue(of(response));
     service.skipNext();
     expect(http.post).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/next',
       {},
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
   }));
 
   it('should send shuffle on request when isShuffle', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setShuffle(true);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/shuffle',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -735,14 +750,16 @@ describe('SpotifyService', () => {
   }));
 
   it('should send shuffle off request when not isShuffle', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setShuffle(false);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/shuffle',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -751,28 +768,32 @@ describe('SpotifyService', () => {
   }));
 
   it('should toggle shuffle off', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     isShuffleProducer.next(true);
     service.toggleShuffle();
     expect(store.dispatch).toHaveBeenCalledWith(new SetShuffle(false));
   }));
 
   it('should toggle shuffle on', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     isShuffleProducer.next(false);
     service.toggleShuffle();
     expect(store.dispatch).toHaveBeenCalledWith(new SetShuffle(true));
   }));
 
   it('should send volume request', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setVolume(50);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/volume',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -781,26 +802,30 @@ describe('SpotifyService', () => {
   }));
 
   it('should set volume to 100 when greater', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setVolume(101);
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(100));
   }));
 
   it('should set volume to 0 when negative', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setVolume(-1);
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDeviceVolume(0));
   }));
 
   it('should send repeat state request', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setRepeatState('context');
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/repeat',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -808,28 +833,34 @@ describe('SpotifyService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeRepeatState('context'));
   }));
 
-  it('should send isTrackSaved request', () => {
+  it('should send isTrackSaved request', fakeAsync(() => {
+    const response = generateResponse<boolean[]>([true], 200);
+    http.get = jasmine.createSpy().and.returnValue(of(response));
     service.isTrackSaved('test-id');
     expect(http.get).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/tracks/contains',
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.get as jasmine.Spy).calls.mostRecent().args[1].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
     expect(spyParams.get('ids')).toEqual('test-id');
-  });
+    expect(store.dispatch).toHaveBeenCalledWith(new SetLiked(true));
+  }));
 
   it('should send add save track request', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 200);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setSavedTrack('test-id', true);
     expect(http.put).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/tracks',
       {},
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -838,13 +869,15 @@ describe('SpotifyService', () => {
   }));
 
   it('should send remove save track request', fakeAsync(() => {
-    http.delete = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 200);
+    http.delete = jasmine.createSpy().and.returnValue(of(response));
     service.setSavedTrack('test-id', false);
     expect(http.delete).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/tracks',
       {
         headers: jasmine.any(HttpHeaders),
-        params: jasmine.any(HttpParams)
+        params: jasmine.any(HttpParams),
+        observe: 'response'
       });
     const spyParams = (http.delete as jasmine.Spy).calls.mostRecent().args[1].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -853,7 +886,8 @@ describe('SpotifyService', () => {
   }));
 
   it('should toggle liked off for current track', fakeAsync(() => {
-    http.delete = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 200);
+    http.delete = jasmine.createSpy().and.returnValue(of(response));
     isLikedProducer.next(true);
     service.toggleLiked();
     expect(http.delete).toHaveBeenCalled();
@@ -861,7 +895,8 @@ describe('SpotifyService', () => {
   }));
 
   it('should toggle liked on for current track', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 200);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     isLikedProducer.next(false);
     service.toggleLiked();
     expect(http.put).toHaveBeenCalled();
@@ -869,19 +904,18 @@ describe('SpotifyService', () => {
   }));
 
   it('should send get playlist request', () => {
-    service.getPlaylist('playlist-id');
+    const playlistResponse = {
+      ...TEST_PLAYLIST_RESPONSE,
+      id: 'playlist-new-id'
+    };
+    const response = generateResponse<PlaylistResponse>(playlistResponse, 200);
+    http.get = jasmine.createSpy().and.returnValue(of(response));
+    service.setPlaylist('playlist-new-id');
     expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/playlists/playlist-id',
-      { headers: jasmine.any(HttpHeaders) }
+      'https://api.spotify.com/v1/playlists/playlist-new-id',
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
-  });
-
-  it('should send get devices request', () => {
-    service.getDevices();
-    expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/devices',
-      { headers: jasmine.any(HttpHeaders) }
-    );
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangePlaylist(parsePlaylist(playlistResponse)));
   });
 
   it('should set available devices', fakeAsync(() => {
@@ -889,23 +923,25 @@ describe('SpotifyService', () => {
       ...TEST_DEVICE_RESPONSE,
       id: 'test-device-2'
     };
-    const response: MultipleDevicesResponse = {
+    const devicesResponse: MultipleDevicesResponse = {
       devices: [
         TEST_DEVICE_RESPONSE,
         device2
       ]
     };
+    const response = generateResponse<MultipleDevicesResponse>(devicesResponse, 200);
     http.get = jasmine.createSpy().and.returnValue(of(response));
     service.fetchAvailableDevices();
     expect(http.get).toHaveBeenCalledOnceWith(
       'https://api.spotify.com/v1/me/player/devices',
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetAvailableDevices([parseDevice(TEST_DEVICE_RESPONSE), parseDevice(device2)]));
   }));
 
   it('should send set device playing request', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     const device: DeviceModel = {
       ...parseDevice(TEST_DEVICE_RESPONSE),
       id: 'new-device'
@@ -917,13 +953,14 @@ describe('SpotifyService', () => {
         device_ids: ['new-device'],
         play: true
       },
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDevice(device));
   }));
 
   it('should send set device not playing request', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
+    const response = generateResponse(null, 204);
+    http.put = jasmine.createSpy().and.returnValue(of(response));
     const device: DeviceModel = {
       ...parseDevice(TEST_DEVICE_RESPONSE),
       id: 'new-device'
@@ -935,7 +972,7 @@ describe('SpotifyService', () => {
         device_ids: ['new-device'],
         play: false
       },
-      { headers: jasmine.any(HttpHeaders) }
+      { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDevice(device));
   }));
@@ -1016,33 +1053,32 @@ describe('SpotifyService', () => {
   });
 
   it('should request and set new AuthToken if expired', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.resolve(null));
-    const expiredToken = {...TEST_AUTH_TOKEN};
-    expiredToken.expiry = (new Date(Date.UTC(1999, 1, 1))).toString();
+    const expiredToken = {
+      ...TEST_AUTH_TOKEN,
+      expiry: (new Date(Date.UTC(1999, 1, 1))).toString()
+    };
     tokenProducer.next(expiredToken);
-    service.setPlaying(true);
+    service['checkTokenExpiry']();
     expect(service.requestAuthToken).toHaveBeenCalledWith(expiredToken.refreshToken, true);
   }));
 
   it('should logout if failed to refresh token', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.reject('error'));
     spyOn(service, 'logout');
     const expiredToken = {...TEST_AUTH_TOKEN};
     expiredToken.expiry = (new Date(Date.UTC(1999, 1, 1))).toString();
     tokenProducer.next(expiredToken);
-    service.setPlaying(true);
+    service['checkTokenExpiry']();
     flushMicrotasks(); // complete the Promise catch
     expect(console.error).toHaveBeenCalled();
     expect(service.logout).toHaveBeenCalled();
   }));
 
   it('should keep current token if not expired', fakeAsync(() => {
-    http.put = jasmine.createSpy().and.returnValue(of(null));
     service.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));
     tokenProducer.next(TEST_AUTH_TOKEN);
-    service.setPlaying(true);
+    service['checkTokenExpiry']();
     expect(service.requestAuthToken).not.toHaveBeenCalled();
     expect(service['authToken']).toEqual(TEST_AUTH_TOKEN);
   }));
