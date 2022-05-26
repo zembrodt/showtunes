@@ -104,7 +104,8 @@ export function parseDevice(device: DeviceResponse): DeviceModel {
       volume: device.volume_percent,
       isRestricted: device.is_restricted,
       isActive: device.is_active,
-      isPrivateSession: device.is_private_session
+      isPrivateSession: device.is_private_session,
+      icon: getDeviceIcon(device.type)
     };
   }
   return null;
@@ -118,4 +119,30 @@ export function getIdFromSpotifyUri(uri: string): string {
     }
   }
   return null;
+}
+
+function getDeviceIcon(deviceType: string): string {
+  let icon = 'device_unknown';
+  if (deviceType) {
+    switch (deviceType.toLowerCase()) {
+      case 'computer':
+        icon = 'laptop_windows';
+        break;
+      case 'tv':
+        icon = 'tv';
+        break;
+      case 'smartphone':
+        icon = 'smartphone';
+        break;
+      case 'speaker':
+        icon = 'speaker';
+        break;
+      case 'castaudio':
+        icon = 'cast';
+        break;
+      default:
+        console.log(`Unsupported device type: '${deviceType}'`);
+    }
+  }
+  return icon;
 }

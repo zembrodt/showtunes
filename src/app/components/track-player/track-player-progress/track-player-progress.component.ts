@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
 import { SpotifyService } from '../../../services/spotify/spotify.service';
 
@@ -7,18 +7,30 @@ import { SpotifyService } from '../../../services/spotify/spotify.service';
   templateUrl: './track-player-progress.component.html',
   styleUrls: ['./track-player-progress.component.css']
 })
-export class TrackPlayerProgressComponent {
+export class TrackPlayerProgressComponent implements OnChanges {
 
   @Input() progress = 0;
   @Input() duration = 100;
 
+  progressFormatted = this.getFormattedProgress(this.progress);
+  durationFormatted = this.getFormattedProgress(this.duration);
+
   constructor(private spotify: SpotifyService) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.progress) {
+      this.progressFormatted = this.getFormattedProgress(this.progress);
+    }
+    if (changes.duration) {
+      this.durationFormatted = this.getFormattedProgress(this.duration);
+    }
+  }
 
   onProgressChange(change: MatSliderChange): void {
     this.spotify.setTrackPosition(change.value);
   }
 
-  getProgress(milliseconds: number): string {
+  private getFormattedProgress(milliseconds: number): string {
     let seconds = Math.floor((milliseconds / 1000) % 60);
     seconds = seconds >= 0 ? seconds : 0;
     const minutes = Math.floor((milliseconds / (1000 * 60)) % 60);

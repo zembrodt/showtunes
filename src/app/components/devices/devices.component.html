@@ -8,7 +8,7 @@
               [class.active]="currentDevice && currentDevice.id === device.id"
               (click)="onSelectDevice(device)"
       >
-        <mat-icon class="app-icon">{{getDeviceIcon(device.type)}}</mat-icon>
+        <mat-icon class="app-icon">{{device.icon}}</mat-icon>
         <span>{{device.name}}</span>
       </button>
     </ng-container>

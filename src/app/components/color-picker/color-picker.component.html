@@ -25,12 +25,12 @@
   </button>
   <mat-menu #colorPickerMenu="matMenu" class="color-picker-menu">
     <mat-grid-list cols="6" (click)="$event.stopPropagation()">
-      <mat-grid-tile *ngFor="let presetColor of presetColors">
+      <mat-grid-tile *ngFor="let calculatedPresetColor of calculatedPresetColors">
         <button mat-fab
                 class="color-button"
-                [ngStyle]="calculateButtonStyle(presetColor)"
-                [ngClass]="calculateButtonClass(presetColor)"
-                (click)="onPresetColorSelect(presetColor); $event.stopPropagation();"></button>
+                [ngStyle]="calculatedPresetColor.buttonStyle"
+                [ngClass]="calculatedPresetColor.buttonClass"
+                (click)="onPresetColorSelect(calculatedPresetColor.presetColor); $event.stopPropagation();"></button>
       </mat-grid-tile>
     </mat-grid-list>
   </mat-menu>

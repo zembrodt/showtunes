@@ -58,6 +58,7 @@ export interface DeviceModel {
   isActive: boolean;
   isPrivateSession: boolean;
   isRestricted: boolean;
+  icon: string;
 }
 
 export const DEFAULT_PLAYBACK: PlaybackModel = {
@@ -92,7 +93,8 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
     volume: 0,
     isActive: false,
     isPrivateSession: false,
-    isRestricted: false
+    isRestricted: false,
+    icon: ''
   },
   availableDevices: [],
   progress: 0,

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
@@ -37,7 +37,7 @@ const REPEAT_TRACK = 'track';
   templateUrl: './track-player-controls.component.html',
   styleUrls: ['./track-player-controls.component.css']
 })
-export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
+export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Input() isShuffle = false;
@@ -45,6 +45,13 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
   @Input() repeatState: string;
   @Input() volume = DEFAULT_VOLUME;
   @Input() isLiked = false;
+
+  shuffleClass = this.getShuffleClass();
+  playIcon = this.getPlayIcon();
+  repeatIcon = this.getRepeatIcon();
+  repeatClass = this.getRepeatClass();
+  volumeIcon = this.getVolumeIcon();
+  likedClass = this.getLikedClass();
 
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
 
@@ -74,6 +81,25 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
           this.fadeControls(isInactive);
         }
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.isShuffle) {
+      this.shuffleClass = this.getShuffleClass();
+    }
+    if (changes.isPlaying) {
+      this.playIcon = this.getPlayIcon();
+    }
+    if (changes.repeatState) {
+      this.repeatIcon = this.getRepeatIcon();
+      this.repeatClass = this.getRepeatClass();
+    }
+    if (changes.volume) {
+      this.volumeIcon = this.getVolumeIcon();
+    }
+    if (changes.isLiked) {
+      this.likedClass = this.getLikedClass();
+    }
   }
 
   ngOnDestroy(): void {
@@ -132,34 +158,42 @@ export class TrackPlayerControlsComponent implements OnInit, OnDestroy {
     this.spotify.toggleLiked();
   }
 
-  getPlayIcon(isPlaying: boolean): string {
-    return isPlaying ? PAUSE_ICON : PLAY_ICON;
+  private getShuffleClass(): string {
+    return this.isShuffle ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY;
   }
 
-  getRepeatIcon(repeatState: string): string {
+  private getPlayIcon(): string {
+    return this.isPlaying ? PAUSE_ICON : PLAY_ICON;
+  }
+
+  private getRepeatIcon(): string {
     let icon = REPEAT_ICON;
-    if (repeatState === REPEAT_TRACK) {
+    if (this.repeatState === REPEAT_TRACK) {
       icon = REPEAT_ONE_ICON;
     }
     return icon;
   }
 
-  getRepeatClass(repeatState: string): string {
+  private getRepeatClass(): string {
     let repeatClass = ICON_CLASS_PRIMARY;
-    if (repeatState !== REPEAT_OFF) {
+    if (this.repeatState !== REPEAT_OFF) {
       repeatClass = ICON_CLASS_ACCENT;
     }
     return repeatClass;
   }
 
-  getVolumeIcon(volume: number): string {
+  private getVolumeIcon(): string {
     let icon = VOLUME_HIGH_ICON;
-    if (volume === 0) {
+    if (this.volume === 0) {
       icon = VOLUME_MUTE_ICON;
-    } else if (volume < 50) {
+    } else if (this.volume < 50) {
       icon = VOLUME_LOW_ICON;
     }
     return icon;
+  }
+
+  private getLikedClass(): string {
+    return this.isLiked ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY;
   }
 
   private fadeControls(isFaded: boolean): void {
