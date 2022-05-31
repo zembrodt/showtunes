@@ -16,6 +16,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxsModule } from '@ngxs/store';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { callComponentChange } from '../../core/testing/test-util';
 
 import { ColorPickerComponent } from './color-picker.component';
 
@@ -161,79 +162,105 @@ describe('ColorPickerComponent', () => {
   it('should calculate white selected light classes when color is white, selected color is white and light theme', () => {
     themeProducer.next('light-theme');
     component.color = 'FFFFFF';
-    expect(component.calculateButtonClass('FFFFFF'))
-      .toEqual(['selected', 'white-selected-light']);
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['selected', 'white-selected-light']);
   });
 
   it('should calculate no class when color is not white, selected color is white, and light theme', () => {
     themeProducer.next('light-theme');
     component.color = 'FFFFFF';
-    expect(component.calculateButtonClass('123123'))
-      .toEqual([]);
+    component.presetColors = ['123123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual([]);
   });
 
   it('should calculate selected class when color is not white, selected color is not white, and light theme', () => {
     themeProducer.next('light-theme');
     component.color = '123123';
-    expect(component.calculateButtonClass('123123'))
-      .toEqual(['selected']);
+    component.presetColors = ['123123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['selected']);
   });
 
   it('should calculate white unselected light classes when color is white, selected color is not white, and light theme', () => {
     themeProducer.next('light-theme');
     component.color = '123123';
-    expect(component.calculateButtonClass('FFFFFF'))
-      .toEqual(['white-unselected', 'white-unselected-light']);
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['white-unselected', 'white-unselected-light']);
   });
 
   it('should calculate white selected dark classes when color is white, selected color is white, and dark theme', () => {
     themeProducer.next('dark-theme');
     component.color = 'FFFFFF';
-    expect(component.calculateButtonClass('FFFFFF'))
-      .toEqual(['selected', 'white-selected-dark']);
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['selected', 'white-selected-dark']);
   });
 
   it('should calculate no classes when color is not white, selected color is white, and dark theme', () => {
     themeProducer.next('dark-theme');
     component.color = 'FFFFFF';
-    expect(component.calculateButtonClass('123123'))
-      .toEqual([]);
+    component.presetColors = ['123123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual([]);
   });
 
   it('should calculate white unselected dark classes when color is white, selected color is not white, and dark theme', () => {
     themeProducer.next('dark-theme');
     component.color = '123123';
-    expect(component.calculateButtonClass('FFFFFF'))
-      .toEqual(['white-unselected', 'white-unselected-dark']);
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['white-unselected', 'white-unselected-dark']);
   });
 
   it('should calculate selected class when color is not white, selected color is not white, and dark theme', () => {
     themeProducer.next('dark-theme');
     component.color = '123123';
-    expect(component.calculateButtonClass('123123'))
-      .toEqual(['selected']);
+    component.presetColors = ['123123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonClass).toEqual(['selected']);
   });
 
   it('should calculate the selected button style when preset color selected', () => {
     component.color = 'ABC123';
-    expect(component.calculateButtonStyle('ABC123'))
-      .toEqual({'box-shadow': '#ABC123 0px 0px 0px 6px inset'});
+    component.presetColors = ['ABC123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonStyle).toEqual({'box-shadow': '#ABC123 0px 0px 0px 6px inset'});
   });
 
   it('should calculate the unselected button style when preset color is not selected', () => {
     component.color = 'ABC123';
-    expect(component.calculateButtonStyle('123123'))
-      .toEqual({'background-color': '#123123'});
+    component.presetColors = ['123123'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonStyle).toEqual({'background-color': '#123123'});
   });
 
   it('should calculate no button style when preset color is white and selected', () => {
     component.color = 'FFFFFF';
-    expect(component.calculateButtonStyle('FFFFFF')).toBeFalsy();
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonStyle).toBeFalsy();
   });
 
   it('should calculate no button style when preset color is white and unselected', () => {
     component.color = 'ABC123';
-    expect(component.calculateButtonStyle('FFFFFF')).toBeFalsy();
+    component.presetColors = ['FFFFFF'];
+    callComponentChange(fixture, 'presetColors', component.presetColors);
+    expect(component.calculatedPresetColors.length).toEqual(1);
+    expect(component.calculatedPresetColors[0].buttonStyle).toBeFalsy();
   });
 
   it('should reset input field value on event', () => {

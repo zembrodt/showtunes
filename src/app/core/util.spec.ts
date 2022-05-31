@@ -5,7 +5,17 @@ import { DeviceResponse } from '../models/device.model';
 import { ImageResponse } from '../models/image.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
-import { expandHexColor, generateRandomString, hexToRgb, isHexColor, parseAlbum, parseDevice, parsePlaylist, parseTrack } from './util';
+import {
+  expandHexColor,
+  generateRandomString,
+  getIdFromSpotifyUri,
+  hexToRgb,
+  isHexColor,
+  parseAlbum,
+  parseDevice,
+  parsePlaylist,
+  parseTrack
+} from './util';
 
 const ARTIST_RESPONSE_1: ArtistResponse = {
   id: 'artist-id-1',
@@ -254,9 +264,59 @@ describe('util package', () => {
     it('should return null when response is null', () => {
       expect(parseDevice(null)).toBeNull();
     });
+
+    it('should set the correct device icon based on device type', () => {
+      const response: DeviceResponse = {
+        id: 'test-id',
+        name: 'test-device',
+        type: 'device-type',
+        volume_percent: 50,
+        is_active: true,
+        is_private_session: true,
+        is_restricted: true
+      };
+
+      response.type = 'COMPUTER';
+      expect(parseDevice(response).icon).toEqual('laptop_windows');
+
+      response.type = 'tv';
+      expect(parseDevice(response).icon).toEqual('tv');
+
+      response.type = 'smartphone';
+      expect(parseDevice(response).icon).toEqual('smartphone');
+
+      response.type = 'speaker';
+      expect(parseDevice(response).icon).toEqual('speaker');
+
+      response.type = 'castaudio';
+      expect(parseDevice(response).icon).toEqual('cast');
+
+      response.type = 'unsupported device';
+      expect(parseDevice(response).icon).toEqual('device_unknown');
+
+      response.type = '';
+      expect(parseDevice(response).icon).toEqual('device_unknown');
+
+      response.type = null;
+      expect(parseDevice(response).icon).toEqual('device_unknown');
+
+      response.type = undefined;
+      expect(parseDevice(response).icon).toEqual('device_unknown');
+    });
   });
 
   describe('getIdFromSpotifyUri', () => {
+    it('should return the ID from a valid Spotify Uri', () => {
+      expect(getIdFromSpotifyUri('abc:123:my_id')).toEqual('my_id');
+    });
 
+    it('should return null from an invalid Spotify Uri', () => {
+      expect(getIdFromSpotifyUri('abc:123')).toBeNull();
+      expect(getIdFromSpotifyUri('abc:123:my_id:456')).toBeNull();
+      expect(getIdFromSpotifyUri('abc')).toBeNull();
+      expect(getIdFromSpotifyUri('')).toBeNull();
+      expect(getIdFromSpotifyUri(null)).toBeNull();
+      expect(getIdFromSpotifyUri(undefined)).toBeNull();
+    });
   });
 });

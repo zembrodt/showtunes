@@ -1,7 +1,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ElementRef } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatButtonHarness } from '@angular/material/button/testing';
@@ -14,6 +14,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
+import { callComponentChange } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
 import { PREVIOUS_VOLUME, SpotifyService } from '../../../services/spotify/spotify.service';
 import { StorageService } from '../../../services/storage/storage.service';
@@ -124,7 +125,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display shuffle button with accent if shuffle is on', () => {
     component.isShuffle = true;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'isShuffle', component.isShuffle);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const shuffle = buttons[SHUFFLE_BUTTON_INDEX];
@@ -163,7 +164,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display play button when not playing', async () => {
     component.isPlaying = false;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'isPlaying', component.isPlaying);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const pauseButton = buttons[PAUSE_BUTTON_INDEX];
@@ -174,7 +175,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display pause button when playing', async () => {
     component.isPlaying = true;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'isPlaying', component.isPlaying);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const pauseButton = buttons[PAUSE_BUTTON_INDEX];
@@ -194,7 +195,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display repeat button with accent if repeat is not off', () => {
     component.repeatState = 'track';
-    fixture.detectChanges();
+    callComponentChange(fixture, 'repeatState', component.repeatState);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeat = buttons[REPEAT_BUTTON_INDEX];
@@ -205,7 +206,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display repeat button without accent if repeat is off', () => {
     component.repeatState = 'off';
-    fixture.detectChanges();
+    callComponentChange(fixture, 'repeatState', component.repeatState);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeat = buttons[REPEAT_BUTTON_INDEX];
@@ -225,7 +226,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display repeat icon when repeat is off', async () => {
     component.repeatState = 'off';
-    fixture.detectChanges();
+    callComponentChange(fixture, 'repeatState', component.repeatState);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeatButton = buttons[REPEAT_BUTTON_INDEX];
@@ -236,7 +237,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display repeat icon when repeat is context', async () => {
     component.repeatState = 'context';
-    fixture.detectChanges();
+    callComponentChange(fixture, 'repeatState', component.repeatState);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeatButton = buttons[REPEAT_BUTTON_INDEX];
@@ -247,7 +248,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display single repeat icon when repeat is track', async () => {
     component.repeatState = 'track';
-    fixture.detectChanges();
+    callComponentChange(fixture, 'repeatState', component.repeatState);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeatButton = buttons[REPEAT_BUTTON_INDEX];
@@ -267,7 +268,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display volume high icon when volume is >= 50', async () => {
     component.volume = 50;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'volume', component.volume);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const volumeButton = buttons[VOLUME_BUTTON_INDEX];
@@ -278,7 +279,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display volume low icon when volume is < 50', async () => {
     component.volume = 25;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'volume', component.volume);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const volumeButton = buttons[VOLUME_BUTTON_INDEX];
@@ -289,7 +290,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display volume mute icon when volume is = 0', async () => {
     component.volume = 0;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'volume', component.volume);
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const volumeButton = buttons[VOLUME_BUTTON_INDEX];
@@ -300,7 +301,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display like button with accent when liked', () => {
     component.isLiked = true;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'isLiked', component.isLiked);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeat = buttons[LIKE_BUTTON_INDEX];
@@ -311,7 +312,7 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should display like button without accent when not liked', () => {
     component.isLiked = false;
-    fixture.detectChanges();
+    callComponentChange(fixture, 'isLiked', component.isLiked);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const repeat = buttons[LIKE_BUTTON_INDEX];
@@ -474,49 +475,86 @@ describe('TrackPlayerControlsComponent', () => {
     expect(spotify.toggleLiked).toHaveBeenCalled();
   });
 
-  it('should return the pause icon name when playing', () => {
-    expect(component.getPlayIcon(true)).toEqual('pause');
+  it('should set the shuffle class when isShuffle', fakeAsync(() => {
+    component.isShuffle = true;
+    callComponentChange(fixture, 'isShuffle', component.isShuffle);
+    expect(component.shuffleClass).toEqual('track-player-icon-accent');
+  }));
+
+  it('should set the shuffle class when not isShuffle', () => {
+    component.isShuffle = false;
+    callComponentChange(fixture, 'isShuffle', component.isShuffle);
+    expect(component.shuffleClass).toEqual('track-player-icon');
   });
 
-  it('should return the play icon name when not playing', () => {
-    expect(component.getPlayIcon(false)).toEqual('play_arrow');
+  it('should set the pause icon name when playing', () => {
+    component.isPlaying = true;
+    callComponentChange(fixture, 'isPlaying', component.isPlaying);
+    expect(component.playIcon).toEqual('pause');
   });
 
-  it('should return the repeat icon name when repeat state is off', () => {
-    expect(component.getRepeatIcon('off')).toEqual('repeat');
+  it('should set the play icon name when not playing', () => {
+    component.isPlaying = false;
+    callComponentChange(fixture, 'isPlaying', component.isPlaying);
+    expect(component.playIcon).toEqual('play_arrow');
   });
 
-  it('should return the repeat icon name when repeat state is on', () => {
-    expect(component.getRepeatIcon('context')).toEqual('repeat');
+  it('should set the correct repeat icon and class when repeat state is off', () => {
+    component.repeatState = 'off';
+    callComponentChange(fixture, 'repeatState', component.repeatState);
+    expect(component.repeatIcon).toEqual('repeat');
+    expect(component.repeatClass).toEqual('track-player-icon');
   });
 
-  it('should return the repeat single icon name when repeat state is track', () => {
-    expect(component.getRepeatIcon('track')).toEqual('repeat_one');
+  it('should set the correct repeat icon and class when repeat state is on', () => {
+    component.repeatState = 'context';
+    callComponentChange(fixture, 'repeatState', component.repeatState);
+    expect(component.repeatIcon).toEqual('repeat');
+    expect(component.repeatClass).toEqual('track-player-icon-accent');
   });
 
-  it('should return the primary class name when repeat state is off', () => {
-    expect(component.getRepeatClass('off')).toEqual('track-player-icon');
+  it('should set the correct repeat icon and class when repeat state is track', () => {
+    component.repeatState = 'track';
+    callComponentChange(fixture, 'repeatState', component.repeatState);
+    expect(component.repeatIcon).toEqual('repeat_one');
+    expect(component.repeatClass).toEqual('track-player-icon-accent');
   });
 
-  it('should return the accent class name when repeat state is on', () => {
-    expect(component.getRepeatClass('context')).toEqual('track-player-icon-accent');
+  it('should set the volume high icon name when volume >= 50', () => {
+    component.volume = 50;
+    callComponentChange(fixture, 'volume', component.volume);
+    expect(component.volumeIcon).toEqual('volume_up');
+
+    component.volume = 100;
+    callComponentChange(fixture, 'volume', component.volume);
+    expect(component.volumeIcon).toEqual('volume_up');
   });
 
-  it('should return the accent class name when repeat state is track', () => {
-    expect(component.getRepeatClass('track')).toEqual('track-player-icon-accent');
+  it('should set the volume low icon name when volume < 50', () => {
+    component.volume = 49;
+    callComponentChange(fixture, 'volume', component.volume);
+    expect(component.volumeIcon).toEqual('volume_down');
+
+    component.volume = 1;
+    callComponentChange(fixture, 'volume', component.volume);
+    expect(component.volumeIcon).toEqual('volume_down');
   });
 
-  it('should return the volume high icon name when volume >= 50', () => {
-    expect(component.getVolumeIcon(50)).toEqual('volume_up');
-    expect(component.getVolumeIcon(100)).toEqual('volume_up');
+  it('should set the volume mute icon name when volume = 0', () => {
+    component.volume = 0;
+    callComponentChange(fixture, 'volume', component.volume);
+    expect(component.volumeIcon).toEqual('volume_off');
   });
 
-  it('should return the volume low icon name when volume < 50', () => {
-    expect(component.getVolumeIcon(49)).toEqual('volume_down');
-    expect(component.getVolumeIcon(1)).toEqual('volume_down');
+  it('should set the liked class when isLiked', () => {
+    component.isLiked = true;
+    callComponentChange(fixture, 'isLiked', component.isLiked);
+    expect(component.likedClass).toEqual('track-player-icon-accent');
   });
 
-  it('should return the volume mute icon name when volume = 0', () => {
-    expect(component.getVolumeIcon(0)).toEqual('volume_off');
+  it('should set the liked class when not isLiked', () => {
+    component.isLiked = false;
+    callComponentChange(fixture, 'isLiked', component.isLiked);
+    expect(component.likedClass).toEqual('track-player-icon');
   });
 });
