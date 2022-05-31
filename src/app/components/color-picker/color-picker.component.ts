@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
@@ -13,7 +13,7 @@ const WHITE_HEX = 'FFFFFF';
   templateUrl: './color-picker.component.html',
   styleUrls: ['./color-picker.component.scss']
 })
-export class ColorPickerComponent implements OnInit, OnDestroy {
+export class ColorPickerComponent implements OnInit, OnChanges, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
@@ -55,10 +55,13 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
       this.setFormValue(this.color);
     });
 
-    this.calculatedPresetColors = new Array(this.presetColors.length);
-    this.presetColors.forEach((presetColor, index) => {
-      this.calculatedPresetColors[index] = new PresetColor(presetColor, this.color, this.theme);
-    });
+    this.createPresetColors();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.presetColors) {
+      this.createPresetColors();
+    }
   }
 
   ngOnDestroy(): void {
@@ -87,6 +90,13 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
   private setFormValue(value: string): void {
     this.form.setValue({
       color: value
+    });
+  }
+
+  private createPresetColors(): void {
+    this.calculatedPresetColors = new Array(this.presetColors.length);
+    this.presetColors.forEach((presetColor, index) => {
+      this.calculatedPresetColors[index] = new PresetColor(presetColor, this.color, this.theme);
     });
   }
 
