@@ -1,6 +1,7 @@
 version: 2.1
 
 orbs:
+  browser-tools: circleci/browser-tools@1.3.0
   codecov: codecov/codecov@3.2.2
 
 jobs:
@@ -9,6 +10,13 @@ jobs:
     docker:
       - image: cimg/node:16.15-browsers
     steps:
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
+      - run:
+          name: "Check Chrome install"
+          command: |
+            google-chrome --version
+            chromedriver --version
       - checkout
       - restore_cache:
           key: showtunes-{{ .Branch }}-{{ checksum "package-lock.json" }}
@@ -19,7 +27,7 @@ jobs:
             - "node_modules"
       - run:
           name: "Run unit tests and code coverage"
-          command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
+          command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadless --code-coverage
       - store_artifacts:
           path: coverage
       - codecov/upload:
