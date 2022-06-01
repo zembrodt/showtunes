@@ -76,7 +76,8 @@ const TEST_DEVICE_1: DeviceModel = {
   volume: 50,
   isActive: true,
   isPrivateSession: true,
-  isRestricted: true
+  isRestricted: true,
+  icon: 'device-icon'
 };
 
 const TEST_DEVICE_2: DeviceModel = {

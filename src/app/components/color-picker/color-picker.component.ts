@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
@@ -13,7 +13,7 @@ const WHITE_HEX = 'FFFFFF';
   templateUrl: './color-picker.component.html',
   styleUrls: ['./color-picker.component.scss']
 })
-export class ColorPickerComponent implements OnInit, OnDestroy {
+export class ColorPickerComponent implements OnInit, OnChanges, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
@@ -24,6 +24,8 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
   @Input() presetColors: string[];
   @Input() colorReset$: Observable<void>;
   @Output() colorChange = new EventEmitter<string>();
+
+  calculatedPresetColors: PresetColor[] = null;
 
   inputControl = new FormControl('', [
     Validators.required,
@@ -42,13 +44,24 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
 
     this.theme$.pipe(
       takeUntil(this.ngUnsubscribe)
-    ).subscribe((theme) => this.theme = theme);
+    ).subscribe((theme) => {
+      this.theme = theme;
+      this.updatePresetColors();
+    });
 
     this.colorReset$.pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe(() => {
       this.setFormValue(this.color);
     });
+
+    this.createPresetColors();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.presetColors) {
+      this.createPresetColors();
+    }
   }
 
   ngOnDestroy(): void {
@@ -67,54 +80,96 @@ export class ColorPickerComponent implements OnInit, OnDestroy {
     this.setColorChange(presetColor);
   }
 
-  calculateButtonClass(presetColor: string): string[] {
-    const classes: string[] = [];
-    if (this.color === presetColor.toUpperCase()) {
-      classes.push('selected');
-      if (this.color === WHITE_HEX) {
-        if (this.theme === 'light-theme') {
-          classes.push('white-selected-light');
-        } else {
-          classes.push('white-selected-dark');
-        }
-      }
-    } else {
-      if (presetColor.toUpperCase() === WHITE_HEX) {
-        classes.push('white-unselected');
-        if (this.theme === 'light-theme') {
-          classes.push('white-unselected-light');
-        } else {
-          classes.push('white-unselected-dark');
-        }
-      }
-    }
-    return classes;
-  }
-
-  calculateButtonStyle(presetColor: string): any {
-    if (presetColor.toUpperCase() !== WHITE_HEX) {
-      if (this.color === presetColor.toUpperCase()) {
-        // Selected preset color (non-white)
-        return {
-          'box-shadow': '#' + presetColor + ' 0px 0px 0px 6px inset'
-        };
-      }
-      // Unselected preset color (non-white)
-      return {
-        'background-color': '#' + presetColor
-      };
-    }
-  }
-
   private setColorChange(color: string): void {
     this.color = color.toUpperCase();
     this.setFormValue(this.color);
     this.colorChange.emit(this.color);
+    this.updatePresetColors();
   }
 
   private setFormValue(value: string): void {
     this.form.setValue({
       color: value
     });
+  }
+
+  private createPresetColors(): void {
+    this.calculatedPresetColors = new Array(this.presetColors.length);
+    this.presetColors.forEach((presetColor, index) => {
+      this.calculatedPresetColors[index] = new PresetColor(presetColor, this.color, this.theme);
+    });
+  }
+
+  private updatePresetColors(): void {
+    if (this.calculatedPresetColors !== null) {
+      this.calculatedPresetColors.forEach((presetColor) => {
+        presetColor.updatePresetColor(this.color, this.theme);
+      });
+    }
+  }
+}
+
+class PresetColor {
+  presetColor: string;
+  buttonStyle: any;
+  buttonClass: string[];
+  previousColor: string = null;
+  previousTheme: string = null;
+
+  constructor(presetColor: string, currentColor: string, currentTheme: string) {
+    this.presetColor = presetColor;
+    this.updatePresetColor(currentColor, currentTheme);
+  }
+
+  updatePresetColor(currentColor: string, currentTheme: string): void {
+    if (currentColor !== this.previousColor) {
+      this.setButtonClass(currentColor, currentTheme);
+      this.setButtonStyle(currentColor);
+    }
+    else if (currentTheme !== this.previousTheme) {
+      this.setButtonClass(currentColor, currentTheme);
+    }
+    this.previousColor = currentColor;
+    this.previousTheme = currentTheme;
+  }
+
+  private setButtonClass(currentColor: string, currentTheme: string): void {
+    const classes: string[] = [];
+    if (currentColor === this.presetColor.toUpperCase()) {
+      classes.push('selected');
+      if (currentColor === WHITE_HEX) {
+        if (currentTheme === 'light-theme') {
+          classes.push('white-selected-light');
+        } else {
+          classes.push('white-selected-dark');
+        }
+      }
+    } else {
+      if (this.presetColor.toUpperCase() === WHITE_HEX) {
+        classes.push('white-unselected');
+        if (currentTheme === 'light-theme') {
+          classes.push('white-unselected-light');
+        } else {
+          classes.push('white-unselected-dark');
+        }
+      }
+    }
+    this.buttonClass = classes;
+  }
+
+  private setButtonStyle(currentColor: string): void {
+    if (this.presetColor.toUpperCase() !== WHITE_HEX) {
+      if (currentColor === this.presetColor.toUpperCase()) {
+        // Selected preset color (non-white)
+        this.buttonStyle = {
+          'box-shadow': '#' + this.presetColor + ' 0px 0px 0px 6px inset'
+        };
+      } else {
+        // Unselected preset color (non-white)
+        this.buttonStyle = {
+          'background-color': '#' + this.presetColor
+        };
+      }
+    }
   }
 }

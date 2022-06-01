@@ -23,7 +23,8 @@ const TEST_DEVICE_1: DeviceModel = {
   volume: 50,
   isActive: true,
   isPrivateSession: false,
-  isRestricted: false
+  isRestricted: false,
+  icon: 'laptop_windows'
 };
 
 const TEST_DEVICE_2: DeviceModel = {
@@ -33,7 +34,8 @@ const TEST_DEVICE_2: DeviceModel = {
   volume: 100,
   isActive: false,
   isPrivateSession: false,
-  isRestricted: false
+  isRestricted: false,
+  icon: 'smartphone'
 };
 
 describe('DevicesComponent', () => {
@@ -106,17 +108,6 @@ describe('DevicesComponent', () => {
     fixture.debugElement.nativeElement.querySelector('button').click();
     const devices = await rootLoader.getAllHarnesses(MatMenuItemHarness);
     expect(devices.length).toEqual(0);
-  });
-
-  it('should retrieve the correct device icon', () => {
-    expect(component.getDeviceIcon('COMPUTER')).toEqual('laptop_windows');
-    expect(component.getDeviceIcon('tv')).toEqual('tv');
-    expect(component.getDeviceIcon('smartphone')).toEqual('smartphone');
-    expect(component.getDeviceIcon('speaker')).toEqual('speaker');
-    expect(component.getDeviceIcon('castaudio')).toEqual('cast');
-    expect(component.getDeviceIcon('unsupported device')).toEqual('device_unknown');
-    expect(component.getDeviceIcon('')).toEqual('device_unknown');
-    expect(component.getDeviceIcon(null)).toEqual('device_unknown');
   });
 
   it('should update device list when availableDevices$ updated', async () => {

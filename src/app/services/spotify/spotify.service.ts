@@ -68,6 +68,13 @@ const SCOPES = [
 ];
 const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
+enum SpotifyAPIResponse {
+  Success,
+  NoPlayback,
+  ReAuthenticated,
+  Error
+}
+
 @Injectable({providedIn: 'root'})
 export class SpotifyService {
   static initialized = false;
@@ -183,20 +190,22 @@ export class SpotifyService {
   }
 
   pollCurrentPlayback(pollingInterval: number): void {
-    this.checkTokenExpiry();
     this.http.get<CurrentPlaybackResponse>(playbackEndpoint, {headers: this.getHeaders(), observe: 'response'})
       .pipe(
         map((res: HttpResponse<CurrentPlaybackResponse>) => {
-          if (res.status === 200) {
+          const apiResponse = this.checkResponseWithPlayback(res, true, true);
+          if (apiResponse === SpotifyAPIResponse.Success) {
             return res.body;
           }
-          else if (res.status === 204) {
+          else if (apiResponse === SpotifyAPIResponse.NoPlayback) {
             // Playback not available or active
             return null;
-          } else {
-            console.error(`Received unhandled playback response ${res.status}`);
-            return null;
           }
+          else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+            // Expired token
+            this.pollCurrentPlayback(pollingInterval);
+          }
+          return null;
       })).subscribe((playback) => {
         // if not locked?
         if (playback && playback.item) {
@@ -219,9 +228,7 @@ export class SpotifyService {
             const playlistId = getIdFromSpotifyUri(playback.context.uri);
             if (!this.playlist || this.playlist.id !== playlistId) {
               // Retrieve new playlist
-              this.getPlaylist(playlistId).subscribe((res) => {
-                this.store.dispatch(new ChangePlaylist(parsePlaylist(res)));
-              });
+              this.setPlaylist(playlistId);
             }
           } else if (this.playlist) {
             // No longer playing a playlist, update if we previously were
@@ -260,8 +267,6 @@ export class SpotifyService {
   }
 
   setTrackPosition(position: number): void {
-    this.checkTokenExpiry();
-
     if (position > this.duration) {
       position = this.duration;
     }
@@ -274,19 +279,31 @@ export class SpotifyService {
 
     this.http.put(seekEndpoint, {}, {
       headers: this.getHeaders(),
-      params: requestParams
+      params: requestParams,
+      observe: 'response'
     }).subscribe((res) => {
-      this.store.dispatch(new SetProgress(position));
+      const apiResponse = this.checkResponse(res, false);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        this.store.dispatch(new SetProgress(position));
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.setTrackPosition(position);
+      }
     });
   }
 
   setPlaying(isPlaying: boolean): void {
-    this.checkTokenExpiry();
     const endpoint = isPlaying ? playEndpoint : pauseEndpoint;
     // TODO: this has optional parameters for JSON body
-    this.http.put(endpoint, {}, {headers: this.getHeaders()})
+    this.http.put(endpoint, {}, {headers: this.getHeaders(), observe: 'response'})
       .subscribe((res) => {
-        this.store.dispatch(new SetPlaying(isPlaying));
+        const apiResponse = this.checkResponse(res, false);
+        if (apiResponse === SpotifyAPIResponse.Success) {
+          this.store.dispatch(new SetPlaying(isPlaying));
+        }
+        else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+          this.setPlaying(isPlaying);
+        }
       });
   }
 
@@ -295,30 +312,46 @@ export class SpotifyService {
   }
 
   skipPrevious(forcePrevious: boolean): void {
-    this.checkTokenExpiry();
     // Check if we should skip to previous track or start of current
     if (!forcePrevious && this.progress > SKIP_PREVIOUS_THRESHOLD && !((SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
       this.setTrackPosition(0);
     } else {
-      this.http.post(previousEndpoint, {}, {headers: this.getHeaders()}).subscribe();
+      this.http.post(previousEndpoint, {}, {headers: this.getHeaders(), observe: 'response'})
+        .subscribe((res) => {
+          const apiResponse = this.checkResponse(res, false);
+          if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+            this.skipPrevious(forcePrevious);
+          }
+        });
     }
   }
 
   skipNext(): void {
-    this.checkTokenExpiry();
-    this.http.post(nextEndpoint, {}, {headers: this.getHeaders()}).subscribe();
+    this.http.post(nextEndpoint, {}, {headers: this.getHeaders(), observe: 'response'})
+      .subscribe((res) => {
+        const apiResponse = this.checkResponse(res, false);
+        if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+          this.skipNext();
+        }
+      });
   }
 
   setShuffle(isShuffle: boolean): void {
-    this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('state', (isShuffle ? 'true' : 'false'));
 
     this.http.put(shuffleEndpoint, {}, {
       headers: this.getHeaders(),
-      params: requestParams
+      params: requestParams,
+      observe: 'response'
     }).subscribe((res) => {
-      this.store.dispatch(new SetShuffle(isShuffle));
+      const apiResponse = this.checkResponse(res, false);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        this.store.dispatch(new SetShuffle(isShuffle));
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.setShuffle(isShuffle);
+      }
     });
   }
 
@@ -327,8 +360,6 @@ export class SpotifyService {
   }
 
   setVolume(volume: number): void {
-    this.checkTokenExpiry();
-
     if (volume > 100) {
       volume = 100;
     }
@@ -341,85 +372,134 @@ export class SpotifyService {
 
     this.http.put(volumeEndpoint, {}, {
       headers: this.getHeaders(),
-      params: requestParams
+      params: requestParams,
+      observe: 'response'
     }).subscribe((res) => {
-      this.store.dispatch(new ChangeDeviceVolume(volume));
+      const apiResponse = this.checkResponse(res, false);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        this.store.dispatch(new ChangeDeviceVolume(volume));
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.setVolume(volume);
+      }
     });
   }
 
   setRepeatState(repeatState: string): void {
-    this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('state', repeatState);
 
     this.http.put(repeatEndpoint, {}, {
       headers: this.getHeaders(),
-      params: requestParams
+      params: requestParams,
+      observe: 'response'
     }).subscribe((res) => {
-      this.store.dispatch(new ChangeRepeatState(repeatState));
+      const apiResponse = this.checkResponse(res, false);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        this.store.dispatch(new ChangeRepeatState(repeatState));
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.setRepeatState(repeatState);
+      }
     });
   }
 
-  isTrackSaved(id: string): Observable<boolean[]> {
-    this.checkTokenExpiry();
+  isTrackSaved(id: string): void {
     let requestParams = new HttpParams();
     requestParams = requestParams.append('ids', id);
 
-    return this.http.get<boolean[]>(checkSavedEndpoint, {
+    this.http.get<boolean[]>(checkSavedEndpoint, {
       headers: this.getHeaders(),
-      params: requestParams
+      params: requestParams,
+      observe: 'response'
+    }).subscribe((res) => {
+      const apiResponse = this.checkResponse(res, true);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        if (res.body && res.body.length > 0) {
+          this.store.dispatch(new SetLiked(res.body[0]));
+        }
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.isTrackSaved(id);
+      }
     });
   }
 
   setSavedTrack(id: string, isSaved: boolean): void {
-    this.checkTokenExpiry();
     let requestParams = new HttpParams();
     requestParams = requestParams.append('ids', id);
-    const options = {
-      headers: this.getHeaders(),
-      params: requestParams
-    };
 
-    if (isSaved) {
-      this.http.put(savedTracksEndpoint, {}, options).subscribe((res) => {
-        this.store.dispatch(new SetLiked(true));
+    const savedEndpoint = isSaved ?
+      this.http.put(savedTracksEndpoint, {}, {
+        headers: this.getHeaders(),
+        params: requestParams,
+        observe: 'response'
+      }) :
+      this.http.delete(savedTracksEndpoint, {
+        headers: this.getHeaders(),
+        params: requestParams,
+        observe: 'response'
       });
-    } else {
-      this.http.delete(savedTracksEndpoint, options).subscribe((res) => {
-        this.store.dispatch(new SetLiked(false));
-      });
-    }
+
+    savedEndpoint.subscribe((res) => {
+      const apiResponse = this.checkResponse(res, true);
+      if (apiResponse === SpotifyAPIResponse.Success) {
+        this.store.dispatch(new SetLiked(isSaved));
+      }
+      else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+        this.setSavedTrack(id, isSaved);
+      }
+    });
   }
 
   toggleLiked(): void {
     this.setSavedTrack(this.track.id, !this.isLiked);
   }
 
-  getPlaylist(id: string): Observable<PlaylistResponse> {
-    this.checkTokenExpiry();
-    return this.http.get<PlaylistResponse>(`${playlistsEndpoint}/${id}`, {headers: this.getHeaders()});
-  }
-
-  getDevices(): Observable<MultipleDevicesResponse> {
-    this.checkTokenExpiry();
-    return this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders()});
+  setPlaylist(id: string): void {
+    if (id === null) {
+      this.store.dispatch(new ChangePlaylist(null));
+    } else {
+      this.http.get<PlaylistResponse>(`${playlistsEndpoint}/${id}`, {headers: this.getHeaders(), observe: 'response'})
+        .subscribe((res) => {
+          const apiResponse = this.checkResponse(res, true);
+          if (apiResponse === SpotifyAPIResponse.Success) {
+            this.store.dispatch(new ChangePlaylist(parsePlaylist(res.body)));
+          } else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+            this.setPlaylist(id);
+          }
+        });
+    }
   }
 
   fetchAvailableDevices(): void {
-    this.getDevices().subscribe((res) => {
-      const devices = res.devices.map(device => parseDevice(device));
-      this.store.dispatch(new SetAvailableDevices(devices));
-    });
+    this.http.get<MultipleDevicesResponse>(devicesEndpoint, {headers: this.getHeaders(), observe: 'response'})
+      .subscribe((res) => {
+        const apiResponse = this.checkResponse(res, true);
+        if (apiResponse === SpotifyAPIResponse.Success) {
+          const devices = res.body.devices.map(device => parseDevice(device));
+          this.store.dispatch(new SetAvailableDevices(devices));
+        }
+        else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+          this.fetchAvailableDevices();
+        }
+      });
   }
 
   setDevice(device: DeviceModel, isPlaying: boolean): void {
-    this.checkTokenExpiry();
     this.http.put(playbackEndpoint, {
       device_ids: [device.id],
       play: isPlaying
-    }, {headers: this.getHeaders()}).subscribe((res) => {
-      this.store.dispatch(new ChangeDevice(device));
-    });
+    }, {headers: this.getHeaders(), observe: 'response'})
+      .subscribe((res) => {
+        const apiResponse = this.checkResponse(res, false);
+        if (apiResponse === SpotifyAPIResponse.Success) {
+          this.store.dispatch(new ChangeDevice(device));
+        }
+        else if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
+          this.setDevice(device, isPlaying);
+        }
+      });
   }
 
   getAuthorizeRequestUrl(): string {
@@ -486,6 +566,43 @@ export class SpotifyService {
       }
     }
     return -1; // no auth token exists
+  }
+
+  /**
+   * Checks a Spotify API response against common response codes
+   * @param res
+   * @param hasResponse
+   * @private
+   */
+  private checkResponse(res: HttpResponse<any>, hasResponse: boolean): SpotifyAPIResponse {
+    return this.checkResponseWithPlayback(res, hasResponse, false);
+  }
+
+  private checkResponseWithPlayback(res: HttpResponse<any>, hasResponse: boolean, isPlayback: boolean): SpotifyAPIResponse {
+    if (res.status === 200 && (hasResponse || isPlayback)) {
+      return SpotifyAPIResponse.Success;
+    }
+    else if (res.status === 204 && (!hasResponse || isPlayback)) {
+      return isPlayback ? SpotifyAPIResponse.NoPlayback : SpotifyAPIResponse.Success;
+    }
+    else if (res.status === 401) {
+      // Expired token
+      this.checkTokenExpiry();
+      return SpotifyAPIResponse.ReAuthenticated;
+    }
+    else if (res.status === 403) {
+      // Bad OAuth request
+      this.logout();
+      return SpotifyAPIResponse.Error;
+    }
+    else if (res.status === 429) {
+      console.error('Spotify rate limits exceeded');
+      this.logout();
+      return SpotifyAPIResponse.Error;
+    } else {
+      console.error(`Unexpected response ${res.status}: ${res.statusText}`);
+      return SpotifyAPIResponse.Error;
+    }
   }
 
   private setState(): void {
