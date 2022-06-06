@@ -119,6 +119,7 @@ describe('SettingsMenuComponent', () => {
 
     AppConfig.settings = {
       env: {
+        spotifyApiUrl: null,
         albumColorUrl: null,
         name: null,
         domain: null

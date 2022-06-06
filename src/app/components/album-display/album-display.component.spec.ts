@@ -67,6 +67,7 @@ describe('AlbumDisplayComponent', () => {
     AppConfig.settings = {
       env: {
         albumColorUrl: 'test-album-color-url',
+        spotifyApiUrl: null,
         name: null,
         domain: null
       },
