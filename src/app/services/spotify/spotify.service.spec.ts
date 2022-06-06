@@ -1,6 +1,7 @@
 /* tslint:disable:no-string-literal */
 
-import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { Router } from '@angular/router';
@@ -37,7 +38,7 @@ import { TokenResponse } from '../../models/token.model';
 import { TrackResponse } from '../../models/track.model';
 import { StorageService } from '../storage/storage.service';
 
-import { PREVIOUS_VOLUME, SpotifyService } from './spotify.service';
+import { PREVIOUS_VOLUME, SpotifyAPIResponse, SpotifyService } from './spotify.service';
 
 const TEST_AUTH_TOKEN: AuthToken = {
   accessToken: 'test-access',
@@ -118,7 +119,7 @@ const TEST_DEVICE_RESPONSE: DeviceResponse = {
   id: 'device-id',
   volume_percent: 50,
   name: 'device-test',
-  type: 'device-type',
+  type: 'speaker',
   is_active: true,
   is_private_session: false,
   is_restricted: false
@@ -150,6 +151,12 @@ function generateResponse<T>(body: T, status: number): HttpResponse<T> {
   });
 }
 
+function generateErrorResponse(status: number): HttpErrorResponse {
+  return new HttpErrorResponse({
+    status
+  });
+}
+
 describe('SpotifyService', () => {
   const mockSelectors = new NgxsSelectorMock<SpotifyService>();
   let service: SpotifyService;
@@ -174,6 +181,7 @@ describe('SpotifyService', () => {
       env: {
         name: 'test-name',
         domain: 'test-domain',
+        spotifyApiUrl: 'spotify-url',
         albumColorUrl: 'album-url'
       },
       auth: {
@@ -188,7 +196,8 @@ describe('SpotifyService', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        NgxsModule.forRoot([], {developmentMode: true})
+        NgxsModule.forRoot([], {developmentMode: true}),
+        HttpClientTestingModule
       ],
       providers: [
         SpotifyService,
@@ -318,10 +327,10 @@ describe('SpotifyService', () => {
     http.get = jasmine.createSpy().and.returnValue(of(response));
 
     service.pollCurrentPlayback(1000);
+
     expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player',
+      SpotifyService.spotifyEndpoints.getPlaybackEndpoint(),
       {
-        headers: jasmine.any(HttpHeaders),
         observe: 'response'
       });
   }));
@@ -590,21 +599,12 @@ describe('SpotifyService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new SetIdle(true));
   }));
 
-  it('should set playback to idle and log error when unhandled status code', fakeAsync(() => {
-    const response = generateResponse<CurrentPlaybackResponse>(TEST_PLAYBACK_RESPONSE, 405);
-    http.get = jasmine.createSpy().and.returnValue(of(response));
-
-    service.pollCurrentPlayback(1000);
-    expect(console.error).toHaveBeenCalled();
-    expect(store.dispatch).toHaveBeenCalledWith(new SetIdle(true));
-  }));
-
   it('should set track position when valid', fakeAsync(() => {
     const response = generateResponse(null, 204);
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setTrackPosition(50);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/seek',
+      SpotifyService.spotifyEndpoints.getSeekEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -637,7 +637,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setPlaying(true);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/play',
+      SpotifyService.spotifyEndpoints.getPlayEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -649,7 +649,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setPlaying(false);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/pause',
+      SpotifyService.spotifyEndpoints.getPauseEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -679,7 +679,7 @@ describe('SpotifyService', () => {
     durationProducer.next(6001);
     service.skipPrevious(false);
     expect(http.post).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/previous',
+      SpotifyService.spotifyEndpoints.getPreviousEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -701,7 +701,7 @@ describe('SpotifyService', () => {
     durationProducer.next(5999);
     service.skipPrevious(false);
     expect(http.post).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/previous',
+      SpotifyService.spotifyEndpoints.getPreviousEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -714,7 +714,7 @@ describe('SpotifyService', () => {
     durationProducer.next(6001);
     service.skipPrevious(true);
     expect(http.post).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/previous',
+      SpotifyService.spotifyEndpoints.getPreviousEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -725,7 +725,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(response));
     service.skipNext();
     expect(http.post).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/next',
+      SpotifyService.spotifyEndpoints.getNextEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
@@ -736,7 +736,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setShuffle(true);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/shuffle',
+      SpotifyService.spotifyEndpoints.getShuffleEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -754,7 +754,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setShuffle(false);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/shuffle',
+      SpotifyService.spotifyEndpoints.getShuffleEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -788,7 +788,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setVolume(50);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/volume',
+      SpotifyService.spotifyEndpoints.getVolumeEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -820,7 +820,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setRepeatState('context');
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/repeat',
+      SpotifyService.spotifyEndpoints.getRepeatEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -838,7 +838,7 @@ describe('SpotifyService', () => {
     http.get = jasmine.createSpy().and.returnValue(of(response));
     service.isTrackSaved('test-id');
     expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/tracks/contains',
+      SpotifyService.spotifyEndpoints.getCheckSavedEndpoint(),
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
@@ -855,7 +855,7 @@ describe('SpotifyService', () => {
     http.put = jasmine.createSpy().and.returnValue(of(response));
     service.setSavedTrack('test-id', true);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/tracks',
+      SpotifyService.spotifyEndpoints.getSavedTracksEndpoint(),
       {},
       {
         headers: jasmine.any(HttpHeaders),
@@ -873,7 +873,7 @@ describe('SpotifyService', () => {
     http.delete = jasmine.createSpy().and.returnValue(of(response));
     service.setSavedTrack('test-id', false);
     expect(http.delete).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/tracks',
+      SpotifyService.spotifyEndpoints.getSavedTracksEndpoint(),
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
@@ -912,7 +912,7 @@ describe('SpotifyService', () => {
     http.get = jasmine.createSpy().and.returnValue(of(response));
     service.setPlaylist('playlist-new-id');
     expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/playlists/playlist-new-id',
+      `${SpotifyService.spotifyEndpoints.getPlaylistsEndpoint()}/playlist-new-id`,
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new ChangePlaylist(parsePlaylist(playlistResponse)));
@@ -933,7 +933,7 @@ describe('SpotifyService', () => {
     http.get = jasmine.createSpy().and.returnValue(of(response));
     service.fetchAvailableDevices();
     expect(http.get).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player/devices',
+      SpotifyService.spotifyEndpoints.getDevicesEndpoint(),
       { headers: jasmine.any(HttpHeaders), observe: 'response' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetAvailableDevices([parseDevice(TEST_DEVICE_RESPONSE), parseDevice(device2)]));
@@ -948,7 +948,7 @@ describe('SpotifyService', () => {
     };
     service.setDevice(device, true);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player',
+      SpotifyService.spotifyEndpoints.getPlaybackEndpoint(),
       {
         device_ids: ['new-device'],
         play: true
@@ -967,7 +967,7 @@ describe('SpotifyService', () => {
     };
     service.setDevice(device, false);
     expect(http.put).toHaveBeenCalledOnceWith(
-      'https://api.spotify.com/v1/me/player',
+      SpotifyService.spotifyEndpoints.getPlaybackEndpoint(),
       {
         device_ids: ['new-device'],
         play: false
@@ -1096,5 +1096,38 @@ describe('SpotifyService', () => {
     service.getAuthorizeRequestUrl(); // calls setState
     expect(service['state']).toMatch('^[A-Za-z0-9]{40}$');
     expect(storage.set).toHaveBeenCalledWith('STATE', service['state']);
+  });
+
+  it('should reauthenticate when error response is an expired token', () => {
+    spyOn(service, 'requestAuthToken').and.returnValue(Promise.resolve(null));
+    const expiredToken = {
+      ...TEST_AUTH_TOKEN,
+      expiry: (new Date(Date.UTC(1999, 1, 1))).toString()
+    };
+    tokenProducer.next(expiredToken);
+    const apiResponse = service.checkErrorResponse(generateErrorResponse(401));
+    expect(service.requestAuthToken).toHaveBeenCalledWith(expiredToken.refreshToken, true);
+    expect(apiResponse).toEqual(SpotifyAPIResponse.ReAuthenticated);
+  });
+
+  it('should logout when error response is a bad OAuth request', () => {
+    spyOn(service, 'logout');
+    const apiResponse = service.checkErrorResponse(generateErrorResponse(403));
+    expect(service.logout).toHaveBeenCalled();
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
+  });
+
+  it('should logout and log an error when error response is Spotify rate limits exceeded', () => {
+    spyOn(service, 'logout');
+    const apiResponse = service.checkErrorResponse(generateErrorResponse(429));
+    expect(service.logout).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalled();
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
+  });
+
+  it('should log an error when error response is unknown', () => {
+    const apiResponse = service.checkErrorResponse(generateErrorResponse(404));
+    expect(console.error).toHaveBeenCalled();
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
   });
 });

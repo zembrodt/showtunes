@@ -30,6 +30,9 @@ gulp.task('generate-config', () => {
     if ('MD_DOMAIN' in process.env) {
       configJson.env.domain = process.env.MD_DOMAIN;
     }
+    if ('SHOWTUNES_SPOTIFY_API_URL' in process.env) {
+      configJson.env.spotifyApiUrl = process.env.SHOWTUNES_SPOTIFY_API_URL;
+    }
     if ('MD_ALBUM_COLOR_URL' in process.env) {
       configJson.env.albumColorUrl = process.env.MD_ALBUM_COLOR_URL;
     }

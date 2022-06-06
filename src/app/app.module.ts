@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserModule } from '@angular/platform-browser';
@@ -32,6 +32,7 @@ import { SettingsState } from './core/settings/settings.state';
 import { MaterialModule } from './modules/material.module';
 import { InactivityService } from './services/inactivity/inactivity.service';
 import { PlaybackService } from './services/playback/playback.service';
+import { SpotifyInterceptor } from './services/spotify/spotify.interceptor';
 import { SpotifyService } from './services/spotify/spotify.service';
 import { StorageService } from './services/storage/storage.service';
 
@@ -85,6 +86,11 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     InactivityService,
     StorageService,
     SpotifyService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SpotifyInterceptor,
+      multi: true
+    },
     PlaybackService,
   ],
   bootstrap: [ AppComponent ]
