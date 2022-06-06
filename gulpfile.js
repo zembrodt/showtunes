@@ -6,8 +6,8 @@ gulp.task('generate-config', () => {
 
     // Get current environment
     let env = 'dev'; // default environment
-    if ('MD_ENV' in process.env) {
-      env = process.env.MD_ENV;
+    if ('SHOWTUNES_ENV' in process.env) {
+      env = process.env.SHOWTUNES_ENV;
     }
 
     let configJson = {};
@@ -27,26 +27,26 @@ gulp.task('generate-config', () => {
     }
 
     // Overwrite config with environment variables
-    if ('MD_DOMAIN' in process.env) {
-      configJson.env.domain = process.env.MD_DOMAIN;
+    if ('SHOWTUNES_DOMAIN' in process.env) {
+      configJson.env.domain = process.env.SHOWTUNES_DOMAIN;
     }
     if ('SHOWTUNES_SPOTIFY_API_URL' in process.env) {
       configJson.env.spotifyApiUrl = process.env.SHOWTUNES_SPOTIFY_API_URL;
     }
-    if ('MD_ALBUM_COLOR_URL' in process.env) {
-      configJson.env.albumColorUrl = process.env.MD_ALBUM_COLOR_URL;
+    if ('SHOWTUNES_ALBUM_COLOR_URL' in process.env) {
+      configJson.env.albumColorUrl = process.env.SHOWTUNES_ALBUM_COLOR_URL;
     }
-    if ('MD_CLIENT_ID' in process.env) {
-      configJson.auth.clientId = process.env.MD_CLIENT_ID;
+    if ('SHOWTUNES_CLIENT_ID' in process.env) {
+      configJson.auth.clientId = process.env.SHOWTUNES_CLIENT_ID;
     }
-    if ('MD_CLIENT_SECRET' in process.env) {
-      configJson.auth.clientSecret = process.env.MD_CLIENT_SECRET;
+    if ('SHOWTUNES_CLIENT_SECRET' in process.env) {
+      configJson.auth.clientSecret = process.env.SHOWTUNES_CLIENT_SECRET;
     }
-    if ('MD_TOKEN_URL' in process.env) {
-      configJson.auth.tokenUrl = process.env.MD_TOKEN_URL;
+    if ('SHOWTUNES_TOKEN_URL' in process.env) {
+      configJson.auth.tokenUrl = process.env.SHOWTUNES_TOKEN_URL;
     }
-    if ('MD_DIRECT_REQ' in process.env) {
-      configJson.auth.isDirectSpotifyRequest = process.env.MD_DIRECT_REQ === 'true';
+    if ('SHOWTUNES_DIRECT_REQ' in process.env) {
+      configJson.auth.isDirectSpotifyRequest = process.env.SHOWTUNES_DIRECT_REQ === 'true';
     }
     console.log('In gulp :: After OS Env: ' + JSON.stringify(configJson));
 
