@@ -36,4 +36,4 @@ $dark-primary: mat.define-palette(mat.$gray-palette);
 $dark-accent:  mat.define-palette(mat.$green-palette, A400, A200, A700);
 $dark-warn:    mat.define-palette(mat.$deep-orange-palette);
 
-$dark-theme: mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn)
+$dark-theme: mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn);

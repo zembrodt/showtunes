@@ -60,15 +60,36 @@
       </div>
       <div class="menu-item"
            fxLayout="row"
-           fxLayoutGap="{{menuItemSpacing}}"
-           *ngIf="showSpotifyCode$ | async">
+           fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">lightbulb</mat-icon>
+        <mat-slide-toggle
+          [checked]="showSmartColorSettings"
+          [color]="'primary'"
+          (toggleChange)="onShowSmartColorSettings()"
+          (click)="$event.stopPropagation();"
+        ></mat-slide-toggle>
+      </div>
+      <div class="menu-item"
+           fxLayout="row"
+           fxLayoutGap="{{menuItemSpacing}}"
+           *ngIf="showSmartColorSettings">
+        <div class="app-icon"></div>
+        <mat-icon class="app-icon">play_circle_outline</mat-icon>
+        <mat-slide-toggle
+          [checked]="(useDynamicThemeAccent$ | async) && smartCodeColorUrlSet"
+          [color]="'primary'"
+          [disabled]="!smartCodeColorUrlSet"
+          (toggleChange)="onUseDynamicThemeAccent()"
+          (click)="$event.stopPropagation();"
+        ></mat-slide-toggle>
+        <mat-icon class="app-icon" *ngIf="showSpotifyCode$ | async">qr_code_2</mat-icon>
         <mat-slide-toggle
           [checked]="(useSmartCodeColor$ | async) && smartCodeColorUrlSet"
           [color]="'primary'"
           [disabled]="!smartCodeColorUrlSet"
           (toggleChange)="onUseSmartCodeColor()"
           (click)="$event.stopPropagation();"
+          *ngIf="showSpotifyCode$ | async"
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
@@ -91,6 +112,27 @@
         (colorChange)="onColorChange($event)"
         (click)="$event.stopPropagation();"
         *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
+      <div class="menu-item"
+           fxLayout="row"
+           fxLayoutGap="{{menuItemSpacing}}"
+           *ngIf="!(useDynamicThemeAccent$ | async)">
+        <mat-form-field appearance="fill">
+          <mat-label>Accent Color</mat-label>
+          <mat-select class="select-accent-color"
+                      [(ngModel)]="customAccentColor"
+                      (selectionChange)="onAccentColorChange()"
+          >
+            <mat-option [value]="null">
+              <span>Unselect</span>
+            </mat-option>
+            <mat-option *ngFor="let accentColor of presetAccentColors" [value]="accentColor">
+              <span [ngStyle]="{'color': '#' + accentColor.hex}">
+                {{accentColor.displayName}}
+              </span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
     </div>
     <div class="menu-help"
          fxLayout="row"

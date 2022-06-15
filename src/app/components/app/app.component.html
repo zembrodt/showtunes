@@ -1,5 +1,8 @@
 <div class="showtunes-app"
-     [class]="theme$ | async"
+     [class]="((useDynamicThemeAccent$ | async) && (dynamicAccentColor$ | async) !== null) ?
+      (dynamicAccentColor$ | async) + '-' + (theme$ | async) :
+      (customAccentColor$ | async) !== null ? (customAccentColor$ | async) + '-' + (theme$ | async) :
+      (theme$ | async)"
      [style]="{ cursor: fadeCursor ? 'none' : 'inherit' }">
     <mat-sidenav-container class="container">
       <router-outlet></router-outlet>

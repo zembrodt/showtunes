@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use 'sass:map';
 @use 'assets/styles/themes';
+@use 'assets/styles/themes_dynamic';
 
 @use 'src/app/components';
 
@@ -38,44 +39,14 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background: $track-color;
 }
 
-$thumb-color-light: mat.get-color-from-palette(map.get(themes.$light-theme, accent), text);
-$track-color-light: mat.get-color-from-palette(map.get(themes.$light-theme, background), app-bar);
-
-.scrollbar-light {
-  scrollbar-color: $thumb-color-light $track-color-light;
-}
-
-.scrollbar-light::-webkit-scrollbar-thumb {
-  @include scrollbar-thumb-theme($thumb-color-light, $track-color-light);
-}
-
-.scrollbar-light::-webkit-scrollbar-track {
-  @include scrollbar-track-theme($track-color-light);
-}
-
-$thumb-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, accent), text);
-$track-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, background), app-bar);
-
-.scrollbar-dark {
-  scrollbar-color: $thumb-color-dark $track-color-dark;
-}
-
-.scrollbar-dark::-webkit-scrollbar-thumb {
-  @include scrollbar-thumb-theme($thumb-color-dark, $track-color-dark);
-}
-
-.scrollbar-dark::-webkit-scrollbar-track {
-  @include scrollbar-track-theme($track-color-dark);
-}
-
-.light-theme {
+@mixin light-theme($theme) {
   //@include mat.angular-material-theme($light-theme);
-  @include themes.component-themes(themes.$light-theme);
-  @include custom-components-theme(themes.$light-theme);
+  @include themes.component-themes($theme);
+  @include custom-components-theme($theme);
 
-  $primary: map.get(themes.$light-theme, primary);
-  $foreground: map.get(themes.$light-theme, foreground);
-  $background: map.get(themes.$light-theme, background);
+  $primary: map.get($theme, primary);
+  $foreground: map.get($theme, foreground);
+  $background: map.get($theme, background);
 
   .app-icon {
     color: mat.get-color-from-palette($foreground, text);
@@ -96,16 +67,45 @@ $track-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, backgr
   .playlist-font {
     color: mat.get-color-from-palette($primary, 500);
   }
+
+  $thumb-color-light: mat.get-color-from-palette(map.get($theme, accent), text);
+  $track-color-light: mat.get-color-from-palette(map.get($theme, background), app-bar);
+
+  .scrollbar-light {
+    scrollbar-color: $thumb-color-light $track-color-light;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-thumb {
+    @include scrollbar-thumb-theme($thumb-color-light, $track-color-light);
+  }
+
+  .scrollbar-light::-webkit-scrollbar-track {
+    @include scrollbar-track-theme($track-color-light);
+  }
+
+  .mat-select-panel {
+    @extend .scrollbar;
+    @extend .scrollbar-light;
+    background-color: mat.get-color-from-palette($background, background);
+  }
+
+  .mat-select-arrow {
+    color: mat.get-contrast-color-from-palette($primary, text);
+  }
 }
 
-.dark-theme {
-  //@include mat.angular-material-theme($dark-theme);
-  @include themes.component-themes(themes.$dark-theme);
-  @include custom-components-theme(themes.$dark-theme);
+.light-theme {
+  @include light-theme(themes.$light-theme);
+}
 
-  $primary: map.get(themes.$dark-theme, primary);
-  $foreground: map.get(themes.$dark-theme, foreground);
-  $background: map.get(themes.$dark-theme, background);
+@mixin dark-theme($theme) {
+  //@include mat.angular-material-theme($dark-theme);
+  @include themes.component-themes($theme);
+  @include custom-components-theme($theme);
+
+  $primary: map.get($theme, primary);
+  $foreground: map.get($theme, foreground);
+  $background: map.get($theme, background);
 
   .app-icon {
     color: mat.get-color-from-palette($primary, text);
@@ -116,7 +116,7 @@ $track-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, backgr
   }
 
   .track-player-icon-foreground {
-    color: mat.get-color-from-palette($background, text);
+    color: rgba(black, 0.87);
   }
 
   .track-player-icon-background {
@@ -126,4 +126,187 @@ $track-color-dark: mat.get-color-from-palette(map.get(themes.$dark-theme, backgr
   .playlist-font {
     color: mat.get-color-from-palette($primary, 500);
   }
+
+  $thumb-color-dark: mat.get-color-from-palette(map.get($theme, accent), text);
+  $track-color-dark: mat.get-color-from-palette(map.get($theme, background), app-bar);
+
+  .scrollbar-dark {
+    scrollbar-color: $thumb-color-dark $track-color-dark;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    @include scrollbar-thumb-theme($thumb-color-dark, $track-color-dark);
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-track {
+    @include scrollbar-track-theme($track-color-dark);
+  }
+
+  .mat-select-panel {
+    @extend .scrollbar;
+    @extend .scrollbar-dark;
+    background-color: mat.get-color-from-palette($background, background);
+  }
+
+  .mat-select-arrow {
+    color: mat.get-contrast-color-from-palette($primary, text);
+  }
+}
+
+.dark-theme {
+  @include dark-theme(themes.$dark-theme);
+}
+
+// Dynamic light themes
+.red-light-theme {
+  @include light-theme(themes_dynamic.$red-light-theme);
+}
+
+.pink-light-theme {
+  @include light-theme(themes_dynamic.$pink-light-theme);
+}
+
+.purple-light-theme {
+  @include light-theme(themes_dynamic.$purple-light-theme);
+}
+
+.deep-purple-light-theme {
+  @include light-theme(themes_dynamic.$deep-purple-light-theme);
+}
+
+.indigo-light-theme {
+  @include light-theme(themes_dynamic.$indigo-light-theme);
+}
+
+.blue-light-theme {
+  @include light-theme(themes_dynamic.$blue-light-theme);
+}
+
+.light-blue-light-theme {
+  @include light-theme(themes_dynamic.$light-blue-light-theme);
+}
+
+.cyan-light-theme {
+  @include light-theme(themes_dynamic.$cyan-light-theme);
+}
+
+.teal-light-theme {
+  @include light-theme(themes_dynamic.$teal-light-theme);
+}
+
+.green-light-theme {
+  @include light-theme(themes_dynamic.$green-light-theme);
+}
+
+.light-green-light-theme {
+  @include light-theme(themes_dynamic.$light-green-light-theme);
+}
+
+.lime-light-theme {
+  @include light-theme(themes_dynamic.$lime-light-theme);
+}
+
+.yellow-light-theme {
+  @include light-theme(themes_dynamic.$yellow-light-theme);
+}
+
+.amber-light-theme {
+  @include light-theme(themes_dynamic.$amber-light-theme);
+}
+
+.orange-light-theme {
+  @include light-theme(themes_dynamic.$orange-light-theme);
+}
+
+.deep-orange-light-theme {
+  @include light-theme(themes_dynamic.$deep-orange-light-theme);
+}
+
+.brown-light-theme {
+  @include light-theme(themes_dynamic.$brown-light-theme);
+}
+
+.gray-light-theme {
+  @include light-theme(themes_dynamic.$gray-light-theme);
+}
+
+.blue-gray-light-theme {
+  @include light-theme(themes_dynamic.$blue-gray-light-theme);
+}
+
+// Dynamic dark themes
+.red-dark-theme {
+  @include dark-theme(themes_dynamic.$red-dark-theme);
+}
+
+.pink-dark-theme {
+  @include dark-theme(themes_dynamic.$pink-dark-theme);
+}
+
+.purple-dark-theme {
+  @include dark-theme(themes_dynamic.$purple-dark-theme);
+}
+
+.deep-purple-dark-theme {
+  @include dark-theme(themes_dynamic.$deep-purple-dark-theme);
+}
+
+.indigo-dark-theme {
+  @include dark-theme(themes_dynamic.$indigo-dark-theme);
+}
+
+.blue-dark-theme {
+  @include dark-theme(themes_dynamic.$blue-dark-theme);
+}
+
+.light-blue-dark-theme {
+  @include dark-theme(themes_dynamic.$light-blue-dark-theme);
+}
+
+.cyan-dark-theme {
+  @include dark-theme(themes_dynamic.$cyan-dark-theme);
+}
+
+.teal-dark-theme {
+  @include dark-theme(themes_dynamic.$teal-dark-theme);
+}
+
+.green-dark-theme {
+  @include dark-theme(themes_dynamic.$green-dark-theme);
+}
+
+.light-green-dark-theme {
+  @include dark-theme(themes_dynamic.$light-green-dark-theme);
+}
+
+.lime-dark-theme {
+  @include dark-theme(themes_dynamic.$lime-dark-theme);
+}
+
+.yellow-dark-theme {
+  @include dark-theme(themes_dynamic.$yellow-dark-theme);
+}
+
+.amber-dark-theme {
+  @include dark-theme(themes_dynamic.$amber-dark-theme);
+}
+
+.orange-dark-theme {
+  @include dark-theme(themes_dynamic.$orange-dark-theme);
+}
+
+.deep-orange-dark-theme {
+  @include dark-theme(themes_dynamic.$deep-orange-dark-theme);
+}
+
+.brown-dark-theme {
+  @include dark-theme(themes_dynamic.$brown-dark-theme);
+}
+
+.gray-dark-theme {
+  @include dark-theme(themes_dynamic.$gray-dark-theme);
+}
+
+.blue-gray-dark-theme {
+  @include dark-theme(themes_dynamic.$blue-gray-dark-theme);
 }

@@ -1,5 +1,6 @@
 .actions {
   justify-content: end;
+  padding-top: 0;
 }
 
 .help-dialog-title {
@@ -16,4 +17,8 @@
 
 ::ng-deep .mat-raised-button.mat-primary {
   color: white !important;
+}
+
+.footer-content {
+  padding-top: 24px;
 }
