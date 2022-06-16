@@ -4,7 +4,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
-import { MockComponent, MockProvider, MockRender, ngMocks } from 'ng-mocks';
+import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
@@ -22,7 +22,10 @@ describe('AppComponent', () => {
   let playback: PlaybackService;
 
   let themeProducer: BehaviorSubject<string>;
+  let customAccentColorProducer: BehaviorSubject<string>;
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
+  let useDynamicThemeAccentProducer: BehaviorSubject<boolean>;
+  let dynamicAccentColorProducer: BehaviorSubject<string>;
   let inactiveProducer: BehaviorSubject<boolean>;
   let spotifyInitSpy: Spy<() => boolean>;
 
@@ -54,7 +57,10 @@ describe('AppComponent', () => {
     app = fixture.componentInstance;
 
     themeProducer = mockSelectors.defineNgxsSelector<string>(app, 'theme$');
+    customAccentColorProducer = mockSelectors.defineNgxsSelector<string>(app, 'customAccentColor$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(app, 'showPlayerControls$');
+    useDynamicThemeAccentProducer = mockSelectors.defineNgxsSelector<boolean>(app, 'useDynamicThemeAccent$');
+    dynamicAccentColorProducer = mockSelectors.defineNgxsSelector<string>(app, 'dynamicAccentColor$');
 
     SpotifyService.initialized = false;
     spotifyInitSpy = spyOn(SpotifyService, 'initialize').and.returnValue(true);
@@ -117,6 +123,107 @@ describe('AppComponent', () => {
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
     expect(main.classes['light-theme']).toBeFalsy();
     expect(main.classes['dark-theme']).toBeFalsy();
+  });
+
+  it('should use dynamic theme when useDynamicThemeAccent and dynamicAccentColor exists', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(true);
+    dynamicAccentColorProducer.next('cyan');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['cyan-light-theme']).toBeTruthy();
+  });
+
+  it('should use dynamic theme over custom theme when useDynamicThemeAccent and dynamicAccentColor exists', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(true);
+    dynamicAccentColorProducer.next('cyan');
+    customAccentColorProducer.next('green');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['cyan-light-theme']).toBeTruthy();
+    expect(main.classes['green-light-theme']).toBeFalsy();
+  });
+
+  it('should not use dynamic theme when not useDynamicThemeAccent and dynamicAccentColor exists', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(false);
+    dynamicAccentColorProducer.next('cyan');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeTruthy();
+    expect(main.classes['cyan-light-theme']).toBeFalsy();
+  });
+
+  it('should not use dynamic theme when useDynamicThemeAccent and dynamicAccentColor is null', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(true);
+    dynamicAccentColorProducer.next(null);
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeTruthy();
+    expect(main.classes['cyan-light-theme']).toBeFalsy();
+  });
+
+  it('should use custom theme when customAccentColor exists and not dynamic', () => {
+    themeProducer.next('light-theme');
+    customAccentColorProducer.next('green');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['green-light-theme']).toBeTruthy();
+  });
+
+  it('should use custom theme when customAccentColor exists and not useDynamicAccentTheme and dynamicAccentColor exists', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(false);
+    dynamicAccentColorProducer.next('cyan');
+    customAccentColorProducer.next('green');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['cyan-light-theme']).toBeFalsy();
+    expect(main.classes['green-light-theme']).toBeTruthy();
+  });
+
+  it('should use custom theme when customAccentColor exists and useDynamicAccentTheme and dynamicAccentColor is null', () => {
+    themeProducer.next('light-theme');
+    useDynamicThemeAccentProducer.next(true);
+    dynamicAccentColorProducer.next(null);
+    customAccentColorProducer.next('green');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['green-light-theme']).toBeTruthy();
+  });
+
+  it('should use no theme when useDynamicAccentTheme and dynamicAccentColor exists and theme is null', () => {
+    themeProducer.next(null);
+    useDynamicThemeAccentProducer.next(true);
+    dynamicAccentColorProducer.next('cyan');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    console.log(JSON.stringify(main.classes));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['dark-theme']).toBeFalsy();
+    expect(main.classes['cyan-light-theme']).toBeFalsy();
+    expect(main.classes['cyan-dark-theme']).toBeFalsy();
+    expect(main.classes['cyan-null']).toBeFalsy();
+  });
+
+  it('should use no theme when customAccentColor exists and theme is null', () => {
+    themeProducer.next(null);
+    customAccentColorProducer.next('green');
+    fixture.detectChanges();
+    const main = fixture.debugElement.query(By.css('.showtunes-app'));
+    console.log(JSON.stringify(main.classes));
+    expect(main.classes['light-theme']).toBeFalsy();
+    expect(main.classes['dark-theme']).toBeFalsy();
+    expect(main.classes['green-light-theme']).toBeFalsy();
+    expect(main.classes['green-dark-theme']).toBeFalsy();
+    expect(main.classes['green-null']).toBeFalsy();
   });
 
   it('should show cursor when not fading and not inactive', () => {

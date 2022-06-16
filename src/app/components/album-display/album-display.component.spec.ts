@@ -8,11 +8,12 @@ import { MatProgressBar, MatProgressBarModule } from '@angular/material/progress
 import { MatProgressSpinnerModule, MatSpinner } from '@angular/material/progress-spinner';
 import { By } from '@angular/platform-browser';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgxsModule } from '@ngxs/store';
+import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { AppConfig } from '../../app.config';
 import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
+import { ChangeSmartColor } from '../../core/settings/settings.actions';
 import { DEFAULT_BAR_CODE_COLOR, DEFAULT_CODE_COLOR } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { ImageResponse } from '../../models/image.model';
@@ -53,6 +54,7 @@ describe('AlbumDisplayComponent', () => {
   let fixture: ComponentFixture<AlbumDisplayComponent>;
   let loader: HarnessLoader;
   let spotify: SpotifyService;
+  let store: Store;
 
   let coverArtProducer: BehaviorSubject<ImageResponse>;
   let trackProducer: BehaviorSubject<TrackModel>;
@@ -62,6 +64,7 @@ describe('AlbumDisplayComponent', () => {
   let showSpotifyCodeProducer: BehaviorSubject<boolean>;
   let backgroundColorProducer: BehaviorSubject<string>;
   let barColorProducer: BehaviorSubject<string>;
+  let useDynamicThemeAccentProducer: BehaviorSubject<boolean>;
 
   beforeAll(() => {
     AppConfig.settings = {
@@ -91,10 +94,12 @@ describe('AlbumDisplayComponent', () => {
           provide: AppConfig,
           deps: [ MockProvider(HttpClient) ]
         },
-        MockProvider(SpotifyService)
+        MockProvider(SpotifyService),
+        MockProvider(Store)
       ]
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
+    store = TestBed.inject(Store);
   });
 
   beforeEach(() => {
@@ -110,6 +115,7 @@ describe('AlbumDisplayComponent', () => {
     showSpotifyCodeProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'showSpotifyCode$');
     backgroundColorProducer = mockSelectors.defineNgxsSelector<string>(component, 'backgroundColor$');
     barColorProducer = mockSelectors.defineNgxsSelector<string>(component, 'barColor$');
+    useDynamicThemeAccentProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useDynamicThemeAccent$');
 
     fixture.detectChanges();
   });
@@ -317,9 +323,11 @@ describe('AlbumDisplayComponent', () => {
     albumProducer.next(TEST_ALBUM_MODEL);
     expect(component.smartBackgroundColor).toBeFalsy();
     expect(component.smartBarColor).toBeFalsy();
+    expect(store.dispatch).not.toHaveBeenCalled();
     useSmartCodeColorProducer.next(true);
     fixture.detectChanges();
     expect(spotify.getAlbumColor).toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor('ABC123'));
     expect(component.smartBackgroundColor).toEqual('ABC123');
     expect(component.smartBarColor).not.toBeFalsy();
   });
@@ -331,11 +339,27 @@ describe('AlbumDisplayComponent', () => {
     albumProducer.next(TEST_ALBUM_MODEL);
     expect(component.smartBackgroundColor).toBeFalsy();
     expect(component.smartBarColor).toBeFalsy();
+    expect(store.dispatch).not.toHaveBeenCalled();
     useSmartCodeColorProducer.next(true);
     fixture.detectChanges();
     expect(spotify.getAlbumColor).toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor(null));
     expect(component.smartBackgroundColor).toEqual(DEFAULT_CODE_COLOR);
     expect(component.smartBarColor).toEqual(DEFAULT_BAR_CODE_COLOR);
     expect(console.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('should set smart color when using dynamic accent theme', () => {
+    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of('#ABC123'));
+    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    albumProducer.next(TEST_ALBUM_MODEL);
+    expect(component.smartBackgroundColor).toBeFalsy();
+    expect(component.smartBarColor).toBeFalsy();
+    expect(store.dispatch).not.toHaveBeenCalled();
+    useDynamicThemeAccentProducer.next(true);
+    fixture.detectChanges();
+    expect(spotify.getAlbumColor).toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor('ABC123'));
+    expect(component.smartBackgroundColor).toEqual('ABC123');
   });
 });

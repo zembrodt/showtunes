@@ -42,7 +42,10 @@ export function hexToRgb(hex: string): Color {
  * Euclidean distance between two colors based on their RGB values
  */
 export function calculateColorDistance(c1: Color, c2: Color): number {
-  return Math.sqrt(Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2));
+  if (c1 && c2) {
+    return Math.sqrt(Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2));
+  }
+  return null;
 }
 
 const validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -155,14 +158,17 @@ function getDeviceIcon(deviceType: string): string {
 }
 
 export function capitalizeWords(words: string, separator: string): string {
-  const wordsSplit = words.split(separator);
-  for (let i = 0; i < wordsSplit.length; i++) {
-    if (wordsSplit[i].length > 1) {
-      wordsSplit[i] = wordsSplit[i][0].toUpperCase() + wordsSplit[i].substring(1);
+  if (words && separator) {
+    const wordsSplit = [];
+    for (let word of words.trim().split(separator)) {
+      word = word.trim();
+      if (word.length > 1) {
+        wordsSplit.push(word[0].toUpperCase() + word.substring(1));
+      } else if (word.length > 0) {
+        wordsSplit.push(word[0].toUpperCase());
+      }
     }
-    else if (wordsSplit[i].length > 0) {
-      wordsSplit[i] = wordsSplit[i][0].toUpperCase();
-    }
+    return wordsSplit.length > 0 ? wordsSplit.join(' ') : null;
   }
-  return wordsSplit.join(' ');
+  return null;
 }

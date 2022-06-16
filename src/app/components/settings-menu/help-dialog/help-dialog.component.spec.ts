@@ -30,8 +30,10 @@ const CONTROLS_FADE_INDEX = 2;
 const CONTROLS_ON_INDEX = 3;
 const PLAYLIST_INDEX = 4;
 const SHOW_CODE_INDEX = 5;
-const SMART_CODE_INDEX = 6;
-const BAR_COLOR_INDEX = 7;
+const SMART_COLOR_INDEX = 6;
+const SMART_ACCENT_INDEX = 7;
+const SMART_CODE_INDEX = 8;
+const BAR_COLOR_INDEX = 9;
 
 describe('HelpDialogComponent', () => {
   describe('MAT_DIALOG_DATA with light theme', () => {
@@ -107,7 +109,7 @@ describe('HelpDialogComponent', () => {
 
     it('should include listed features', () => {
       const helpInfo = fixture.debugElement.queryAll(By.css('ul'))[0];
-      expect(helpInfo.queryAll(By.css('li')).length).toEqual(5);
+      expect(helpInfo.queryAll(By.css('li')).length).toEqual(6);
     });
 
     it('should include a help section', () => {
@@ -118,7 +120,7 @@ describe('HelpDialogComponent', () => {
 
     it('should include all help info', () => {
       const helpInfo = fixture.debugElement.queryAll(By.css('ul'))[1];
-      expect(helpInfo.queryAll(By.css('li')).length).toEqual(9);
+      expect(helpInfo.queryAll(By.css('li')).length).toEqual(12);
     });
 
     it('should include help for theme toggle', () => {
@@ -151,9 +153,19 @@ describe('HelpDialogComponent', () => {
       expect(helpIcons[SHOW_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
     });
 
+    it('should include help for smart color toggle', () => {
+      const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
+      expect(helpIcons[SMART_COLOR_INDEX].nativeElement.textContent.trim()).toEqual('lightbulb');
+    });
+
+    it('should include help for smart accent toggle', () => {
+      const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
+      expect(helpIcons[SMART_ACCENT_INDEX].nativeElement.textContent.trim()).toEqual('play_circle_outline');
+    });
+
     it('should include help for smart code toggle', () => {
       const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
-      expect(helpIcons[SMART_CODE_INDEX].nativeElement.textContent.trim()).toEqual('lightbulb');
+      expect(helpIcons[SMART_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
     });
 
     it('should include help for bar color toggle', () => {

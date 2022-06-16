@@ -6,6 +6,9 @@ import { ImageResponse } from '../models/image.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
 import {
+  calculateColorDistance,
+  capitalizeWords,
+  Color,
   expandHexColor,
   generateRandomString,
   getIdFromSpotifyUri,
@@ -143,6 +146,23 @@ describe('util package', () => {
     it('should return null with null or empty input', () => {
       expect(hexToRgb('')).toBeNull();
       expect(hexToRgb(null)).toBeNull();
+    });
+  });
+
+  describe('calculateColorDistance', () => {
+    it('should return the correct euclidean distance between two RGB colors', () => {
+      const c1: Color = { r: 4, g: 3, b: 2 };
+      const c2: Color = { r: 2, g: 1, b: 4 };
+      expect(calculateColorDistance(c1, c2)).toEqual(Math.sqrt(12));
+    });
+
+    it('should return null when either color is null or undefined', () => {
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, null)).toBeNull();
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, undefined)).toBeNull();
+      expect(calculateColorDistance(null, { r: 1, g: 2, b: 3 })).toBeNull();
+      expect(calculateColorDistance(undefined, { r: 1, g: 2, b: 3 })).toBeNull();
+      expect(calculateColorDistance(null, null)).toBeNull();
+      expect(calculateColorDistance(undefined, undefined)).toBeNull();
     });
   });
 
@@ -317,6 +337,45 @@ describe('util package', () => {
       expect(getIdFromSpotifyUri('')).toBeNull();
       expect(getIdFromSpotifyUri(null)).toBeNull();
       expect(getIdFromSpotifyUri(undefined)).toBeNull();
+    });
+  });
+
+  describe('capitalizeWords', () => {
+    it('should split words by the separator and capitalize the first letters', () => {
+      expect(capitalizeWords('first-test', '-')).toEqual('First Test');
+      expect(capitalizeWords('abc 123', ' ')).toEqual('Abc 123');
+    });
+
+    it('should be able to capitalize single letter words', () => {
+      expect(capitalizeWords('test-a', '-')).toEqual('Test A');
+      expect(capitalizeWords('a', '-')).toEqual('A');
+    });
+
+    it('should ignore whitespace before/after words', () => {
+      expect(capitalizeWords('  this is a test  \n \t', ' ')).toEqual('This Is A Test');
+    });
+
+    it('should not add empty words to string', () => {
+      expect(capitalizeWords('--this-is -a-test--', '-')).toEqual('This Is A Test');
+    });
+
+    it('should return null if words string is only separators', () => {
+      expect(capitalizeWords('-', '-')).toBeNull();
+      expect(capitalizeWords('---', '-')).toBeNull();
+      expect(capitalizeWords(' - -\n- \t', '-')).toBeNull();
+      expect(capitalizeWords(' \t   \n ', ' ')).toBeNull();
+    });
+
+    it('should return null if either input is null or undefined or empty string', () => {
+      expect(capitalizeWords(null, '-')).toBeNull();
+      expect(capitalizeWords(undefined, '-')).toBeNull();
+      expect(capitalizeWords('', '-')).toBeNull();
+      expect(capitalizeWords('this-is-a-test', null)).toBeNull();
+      expect(capitalizeWords('this-is-a-test', undefined)).toBeNull();
+      expect(capitalizeWords('this-is-a-test', '')).toBeNull();
+      expect(capitalizeWords(null, null)).toBeNull();
+      expect(capitalizeWords(undefined, undefined)).toBeNull();
+      expect(capitalizeWords('', '')).toBeNull();
     });
   });
 });

@@ -170,6 +170,13 @@ export class SettingsState implements NgxsOnInit {
     ctx.patchState({dynamicAccentColor: action.dynamicAccentColor});
   }
 
+  /**
+   * Updates the theme class on the overlayContainer
+   * @param theme the standard theme (light/dark)
+   * @param customTheme a custom accent color for the theme
+   * @param dynamicTheme a dynamic accent color for the theme (overwrites the custom color)
+   * @private
+   */
   private updateOverlayContainer(theme: string, customTheme: string, dynamicTheme: string): void {
     const classList = this.overlayContainer.getContainerElement().classList;
     const toRemove = Array.from(classList).filter((item: string) =>
@@ -179,7 +186,7 @@ export class SettingsState implements NgxsOnInit {
       classList.remove(...toRemove);
     }
     let additionalTheme = dynamicTheme;
-    if (additionalTheme === null) {
+    if (!additionalTheme) {
       additionalTheme = customTheme;
     }
     classList.add(additionalTheme ? `${additionalTheme}-${theme}` : theme);
@@ -187,6 +194,8 @@ export class SettingsState implements NgxsOnInit {
 
   /**
    * Find the closest pre-defined theme color to the smart color
+   * @param smartColor a hex color
+   * @private
    */
   private calculateDynamicAccentColor(smartColor: string): string {
     const smartColorRgb = hexToRgb(smartColor);
