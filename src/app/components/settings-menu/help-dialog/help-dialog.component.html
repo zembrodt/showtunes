@@ -1,6 +1,12 @@
-<h1 mat-dialog-title class="help-dialog-title mat-display-2">ShowTunes</h1>
+<div fxLayout="row"
+     fxLayoutAlign="space-between start">
+  <h1 mat-dialog-title class="help-dialog-title mat-display-2">ShowTunes</h1>
+  <div mat-dialog-actions class="actions">
+    <button mat-raised-button color="primary" (click)="onClose()">Close</button>
+  </div>
+</div>
+<p class="version-text">v{{data.version}}</p>
 <mat-dialog-content class="scrollbar scrollbar-{{data.isLightTheme ? 'light' : 'dark'}}">
-  <p class="version-text">v{{data.version}}</p>
   <h1 class="help-dialog-title mat-display-1">Info</h1>
   <p>
     ShowTunes is a web application that retrieves information from the Spotify API on the track currently
@@ -16,6 +22,7 @@
     <li>Current track's album artwork</li>
     <li>An optional Spotify code for the current track</li>
     <li>Customization for the Spotify code's colors</li>
+    <li>Customization for the app's accent colors</li>
     <li>A full music player to connect to your Spotify account</li>
     <li>Light and dark themes</li>
   </ul>
@@ -41,18 +48,34 @@
       to a QR code and allows people to scan them to access the track on their Spotify app
     </li>
     <li>
-      <mat-icon class="help-icon">lightbulb</mat-icon> - Toggle between using a dynamic color generated from the current
-      album's artwork for the Spotify code or a fixed color
+      <mat-icon class="help-icon">lightbulb</mat-icon> - Toggle display of settings for dynamic colors generated from
+      the album's artwork
+      <ul>
+        <li>
+          <mat-icon class="help-icon">play_circle_outline</mat-icon> - Toggle between using the dynamic color for the
+          app's accent colors or a custom color/the default color
+        </li>
+        <li>
+          <mat-icon class="help-icon">qr_code_2</mat-icon> - Toggle between using the dynamic color for the Spotify code
+          or a fixed color
+        </li>
+      </ul>
     </li>
     <li>
       <mat-icon class="help-icon">invert_colors</mat-icon> - Toggle the bar code on the Spotify code as black or white.
       Only usable when dynamic color is set to off
     </li>
     <li>
-      Color picker - Set the background color of the Spotify code to a fixed color. The widget displays preset colors
-      or allows a hex code to set to a specific color. Only usable when dynamic color is set to off
+      <em><strong>Color picker</strong></em> - Set the background color of the Spotify code to a fixed color. The widget displays preset colors
+      or allows a hex code to set to a specific color. This can be overridden by the dynamic code color
+    </li>
+    <li>
+      <em><strong>Accent color</strong></em> - Set the accent color of the app to a fixed color from the list rather than the default green color.
+      This can be overridden by the dynamic accent color
     </li>
   </ul>
+</mat-dialog-content>
+<div class="footer-content">
   <p>
     Developed by <a href="https://zembrodt.com/">Ryan Zembrodt</a>
   </p>
@@ -66,8 +89,6 @@
     <div class="copyright-link footer-item">
       <a href="https://raw.githubusercontent.com/zembrodt/showtunes/main/LICENSE" target="_blank">© {{data.year}} Ryan Zembrodt</a>
     </div>
-    <div mat-dialog-actions class="actions">
-      <button mat-raised-button color="primary" (click)="onClose()">Close</button>
-    </div>
+    <div class="actions"></div>
   </div>
-</mat-dialog-content>
+</div>

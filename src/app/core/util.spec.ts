@@ -6,15 +6,21 @@ import { ImageResponse } from '../models/image.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
 import {
+  calculateColorDistance,
+  capitalizeWords,
+  Color,
+  cssRgbToHex,
   expandHexColor,
   generateRandomString,
   getIdFromSpotifyUri,
   hexToRgb,
   isHexColor,
+  isRgbColor,
   parseAlbum,
   parseDevice,
   parsePlaylist,
-  parseTrack
+  parseTrack,
+  rgbToHex
 } from './util';
 
 const ARTIST_RESPONSE_1: ArtistResponse = {
@@ -143,6 +149,87 @@ describe('util package', () => {
     it('should return null with null or empty input', () => {
       expect(hexToRgb('')).toBeNull();
       expect(hexToRgb(null)).toBeNull();
+    });
+  });
+
+  describe('isRgbColor', () => {
+    it('should return true for valid RGB color', () => {
+      expect(isRgbColor({ r: 0, g: 0, b: 0 })).toBeTrue();
+      expect(isRgbColor({ r: 100, g: 100, b: 100 })).toBeTrue();
+      expect(isRgbColor({ r: 255, g: 255, b: 255 })).toBeTrue();
+    });
+
+    it('should return false for values outside a valid RGB range', () => {
+      expect(isRgbColor({ r: -1, g: -1, b: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 256, b: 256 })).toBeFalse();
+      expect(isRgbColor({ r: -1, g: 0, b: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: -1, b: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: 0, b: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 255, b: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 256, b: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 255, b: 256 })).toBeFalse();
+    });
+
+    it('should return false if no color', () => {
+      expect(isRgbColor(null)).toBeFalse();
+      expect(isRgbColor(undefined)).toBeFalse();
+    });
+  });
+
+  describe('rgbToHex', () => {
+    it('should return hex color for valid RGB values', () => {
+      expect(rgbToHex({ r: 0, g: 0, b: 0 })).toEqual('000000');
+      expect(rgbToHex({ r: 255, g: 255, b: 255 })).toEqual('FFFFFF');
+      expect(rgbToHex({ r: 171, g: 193, b: 35 })).toEqual('ABC123');
+    });
+
+    it('should return null if not valid RGB values', () => {
+      expect(rgbToHex({ r: -1, g: -1, b: -1 })).toBeNull();
+      expect(rgbToHex({ r: -1, g: 0, b: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: -1, b: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: 0, b: -1 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 256, b: 256 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 255, b: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 256, b: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 255, b: 256 })).toBeNull();
+      expect(rgbToHex(null)).toBeNull();
+      expect(rgbToHex(undefined)).toBeNull();
+    });
+  });
+
+  describe('cssRgbToHex', () => {
+    it('should return hex color for valid CSS RGB value', () => {
+      expect(cssRgbToHex('rgb(0,0,0)')).toEqual('000000');
+      expect(cssRgbToHex('rgb( 255 , 255 , 255 )')).toEqual('FFFFFF');
+      expect(cssRgbToHex('rgb(171, 193, 35)')).toEqual('ABC123');
+      expect(cssRgbToHex('0,0,0')).toEqual('000000');
+      expect(cssRgbToHex('rgba(0,0,0,0)')).toEqual('000000');
+      expect(cssRgbToHex('(0,0,0)')).toEqual('000000');
+    });
+
+    it('should return null for an invalid CSS RGB value', () => {
+      expect(cssRgbToHex('rgb(0,0)')).toBeNull();
+      expect(cssRgbToHex('test')).toBeNull();
+      expect(cssRgbToHex('rgblah(0,0,0)')).toBeNull();
+      expect(cssRgbToHex(null)).toBeNull();
+      expect(cssRgbToHex(undefined)).toBeNull();
+    });
+  });
+
+  describe('calculateColorDistance', () => {
+    it('should return the correct euclidean distance between two RGB colors', () => {
+      const c1: Color = { r: 4, g: 3, b: 2 };
+      const c2: Color = { r: 2, g: 1, b: 4 };
+      expect(calculateColorDistance(c1, c2)).toEqual(Math.sqrt(12));
+    });
+
+    it('should return null when either color is null or undefined', () => {
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, null)).toBeNull();
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, undefined)).toBeNull();
+      expect(calculateColorDistance(null, { r: 1, g: 2, b: 3 })).toBeNull();
+      expect(calculateColorDistance(undefined, { r: 1, g: 2, b: 3 })).toBeNull();
+      expect(calculateColorDistance(null, null)).toBeNull();
+      expect(calculateColorDistance(undefined, undefined)).toBeNull();
     });
   });
 
@@ -317,6 +404,45 @@ describe('util package', () => {
       expect(getIdFromSpotifyUri('')).toBeNull();
       expect(getIdFromSpotifyUri(null)).toBeNull();
       expect(getIdFromSpotifyUri(undefined)).toBeNull();
+    });
+  });
+
+  describe('capitalizeWords', () => {
+    it('should split words by the separator and capitalize the first letters', () => {
+      expect(capitalizeWords('first-test', '-')).toEqual('First Test');
+      expect(capitalizeWords('abc 123', ' ')).toEqual('Abc 123');
+    });
+
+    it('should be able to capitalize single letter words', () => {
+      expect(capitalizeWords('test-a', '-')).toEqual('Test A');
+      expect(capitalizeWords('a', '-')).toEqual('A');
+    });
+
+    it('should ignore whitespace before/after words', () => {
+      expect(capitalizeWords('  this is a test  \n \t', ' ')).toEqual('This Is A Test');
+    });
+
+    it('should not add empty words to string', () => {
+      expect(capitalizeWords('--this-is -a-test--', '-')).toEqual('This Is A Test');
+    });
+
+    it('should return null if words string is only separators', () => {
+      expect(capitalizeWords('-', '-')).toBeNull();
+      expect(capitalizeWords('---', '-')).toBeNull();
+      expect(capitalizeWords(' - -\n- \t', '-')).toBeNull();
+      expect(capitalizeWords(' \t   \n ', ' ')).toBeNull();
+    });
+
+    it('should return null if either input is null or undefined or empty string', () => {
+      expect(capitalizeWords(null, '-')).toBeNull();
+      expect(capitalizeWords(undefined, '-')).toBeNull();
+      expect(capitalizeWords('', '-')).toBeNull();
+      expect(capitalizeWords('this-is-a-test', null)).toBeNull();
+      expect(capitalizeWords('this-is-a-test', undefined)).toBeNull();
+      expect(capitalizeWords('this-is-a-test', '')).toBeNull();
+      expect(capitalizeWords(null, null)).toBeNull();
+      expect(capitalizeWords(undefined, undefined)).toBeNull();
+      expect(capitalizeWords('', '')).toBeNull();
     });
   });
 });

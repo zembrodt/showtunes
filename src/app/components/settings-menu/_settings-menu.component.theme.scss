@@ -12,4 +12,8 @@
   .foreground-text {
     color: mat.get-color-from-palette($foreground, text);
   }
+
+  .select-accent-color {
+    color: mat.get-color-from-palette($foreground, text);
+  }
 }

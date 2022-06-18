@@ -17,7 +17,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
+  @Select(SettingsState.customAccentColor) customAccentColor$: Observable<string>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
+  @Select(SettingsState.useDynamicThemeAccent) useDynamicThemeAccent$: Observable<boolean>;
+  @Select(SettingsState.dynamicAccentColor) dynamicAccentColor$: Observable<string>;
 
   fadePlayerControls = false;
   fadeCursor = false;

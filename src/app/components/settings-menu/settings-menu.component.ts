@@ -10,15 +10,24 @@ import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AppConfig } from '../../app.config';
 import {
+  ChangeCustomAccentColor,
   ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
   ChangeTheme,
+  ToggleDynamicThemeAccent,
   TogglePlaylistName,
   ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
-import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DEFAULT_SETTINGS, PlayerControlsOptions } from '../../core/settings/settings.model';
+import {
+  BAR_COLOR_BLACK,
+  BAR_COLOR_WHITE,
+  CustomColor,
+  DEFAULT_SETTINGS,
+  DYNAMIC_THEME_COLORS,
+  PlayerControlsOptions
+} from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { isHexColor } from '../../core/util';
 import { SpotifyService } from '../../services/spotify/spotify.service';
@@ -44,17 +53,23 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
+  @Select(SettingsState.customAccentColor) customAccentColor$: Observable<string>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
   @Select(SettingsState.spotifyCodeBarColor) barColor$: Observable<string>;
+  @Select(SettingsState.useDynamicThemeAccent) useDynamicThemeAccent$: Observable<boolean>;
 
   private currentTheme: string;
   private currentBarColor: string;
+  private useSmartCodeColor: boolean;
+  private useDynamicThemeAccent: boolean;
 
   smartCodeColorUrlSet = false;
+  showSmartColorSettings = false;
+  customAccentColor: CustomColor = null;
 
   colorPickerResetEvent = new Subject<void>();
 
@@ -66,6 +81,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   readonly playerControlsFade = PlayerControlsOptions.Fade;
   readonly placeholderColor = DEFAULT_SETTINGS.spotifyCode.backgroundColor;
   readonly presetColors = PRESET_COLORS;
+  readonly presetAccentColors = DYNAMIC_THEME_COLORS.getColors();
 
   constructor(private store: Store, private spotify: SpotifyService, private router: Router, public helpDialog: MatDialog) {}
 
@@ -73,9 +89,37 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.theme$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((theme) => this.currentTheme = theme);
+    this.customAccentColor$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((customAccentColor) => {
+        if (customAccentColor !== null) {
+          for (const presetColor of this.presetAccentColors) {
+            if (presetColor.name === customAccentColor) {
+              this.customAccentColor = presetColor;
+              break;
+            }
+          };
+        }
+      });
     this.barColor$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((barColor) => this.currentBarColor = barColor);
+    this.useSmartCodeColor$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((useSmartCodeColor) => {
+        this.useSmartCodeColor = useSmartCodeColor;
+        if (useSmartCodeColor && !this.showSmartColorSettings) {
+          this.showSmartColorSettings = true;
+        }
+      });
+    this.useDynamicThemeAccent$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((useDynamicThemeAccent) => {
+        this.useDynamicThemeAccent = useDynamicThemeAccent;
+        if (useDynamicThemeAccent && !this.showSmartColorSettings) {
+          this.showSmartColorSettings = true;
+        }
+      });
 
     if (AppConfig.settings.env.albumColorUrl) {
       this.smartCodeColorUrlSet = true;
@@ -113,6 +157,18 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ToggleSpotifyCode());
   }
 
+  onShowSmartColorSettings(): void {
+    this.showSmartColorSettings = !this.showSmartColorSettings;
+    if (!this.showSmartColorSettings) {
+      if (this.useSmartCodeColor) {
+        this.onUseSmartCodeColor();
+      }
+      if (this.useDynamicThemeAccent) {
+        this.onUseDynamicThemeAccent();
+      }
+    }
+  }
+
   onUseSmartCodeColor(): void {
     this.store.dispatch(new ToggleSmartCodeColor());
   }
@@ -126,6 +182,18 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     if (isHexColor(change)) {
       this.store.dispatch(new ChangeSpotifyCodeBackgroundColor(change));
     }
+  }
+
+  onUseDynamicThemeAccent(): void {
+    this.store.dispatch(new ToggleDynamicThemeAccent());
+  }
+
+  onAccentColorChange(): void {
+    let accentColor: string = null;
+    if (this.customAccentColor) {
+      accentColor = this.customAccentColor.name;
+    }
+    this.store.dispatch(new ChangeCustomAccentColor(accentColor));
   }
 
   openHelpDialog(): void {

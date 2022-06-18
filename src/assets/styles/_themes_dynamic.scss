@@ -1,0 +1,67 @@
+@use '@angular/material' as mat;
+@use 'themes';
+
+@include mat.core();
+
+// List of all potential "dynamic" theme accent colors
+$red-accent: mat.define-palette(mat.$red-palette, A400, A200, A700);
+$pink-accent: mat.define-palette(mat.$pink-palette, A400, A200, A700);
+$purple-accent: mat.define-palette(mat.$purple-palette, A400, A200, A700);
+$deep-purple-accent: mat.define-palette(mat.$deep-purple-palette, A400, A200, A700);
+$indigo-accent: mat.define-palette(mat.$indigo-palette, A400, A200, A700);
+$blue-accent: mat.define-palette(mat.$blue-palette, A400, A200, A700);
+$light-blue-accent: mat.define-palette(mat.$light-blue-palette, A400, A200, A700);
+$cyan-accent: mat.define-palette(mat.$cyan-palette, A400, A200, A700);
+$teal-accent: mat.define-palette(mat.$teal-palette, A400, A200, A700);
+$green-accent: mat.define-palette(mat.$green-palette, A400, A200, A700);
+$light-green-accent: mat.define-palette(mat.$light-green-palette, A400, A200, A700);
+$lime-accent: mat.define-palette(mat.$lime-palette, A400, A200, A700);
+$yellow-accent: mat.define-palette(mat.$yellow-palette, A400, A200, A700);
+$amber-accent: mat.define-palette(mat.$amber-palette, A400, A200, A700);
+$orange-accent: mat.define-palette(mat.$orange-palette, A400, A200, A700);
+$deep-orange-accent: mat.define-palette(mat.$deep-orange-palette, A400, A200, A700);
+$brown-accent: mat.define-palette(mat.$brown-palette, A400, A200, A700);
+$gray-accent: mat.define-palette(mat.$gray-palette, A400, A200, A700);
+$blue-gray-accent: mat.define-palette(mat.$blue-gray-palette, A400, A200, A700);
+
+// List of all potential "dynamic" light themes
+$red-light-theme: mat.define-light-theme(themes.$light-primary, $red-accent, themes.$light-warn);
+$pink-light-theme: mat.define-light-theme(themes.$light-primary, $pink-accent, themes.$light-warn);
+$purple-light-theme: mat.define-light-theme(themes.$light-primary, $purple-accent, themes.$light-warn);
+$deep-purple-light-theme: mat.define-light-theme(themes.$light-primary, $deep-purple-accent, themes.$light-warn);
+$indigo-light-theme: mat.define-light-theme(themes.$light-primary, $indigo-accent, themes.$light-warn);
+$blue-light-theme: mat.define-light-theme(themes.$light-primary, $blue-accent, themes.$light-warn);
+$light-blue-light-theme: mat.define-light-theme(themes.$light-primary, $light-blue-accent, themes.$light-warn);
+$cyan-light-theme: mat.define-light-theme(themes.$light-primary, $cyan-accent, themes.$light-warn);
+$teal-light-theme: mat.define-light-theme(themes.$light-primary, $teal-accent, themes.$light-warn);
+$green-light-theme: mat.define-light-theme(themes.$light-primary, $green-accent, themes.$light-warn);
+$light-green-light-theme: mat.define-light-theme(themes.$light-primary, $light-green-accent, themes.$light-warn);
+$lime-light-theme: mat.define-light-theme(themes.$light-primary, $lime-accent, themes.$light-warn);
+$yellow-light-theme: mat.define-light-theme(themes.$light-primary, $yellow-accent, themes.$light-warn);
+$amber-light-theme: mat.define-light-theme(themes.$light-primary, $amber-accent, themes.$light-warn);
+$orange-light-theme: mat.define-light-theme(themes.$light-primary, $orange-accent, themes.$light-warn);
+$deep-orange-light-theme: mat.define-light-theme(themes.$light-primary, $deep-orange-accent, themes.$light-warn);
+$brown-light-theme: mat.define-light-theme(themes.$light-primary, $brown-accent, themes.$light-warn);
+$gray-light-theme: mat.define-light-theme(themes.$light-primary, $gray-accent, themes.$light-warn);
+$blue-gray-light-theme: mat.define-light-theme(themes.$light-primary, $blue-gray-accent, themes.$light-warn);
+
+// List of all potential "dynamic" dark themes
+$red-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $red-accent, themes.$dark-warn);
+$pink-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $pink-accent, themes.$dark-warn);
+$purple-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $purple-accent, themes.$dark-warn);
+$deep-purple-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $deep-purple-accent, themes.$dark-warn);
+$indigo-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $indigo-accent, themes.$dark-warn);
+$blue-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $blue-accent, themes.$dark-warn);
+$light-blue-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $light-blue-accent, themes.$dark-warn);
+$cyan-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $cyan-accent, themes.$dark-warn);
+$teal-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $teal-accent, themes.$dark-warn);
+$green-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $green-accent, themes.$dark-warn);
+$light-green-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $light-green-accent, themes.$dark-warn);
+$lime-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $lime-accent, themes.$dark-warn);
+$yellow-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $yellow-accent, themes.$dark-warn);
+$amber-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $amber-accent, themes.$dark-warn);
+$orange-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $orange-accent, themes.$dark-warn);
+$deep-orange-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $deep-orange-accent, themes.$dark-warn);
+$brown-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $brown-accent, themes.$dark-warn);
+$gray-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $gray-accent, themes.$dark-warn);
+$blue-gray-dark-theme:  mat.define-dark-theme(themes.$dark-primary, $blue-gray-accent, themes.$dark-warn);

@@ -38,6 +38,55 @@ export function hexToRgb(hex: string): Color {
   return null;
 }
 
+export function isRgbColor(color: Color): boolean {
+  if (color) {
+    return color.r >= 0 && color.r <= 255
+      && color.g >= 0 && color.g <= 255
+      && color.b >= 0 && color.b <= 255;
+  }
+  return false;
+}
+
+function componentToHex(c: number): string {
+  const hex = c.toString(16).toUpperCase();
+  return hex.length === 1 ? `0${hex}` : hex;
+}
+
+export function rgbToHex(color: Color): string {
+  if (isRgbColor(color)) {
+    return `${componentToHex(color.r)}${componentToHex(color.g)}${componentToHex(color.b)}`;
+  }
+  return null;
+}
+
+export function cssRgbToHex(rgb: string): string {
+  if (rgb) {
+    rgb = rgb.replace('rgb', '')
+      .replace('a', '')
+      .replace('\(', '')
+      .replace('\)', '');
+    const rgbValues = rgb.split(',');
+    if (rgbValues.length >= 3) {
+      return rgbToHex({
+        r: parseInt(rgbValues[0].trim(), 10),
+        g: parseInt(rgbValues[1].trim(), 10),
+        b: parseInt(rgbValues[2].trim(), 10)
+      });
+    }
+  }
+  return null;
+}
+
+/**
+ * Euclidean distance between two colors based on their RGB values
+ */
+export function calculateColorDistance(c1: Color, c2: Color): number {
+  if (c1 && c2) {
+    return Math.sqrt(Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2));
+  }
+  return null;
+}
+
 const validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 export function generateRandomString(length: number): string {
@@ -145,4 +194,20 @@ function getDeviceIcon(deviceType: string): string {
     }
   }
   return icon;
+}
+
+export function capitalizeWords(words: string, separator: string): string {
+  if (words && separator) {
+    const wordsSplit = [];
+    for (let word of words.trim().split(separator)) {
+      word = word.trim();
+      if (word.length > 1) {
+        wordsSplit.push(word[0].toUpperCase() + word.substring(1));
+      } else if (word.length > 0) {
+        wordsSplit.push(word[0].toUpperCase());
+      }
+    }
+    return wordsSplit.length > 0 ? wordsSplit.join(' ') : null;
+  }
+  return null;
 }
