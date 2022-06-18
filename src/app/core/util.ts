@@ -38,6 +38,45 @@ export function hexToRgb(hex: string): Color {
   return null;
 }
 
+export function isRgbColor(color: Color): boolean {
+  if (color) {
+    return color.r >= 0 && color.r <= 255
+      && color.g >= 0 && color.g <= 255
+      && color.b >= 0 && color.b <= 255;
+  }
+  return false;
+}
+
+function componentToHex(c: number): string {
+  const hex = c.toString(16).toUpperCase();
+  return hex.length === 1 ? `0${hex}` : hex;
+}
+
+export function rgbToHex(color: Color): string {
+  if (isRgbColor(color)) {
+    return `${componentToHex(color.r)}${componentToHex(color.g)}${componentToHex(color.b)}`;
+  }
+  return null;
+}
+
+export function cssRgbToHex(rgb: string): string {
+  if (rgb) {
+    rgb = rgb.replace('rgb', '')
+      .replace('a', '')
+      .replace('\(', '')
+      .replace('\)', '');
+    const rgbValues = rgb.split(',');
+    if (rgbValues.length >= 3) {
+      return rgbToHex({
+        r: parseInt(rgbValues[0].trim(), 10),
+        g: parseInt(rgbValues[1].trim(), 10),
+        b: parseInt(rgbValues[2].trim(), 10)
+      });
+    }
+  }
+  return null;
+}
+
 /**
  * Euclidean distance between two colors based on their RGB values
  */

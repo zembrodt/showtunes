@@ -9,15 +9,18 @@ import {
   calculateColorDistance,
   capitalizeWords,
   Color,
+  cssRgbToHex,
   expandHexColor,
   generateRandomString,
   getIdFromSpotifyUri,
   hexToRgb,
   isHexColor,
+  isRgbColor,
   parseAlbum,
   parseDevice,
   parsePlaylist,
-  parseTrack
+  parseTrack,
+  rgbToHex
 } from './util';
 
 const ARTIST_RESPONSE_1: ArtistResponse = {
@@ -146,6 +149,70 @@ describe('util package', () => {
     it('should return null with null or empty input', () => {
       expect(hexToRgb('')).toBeNull();
       expect(hexToRgb(null)).toBeNull();
+    });
+  });
+
+  describe('isRgbColor', () => {
+    it('should return true for valid RGB color', () => {
+      expect(isRgbColor({ r: 0, g: 0, b: 0 })).toBeTrue();
+      expect(isRgbColor({ r: 100, g: 100, b: 100 })).toBeTrue();
+      expect(isRgbColor({ r: 255, g: 255, b: 255 })).toBeTrue();
+    });
+
+    it('should return false for values outside a valid RGB range', () => {
+      expect(isRgbColor({ r: -1, g: -1, b: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 256, b: 256 })).toBeFalse();
+      expect(isRgbColor({ r: -1, g: 0, b: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: -1, b: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: 0, b: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 255, b: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 256, b: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 255, b: 256 })).toBeFalse();
+    });
+
+    it('should return false if no color', () => {
+      expect(isRgbColor(null)).toBeFalse();
+      expect(isRgbColor(undefined)).toBeFalse();
+    });
+  });
+
+  describe('rgbToHex', () => {
+    it('should return hex color for valid RGB values', () => {
+      expect(rgbToHex({ r: 0, g: 0, b: 0 })).toEqual('000000');
+      expect(rgbToHex({ r: 255, g: 255, b: 255 })).toEqual('FFFFFF');
+      expect(rgbToHex({ r: 171, g: 193, b: 35 })).toEqual('ABC123');
+    });
+
+    it('should return null if not valid RGB values', () => {
+      expect(rgbToHex({ r: -1, g: -1, b: -1 })).toBeNull();
+      expect(rgbToHex({ r: -1, g: 0, b: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: -1, b: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: 0, b: -1 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 256, b: 256 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 255, b: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 256, b: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 255, b: 256 })).toBeNull();
+      expect(rgbToHex(null)).toBeNull();
+      expect(rgbToHex(undefined)).toBeNull();
+    });
+  });
+
+  describe('cssRgbToHex', () => {
+    it('should return hex color for valid CSS RGB value', () => {
+      expect(cssRgbToHex('rgb(0,0,0)')).toEqual('000000');
+      expect(cssRgbToHex('rgb( 255 , 255 , 255 )')).toEqual('FFFFFF');
+      expect(cssRgbToHex('rgb(171, 193, 35)')).toEqual('ABC123');
+      expect(cssRgbToHex('0,0,0')).toEqual('000000');
+      expect(cssRgbToHex('rgba(0,0,0,0)')).toEqual('000000');
+      expect(cssRgbToHex('(0,0,0)')).toEqual('000000');
+    });
+
+    it('should return null for an invalid CSS RGB value', () => {
+      expect(cssRgbToHex('rgb(0,0)')).toBeNull();
+      expect(cssRgbToHex('test')).toBeNull();
+      expect(cssRgbToHex('rgblah(0,0,0)')).toBeNull();
+      expect(cssRgbToHex(null)).toBeNull();
+      expect(cssRgbToHex(undefined)).toBeNull();
     });
   });
 

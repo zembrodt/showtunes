@@ -205,7 +205,6 @@ describe('AppComponent', () => {
     dynamicAccentColorProducer.next('cyan');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    console.log(JSON.stringify(main.classes));
     expect(main.classes['light-theme']).toBeFalsy();
     expect(main.classes['dark-theme']).toBeFalsy();
     expect(main.classes['cyan-light-theme']).toBeFalsy();
@@ -218,7 +217,6 @@ describe('AppComponent', () => {
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    console.log(JSON.stringify(main.classes));
     expect(main.classes['light-theme']).toBeFalsy();
     expect(main.classes['dark-theme']).toBeFalsy();
     expect(main.classes['green-light-theme']).toBeFalsy();
