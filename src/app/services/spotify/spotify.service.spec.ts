@@ -187,8 +187,7 @@ describe('SpotifyService', () => {
       auth: {
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret',
-        tokenUrl: 'token-url',
-        isDirectSpotifyRequest: false
+        tokenUrl: 'token-url'
       },
       logging: null
     };

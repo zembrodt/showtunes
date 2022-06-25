@@ -9,7 +9,6 @@ export interface IAppConfig {
     clientId: string;
     clientSecret: string;
     tokenUrl: string;
-    isDirectSpotifyRequest: boolean;
   };
   logging: {
     level: string;

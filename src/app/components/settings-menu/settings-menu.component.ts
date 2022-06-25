@@ -98,7 +98,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
               this.customAccentColor = presetColor;
               break;
             }
-          };
+          }
         }
       });
     this.barColor$

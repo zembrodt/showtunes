@@ -16,3 +16,12 @@ html, body {
 .showtunes-app {
   height: 100%;
 }
+
+.not-initialized {
+  height: 100%;
+
+  .mat-icon {
+    transform: scale(4);
+    margin: 0 0 64px;
+  }
+}

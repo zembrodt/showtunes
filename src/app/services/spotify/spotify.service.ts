@@ -61,12 +61,13 @@ export enum SpotifyAPIResponse {
 export class SpotifyService {
   static initialized = false;
   protected static clientId: string;
-  protected static tokenUrl: string;
+  protected static clientSecret: string = null;
+  protected static tokenUrl: string = null;
   public static spotifyApiUrl: string;
   public static spotifyEndpoints: SpotifyEndpoints;
   public static albumColorUrl: string;
-  protected static isDirectSpotifyRequest: boolean;
   protected static redirectUri: string;
+  protected static isDirectSpotifyRequest = false;
 
   @Select(AuthState.token) private authToken$: BehaviorSubject<AuthToken>;
   private authToken: AuthToken = null;
@@ -100,20 +101,46 @@ export class SpotifyService {
   private isLiked = false;
 
   static initialize(): boolean {
+    this.initialized = true;
     try {
       this.clientId = AppConfig.settings.auth.clientId;
+      if (!this.clientId) {
+        console.error('No Spotify API Client ID provided');
+        this.initialized = false;
+      }
+
       this.tokenUrl = AppConfig.settings.auth.tokenUrl;
+      this.clientSecret = AppConfig.settings.auth.clientSecret;
+      if (!this.tokenUrl && !this.clientSecret) {
+        console.error('No URL to retrieve Spotify API tokens or Spotify API client secret configured');
+        this.initialized = false;
+      }
+      this.isDirectSpotifyRequest = !this.tokenUrl;
+
       this.spotifyApiUrl = AppConfig.settings.env.spotifyApiUrl;
-      this.spotifyEndpoints = new SpotifyEndpoints(this.spotifyApiUrl);
+      if (!this.spotifyApiUrl) {
+        console.error('No Spotify API URL configured');
+        this.initialized = false;
+      } else {
+        this.spotifyEndpoints = new SpotifyEndpoints(this.spotifyApiUrl);
+      }
+
+      if (AppConfig.settings.env.domain) {
+        this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback');
+      } else {
+        console.error('No domain set for Spotify OAuth callback URL');
+        this.initialized = false;
+      }
+
       this.albumColorUrl = AppConfig.settings.env.albumColorUrl;
-      this.isDirectSpotifyRequest = AppConfig.settings.auth.isDirectSpotifyRequest;
-      this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback');
+      if (!this.albumColorUrl) {
+        console.warn('No album color URL is configured. Related features are disabled');
+      }
     } catch (error) {
-      console.error('Failed to initialize spotify service: ' + error);
-      return false;
+      console.error(`Failed to initialize spotify service: ${error}`);
+      this.initialized = false;
     }
-    this.initialized = true;
-    return true;
+    return this.initialized;
   }
 
   constructor(private http: HttpClient, private storage: StorageService, private store: Store) {
@@ -146,7 +173,7 @@ export class SpotifyService {
     const headers = new HttpHeaders().set(
       'Content-Type', 'application/x-www-form-urlencoded'
     );
-    if (SpotifyService.isDirectSpotifyRequest) {
+    if (!SpotifyService.isDirectSpotifyRequest) {
       headers.set('Authorization', `Basic ${btoa(`${SpotifyService.clientId}:${AppConfig.settings.auth.clientSecret}`)}`);
     }
 

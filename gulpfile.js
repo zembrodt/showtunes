@@ -45,9 +45,6 @@ gulp.task('generate-config', () => {
     if ('SHOWTUNES_TOKEN_URL' in process.env) {
       configJson.auth.tokenUrl = process.env.SHOWTUNES_TOKEN_URL;
     }
-    if ('SHOWTUNES_DIRECT_REQ' in process.env) {
-      configJson.auth.isDirectSpotifyRequest = process.env.SHOWTUNES_DIRECT_REQ === 'true';
-    }
     console.log('In gulp :: After OS Env: ' + JSON.stringify(configJson));
 
     if (!configJson.env.name) {
