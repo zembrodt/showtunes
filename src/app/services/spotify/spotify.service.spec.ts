@@ -231,6 +231,73 @@ describe('SpotifyService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('should fail to initialize if no configured clientId', () => {
+    AppConfig.settings.auth.clientId = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should fail to initialize if no configured tokenUrl and clientSecret', () => {
+    AppConfig.settings.auth.tokenUrl = null;
+    AppConfig.settings.auth.clientSecret = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should set isDirectSpotifyRequest to false if configured tokenUrl and not configured clientSecret', () => {
+    AppConfig.settings.auth.tokenUrl = 'test-url';
+    AppConfig.settings.auth.clientSecret = null;
+    expect(SpotifyService.initialize()).toBeTrue();
+    expect(SpotifyService['isDirectSpotifyRequest']).toBeFalse();
+  });
+
+  it('should set isDirectSpotifyRequest to false if configured tokenUrl and clientSecret', () => {
+    AppConfig.settings.auth.tokenUrl = 'test-url';
+    AppConfig.settings.auth.clientSecret = 'secret';
+    expect(SpotifyService.initialize()).toBeTrue();
+    expect(SpotifyService['isDirectSpotifyRequest']).toBeFalse();
+  });
+
+  it('should set isDirectSpotifyRequest to true if not configured tokenUrl and configured clientSecret', () => {
+    AppConfig.settings.auth.tokenUrl = null;
+    AppConfig.settings.auth.clientSecret = 'secret';
+    expect(SpotifyService.initialize()).toBeTrue();
+    expect(SpotifyService['isDirectSpotifyRequest']).toBeTrue();
+  });
+
+  it('should fail to initialize if no configured spotifyApiUrl', () => {
+    AppConfig.settings.env.spotifyApiUrl = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should fail to initialize if no configured domain', () => {
+    AppConfig.settings.env.domain = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should log a warning message if no configured albumColorUrl', () => {
+    spyOn(console, 'warn');
+    AppConfig.settings.env.albumColorUrl = null;
+    expect(SpotifyService.initialize()).toBeTrue();
+    expect(console.warn).toHaveBeenCalled();
+  });
+
+  it('should fail to initialize if issue retrieving AppConfig', () => {
+    AppConfig.settings.env = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+
+    AppConfig.settings.auth = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+
+    AppConfig.settings = null;
+    expect(SpotifyService.initialize()).toBeFalse();
+    expect(console.error).toHaveBeenCalled();
+  });
+
   it('should requestAuthToken with POST request for non-refresh', fakeAsync(() => {
     const tokenResponse: TokenResponse = {
       access_token: 'test-access-token',

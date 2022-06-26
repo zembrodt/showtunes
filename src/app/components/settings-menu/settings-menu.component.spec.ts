@@ -5,12 +5,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { FormsModule } from '@angular/forms';
-import {
-  MatButtonToggle,
-  MatButtonToggleChange,
-  MatButtonToggleGroup,
-  MatButtonToggleModule
-} from '@angular/material/button-toggle';
+import { MatButtonToggle, MatButtonToggleChange, MatButtonToggleGroup, MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonToggleHarness } from '@angular/material/button-toggle/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatOption } from '@angular/material/core';
@@ -37,12 +32,7 @@ import {
   ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
-import {
-  BAR_COLOR_BLACK,
-  BAR_COLOR_WHITE,
-  DYNAMIC_THEME_COLORS,
-  PlayerControlsOptions
-} from '../../core/settings/settings.model';
+import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DYNAMIC_THEME_COLORS, PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { cssRgbToHex } from '../../core/util';
@@ -516,22 +506,48 @@ describe('SettingsMenuComponent', () => {
     expect(toggles.length).toEqual(1);
   });
 
-  it('should set smart settings toggle to check when showSmartColorSettings', async () => {
+  it('should set smart settings toggle to check when showSmartColorSettings and smartCodeColorUrlSet', async () => {
     component.showSmartColorSettings = true;
+    component.smartCodeColorUrlSet = true;
     fixture.detectChanges();
     await openMenu(loader);
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
+    expect(toggle.disabled).toBeFalse();
   });
 
-  it('should set smart settings toggle to uncheck when not showSmartColorSettings', async () => {
+  it('should set smart settings toggle to uncheck when not showSmartColorSettings and smartCodeColorUrlSet', async () => {
     component.showSmartColorSettings = false;
+    component.smartCodeColorUrlSet = true;
     fixture.detectChanges();
     await openMenu(loader);
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
+    expect(toggle.disabled).toBeFalse();
+  });
+
+  it('should set smart settings toggle to uncheck and disabled when showSmartColorSettings and not smartCodeColorUrlSet', async () => {
+    component.showSmartColorSettings = true;
+    component.smartCodeColorUrlSet = false;
+    fixture.detectChanges();
+    await openMenu(loader);
+    const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
+      .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
+    expect(toggle.checked).toBeFalse();
+    expect(toggle.disabled).toBeTrue();
+  });
+
+  it('should set smart settings toggle to uncheck and disabled when not showSmartColorSettings and not smartCodeColorUrlSet', async () => {
+    component.showSmartColorSettings = false;
+    component.smartCodeColorUrlSet = false;
+    fixture.detectChanges();
+    await openMenu(loader);
+    const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
+      .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
+    expect(toggle.checked).toBeFalse();
+    expect(toggle.disabled).toBeTrue();
   });
 
   it('should set smart accent toggle to check and not disabled when useDynamicThemeAccent and smartColorUrlSet', async () => {

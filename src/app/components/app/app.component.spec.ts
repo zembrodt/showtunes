@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
@@ -37,6 +38,7 @@ describe('AppComponent', () => {
         MockComponent(RouterOutlet)
       ],
       imports: [
+        MatIconModule,
         MatSidenavModule,
         NgxsModule.forRoot([], { developmentMode: true })
       ],
@@ -91,6 +93,23 @@ describe('AppComponent', () => {
     app.ngOnInit();
     expect(SpotifyService.initialize).toHaveBeenCalled();
     expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should not display the failed to initialize error message if Spotify service initialized', () => {
+    const failedInit = fixture.debugElement.query(By.css('.not-initialized'));
+    expect(failedInit).toBeFalsy();
+  });
+
+  it('should display a failed to initialize error message if Spotify service not initialized', () => {
+    spotifyInitSpy.and.returnValue(false);
+    app.appInitialized = false;
+    spyOn(console, 'error');
+    app.ngOnInit();
+    fixture.detectChanges();
+    const failedInit = fixture.debugElement.query(By.css('.not-initialized'));
+    expect(failedInit).toBeTruthy();
+    expect(failedInit.query(By.css('div')).nativeElement.textContent.trim()).toEqual('ShowTunes failed to initialize!');
+    expect(failedInit.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('error_outline');
   });
 
   it('should initialize the Spotify service subscriptions', () => {
