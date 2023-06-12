@@ -11,12 +11,7 @@
         <router-outlet></router-outlet>
       </ng-container>
       <ng-template #appNotInitialized>
-        <div class="not-initialized"
-             fxLayout="column"
-             fxLayoutAlign="center center">
-          <mat-icon [color]="'warn'">error_outline</mat-icon>
-          <div class="mat-display-1">ShowTunes failed to initialize!</div>
-        </div>
+        <app-error [message]="'ShowTunes failed to initialize!'"></app-error>
       </ng-template>
     </mat-sidenav-container>
 </div>

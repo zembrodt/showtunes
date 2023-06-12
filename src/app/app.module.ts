@@ -18,6 +18,7 @@ import { CallbackComponent } from './components/callback/callback.component';
 import { ColorPickerComponent } from './components/color-picker/color-picker.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DevicesComponent } from './components/devices/devices.component';
+import { ErrorComponent } from './components/error/error.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { LoginComponent } from './components/login/login.component';
 import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
@@ -49,6 +50,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     ColorPickerComponent,
     DashboardComponent,
     DevicesComponent,
+    ErrorComponent,
     HelpDialogComponent,
     LoadingComponent,
     LoginComponent,

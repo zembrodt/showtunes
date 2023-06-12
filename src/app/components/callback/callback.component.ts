@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Select, Store } from '@ngxs/store';
+import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { AuthToken } from '../../core/auth/auth.model';
 import { AuthState } from '../../core/auth/auth.state';
@@ -22,8 +22,7 @@ export class CallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private spotify: SpotifyService,
-    private store: Store) { }
+    private spotify: SpotifyService) { }
 
   ngOnInit(): void {
     // redirect to /dashboard if already authenticated
@@ -44,6 +43,7 @@ export class CallbackComponent implements OnInit {
         this.spotify.requestAuthToken(code, false)
           .catch((reason) => {
             console.error(`Spotify request failed: ${reason}`);
+            this.router.navigateByUrl('/error');
           });
       } else {
         console.error(`Error with OAuth${error ? `: ${error}` : ''}`);
@@ -55,8 +55,7 @@ export class CallbackComponent implements OnInit {
             console.error(`State value is not correct: ${state}`);
           }
         }
-        // TODO: Redirect to /login here?
-        // this.router.navigateByUrl('/login');
+        this.router.navigateByUrl('/error');
       }
     });
   }
