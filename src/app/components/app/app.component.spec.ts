@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
@@ -12,6 +12,7 @@ import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
 import { SpotifyService } from '../../services/spotify/spotify.service';
+import { ErrorComponent } from '../error/error.component';
 import { AppComponent } from './app.component';
 import Spy = jasmine.Spy;
 
@@ -35,7 +36,8 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [
         AppComponent,
-        MockComponent(RouterOutlet)
+        MockComponent(RouterOutlet),
+        MockComponent(ErrorComponent)
       ],
       imports: [
         MatIconModule,
@@ -106,10 +108,10 @@ describe('AppComponent', () => {
     spyOn(console, 'error');
     app.ngOnInit();
     fixture.detectChanges();
-    const failedInit = fixture.debugElement.query(By.css('.not-initialized'));
+    const failedInit = fixture.debugElement.query(By.directive(ErrorComponent));
+    expect(console.error).toHaveBeenCalled();
     expect(failedInit).toBeTruthy();
-    expect(failedInit.query(By.css('div')).nativeElement.textContent.trim()).toEqual('ShowTunes failed to initialize!');
-    expect(failedInit.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('error_outline');
+    expect(failedInit.componentInstance.message).toEqual('ShowTunes failed to initialize!');
   });
 
   it('should initialize the Spotify service subscriptions', () => {
