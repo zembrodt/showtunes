@@ -5,23 +5,23 @@
 @include mat.core();
 
 // Add the theme mixin for each Material module used
-@mixin component-themes($theme) {
-  @include mat.core-theme($theme);
+@mixin component-colors($theme) {
+  @include mat.core-color($theme);
 
-  @include mat.button-theme($theme);
-  @include mat.button-toggle-theme($theme);
-  @include mat.card-theme($theme);
-  @include mat.dialog-theme($theme);
-  @include mat.form-field-theme($theme);
-  @include mat.grid-list-theme($theme);
-  @include mat.icon-theme($theme);
-  @include mat.input-theme($theme);
-  @include mat.menu-theme($theme);
-  @include mat.progress-bar-theme($theme);
-  @include mat.progress-spinner-theme($theme);
-  @include mat.sidenav-theme($theme);
-  @include mat.slider-theme($theme);
-  @include mat.slide-toggle-theme($theme);
+  @include mat.button-color($theme);
+  @include mat.button-toggle-color($theme);
+  @include mat.card-color($theme);
+  @include mat.dialog-color($theme);
+  @include mat.form-field-color($theme);
+  @include mat.grid-list-color($theme);
+  @include mat.icon-color($theme);
+  @include mat.input-color($theme);
+  @include mat.menu-color($theme);
+  @include mat.progress-bar-color($theme);
+  @include mat.progress-spinner-color($theme);
+  @include mat.sidenav-color($theme);
+  @include mat.slider-color($theme);
+  @include mat.slide-toggle-color($theme);
 }
 
 // Light theme

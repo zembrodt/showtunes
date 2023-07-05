@@ -10,7 +10,7 @@ import {
   capitalizeWords,
   Color,
   cssRgbToHex,
-  expandHexColor,
+  expandHexColor, generateCodeChallenge, generateCodeVerifier,
   generateRandomString,
   getIdFromSpotifyUri,
   hexToRgb,
@@ -233,17 +233,57 @@ describe('util package', () => {
     });
   });
 
+  describe('generateCodeChallenge', () => {
+    it('should be truthy', async () => {
+      expect(await generateCodeChallenge('test')).toBeTruthy();
+    });
+
+    it('should use SHA-256 encryption', async () => {
+      spyOn(window.crypto.subtle, 'digest');
+      await generateCodeChallenge('test');
+      expect(window.crypto.subtle.digest).toHaveBeenCalledWith('SHA-256', jasmine.any(Uint8Array));
+    });
+  });
+
   describe('generateRandomString', () => {
     it('should return a random string of correct length', () => {
       expect(generateRandomString(10).length).toEqual(10);
     });
 
     it('should return a random string of only alpha-numeric characters', () => {
-      expect(generateRandomString(10)).toMatch('^[A-Za-z0-9]+$');
+      expect(generateRandomString(10)).toMatch('^[a-zA-Z0-9]+$');
     });
 
     it('should return empty string for length 0', () => {
       expect(generateRandomString(0).length).toEqual(0);
+    });
+  });
+
+  describe('generateCodeVerifier', () => {
+    it('should generate a random string of specific length when minLength = maxLength', () => {
+      expect(generateCodeVerifier(2, 2).length).toEqual(2);
+    });
+
+    it('should generate a random string of a length within the bounds', () => {
+      const codeVerifier = generateCodeVerifier(5, 10);
+      expect(codeVerifier.length >= 5).toBeTrue();
+      expect(codeVerifier.length <= 10).toBeTrue();
+    });
+
+    it('should return a random string of valid code verifier characters', () => {
+      expect(generateCodeVerifier(5, 10)).toMatch('^[a-zA-Z0-9_\\-.~]+$');
+    });
+
+    it('should return empty string for length 0', () => {
+      expect(generateCodeVerifier(0, 0).length).toEqual(0);
+    });
+
+    it('should return empty string for maxLength > minLength', () => {
+      expect(generateCodeVerifier(10, 5).length).toEqual(0);
+    });
+
+    it('should return empty string minLength < 0', () => {
+      expect(generateCodeVerifier(-1, 5).length).toEqual(0);
     });
   });
 
@@ -332,7 +372,7 @@ describe('util package', () => {
       const response: DeviceResponse = {
         id: 'test-id',
         name: 'test-device',
-        type: 'device-type',
+        type: 'computer',
         volume_percent: 50,
         is_active: true,
         is_private_session: true,
@@ -362,6 +402,7 @@ describe('util package', () => {
         is_private_session: true,
         is_restricted: true
       };
+      spyOn(console, 'warn');
 
       response.type = 'COMPUTER';
       expect(parseDevice(response).icon).toEqual('laptop_windows');
@@ -380,6 +421,7 @@ describe('util package', () => {
 
       response.type = 'unsupported device';
       expect(parseDevice(response).icon).toEqual('device_unknown');
+      expect(console.warn).toHaveBeenCalled();
 
       response.type = '';
       expect(parseDevice(response).icon).toEqual('device_unknown');

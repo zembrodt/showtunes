@@ -24,36 +24,39 @@ export class AppComponent implements OnInit, OnDestroy {
 
   fadePlayerControls = false;
   fadeCursor = false;
+  appInitialized = false;
 
   constructor(private spotify: SpotifyService, private playback: PlaybackService, private inactivity: InactivityService) {}
 
   ngOnInit(): void {
     if (!SpotifyService.initialized && !SpotifyService.initialize()) {
       console.error('Failed to initialize Spotify service');
+    } else {
+      this.appInitialized = true;
+
+      this.spotify.initSubscriptions();
+
+      this.playback.initialize();
+
+      this.inactivity.inactive$
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe((isInactive) => {
+          if (this.fadePlayerControls) {
+            this.fadeCursor = isInactive;
+          }
+        });
+
+      this.showPlayerControls$
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe((option) => {
+          const isFading = option === PlayerControlsOptions.Fade || option === PlayerControlsOptions.Off;
+          // Make sure we display cursor if previously off
+          if (this.fadePlayerControls && !isFading) {
+            this.fadeCursor = false;
+          }
+          this.fadePlayerControls = isFading;
+        });
     }
-
-    this.spotify.initSubscriptions();
-
-    this.playback.initialize();
-
-    this.inactivity.inactive$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((isInactive) => {
-        if (this.fadePlayerControls) {
-          this.fadeCursor = isInactive;
-        }
-      });
-
-    this.showPlayerControls$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((option) => {
-        const isFading = option === PlayerControlsOptions.Fade || option === PlayerControlsOptions.Off;
-        // Make sure we display cursor if previously off
-        if (this.fadePlayerControls && !isFading) {
-          this.fadeCursor = false;
-        }
-        this.fadePlayerControls = isFading;
-      });
   }
 
   ngOnDestroy(): void {

@@ -13,6 +13,7 @@ import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
   const mockSelectors = new NgxsSelectorMock<LoginComponent>();
+  const authorizeUrl = 'https://example.com/authorize';
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let spotify: SpotifyService;
@@ -35,12 +36,18 @@ describe('LoginComponent', () => {
     router = TestBed.inject(Router);
   });
 
+  beforeAll(() => {
+    window.onbeforeunload = () => 'Prevent page reload';
+  });
+
   beforeEach(() => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
 
     tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(component, 'token$');
     navigateToUrlSpy = spyOn<any>(component, 'navigateToUrl');
+
+    spotify.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
 
     fixture.detectChanges();
   });
@@ -58,16 +65,16 @@ describe('LoginComponent', () => {
     tokenProducer.next({
       accessToken: 'access_token',
       tokenType: 'type',
-      expiry: 'expiry',
+      expiry: new Date(),
       scope: 'scope',
       refreshToken: 'refresh'
     });
     expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
   });
 
-  it('should navigate to the Spotify authorize request URL when no auth token present', () => {
+  it('should navigate to the Spotify authorize request URL when no auth token present', async () => {
     tokenProducer.next(null);
     expect(spotify.getAuthorizeRequestUrl).toHaveBeenCalled();
-    expect(navigateToUrlSpy).toHaveBeenCalled();
+    expect(await navigateToUrlSpy).toHaveBeenCalledWith(authorizeUrl);
   });
 });

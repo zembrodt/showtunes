@@ -6,8 +6,7 @@
   "auth": {
     "clientId": "b2adb98b91a2452aa03b052df0c9a55e",
     "clientSecret": "",
-    "tokenUrl": "",
-    "isDirectSpotifyRequest": false
+    "tokenUrl": ""
   },
   "logging": {
     "level": "info"

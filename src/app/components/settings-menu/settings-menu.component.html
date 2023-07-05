@@ -63,8 +63,9 @@
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">lightbulb</mat-icon>
         <mat-slide-toggle
-          [checked]="showSmartColorSettings"
+          [checked]="showSmartColorSettings && smartCodeColorUrlSet"
           [color]="'primary'"
+          [disabled]="!smartCodeColorUrlSet"
           (toggleChange)="onShowSmartColorSettings()"
           (click)="$event.stopPropagation();"
         ></mat-slide-toggle>
@@ -120,8 +121,7 @@
           <mat-label>Accent Color</mat-label>
           <mat-select class="select-accent-color"
                       [(ngModel)]="customAccentColor"
-                      (selectionChange)="onAccentColorChange()"
-          >
+                      (selectionChange)="onAccentColorChange()">
             <mat-option [value]="null">
               <span>Unselect</span>
             </mat-option>

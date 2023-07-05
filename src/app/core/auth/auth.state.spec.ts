@@ -13,7 +13,7 @@ import { AuthState } from './auth.state';
 const TEST_AUTH_TOKEN: AuthToken = {
   accessToken: 'test-token',
   tokenType: 'test-type',
-  expiry: (new Date(Date.UTC(9999, 1, 1))).toString(),
+  expiry: new Date(Date.UTC(9999, 1, 1)),
   scope: 'test-scope',
   refreshToken: 'test-refresh'
 };

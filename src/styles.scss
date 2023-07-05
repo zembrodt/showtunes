@@ -40,8 +40,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 @mixin light-theme($theme) {
-  //@include mat.angular-material-theme($light-theme);
-  @include themes.component-themes($theme);
+  @include themes.component-colors($theme);
   @include custom-components-theme($theme);
 
   $primary: map.get($theme, primary);
@@ -99,8 +98,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 @mixin dark-theme($theme) {
-  //@include mat.angular-material-theme($dark-theme);
-  @include themes.component-themes($theme);
+  @include themes.component-colors($theme);
   @include custom-components-theme($theme);
 
   $primary: map.get($theme, primary);

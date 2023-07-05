@@ -7,6 +7,11 @@
       ) : ''"
      [style]="{ cursor: fadeCursor ? 'none' : 'inherit' }">
     <mat-sidenav-container class="container">
-      <router-outlet></router-outlet>
+      <ng-container *ngIf="appInitialized; else appNotInitialized">
+        <router-outlet></router-outlet>
+      </ng-container>
+      <ng-template #appNotInitialized>
+        <app-error [message]="'ShowTunes failed to initialize!'"></app-error>
+      </ng-template>
     </mat-sidenav-container>
 </div>

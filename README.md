@@ -6,6 +6,99 @@
 
 Angular web application used to display your currently playing Spotify track with a web player.
 
-Can interface with an external API to hide Spotify client secret. See https://github.com/zembrodt/showtunes-api for an implementation in Go.
+Application deployed to https://showtunes.app.
 
-Application deployed to https://showtunes.app
+Feel free to open a ticket if any issues are found.
+
+## Authentication
+
+Three methods are supported for Spotify authentication:
+* PKCE (recommended)
+* Non-PKCE (not recommended)
+* Backend server
+
+### PKCE
+
+Send auth token requests directly to Spotify's authorization endpoint.
+
+This will be the default authentication method if nothing is configured. It will also be used if `"auth" / "tokenUrl"` and `"auth" / "clientSecret"` are not set or
+`"auth" / "forcePkce"` is set to `true`.
+
+Required configurations will be:
+- `"auth" / "cliendId"` - always required
+- `"env" / "domain"` - needed to create callback URL
+- `"auth" / "scopes"` - API scopes to give ShowTunes access to
+
+This method is the recommended authentication method from Spotify and follows their flow outlines in: https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow. 
+
+### Non-PKCE (not recommended)
+
+Send auth token requests directly to Spotify's authorization endpoint.
+
+This will be set as the authentication method if `"auth" / "clientSecret"` is configured, `"auth" / "tokenUrl"` is not configured, and `"auth" / "forcePkce"` is set to `false`.
+
+The required configurations will be the same as PCKE, along with `clientSecret`:
+- `"auth" / "cliendId"`
+- `"auth" / "clientSecret"`
+- `"env" / "domain"`
+- `"auth" / "scopes"`
+
+This method is not recommended by Spotify. It should not be used in production to reveal access to your Spotify client secret.
+See https://developer.spotify.com/documentation/web-api/tutorials/code-flow for the flow used.
+
+### Backend Server
+
+A backend server can be used (an example implementation is provided at https://github.com/zembrodt/showtunes-api). 
+With this method, only the Spotify API client ID is needed to be stored in this application, with the client secret stored on the backend server.
+
+The authentication API calls need to match requests/responses used with the official Spotify API. The only difference
+is the official Spotify API returns an authentication token with the value `expires_in` as an integer value for the amount of time in milliseconds until
+the token expires. This application also supports a response using `expiry` instead, as a string date for when the token will expire. The backend server can respond with either value.
+
+The backend server will be set as the authentication method if `"auth" / "tokenUrl"` is configured and `"auth" / "forcePkce"` is set to `false`.
+
+The required configurations will be the same as PKCE, with the addition of the third party URL as `tokenUrl`:
+- `"auth" / "cliendId"`
+- `"auth" / "tokenUrl"` - the full endpoint URL for the third party token endpoint
+- `"env" / "domain"`
+- `"auth" / "scopes"`
+
+## Configurations
+
+The config model can be found in the file `app-config-model.ts`. The config will be set up in a json file located in `src/assets/config`.
+The name of the file needs to follow the format `config.{env_name}.json` where `env_name` is set in the environment variable `SHOWTUNES_ENV`.
+If this environment variable is not set, the default value of `dev` will be used.
+
+Explanation of configurations (**^** denotes required config): 
+- `"env"`
+  - `"name"` - (*string*) the name of the environment
+  - **^**`"domain"` - (*string*) the domain this app is running on
+  - **^**`"spotifyApiUrl"` - (*string*) Spotify's API url
+  - `"albumColorUrl"` - (*string*) the URL for a server to return dynamic colors (see relevant section below)
+- `"auth"`
+  - **^**`"clientId"` (*string*) the client ID for accessing Spotify's API
+  - `"clientSecret"` - (*string*) the client secret for accessing Spotify's API (if using non-PKCE method)
+  - `"scopes"` - (*string*) comma-separated list of API Spotify scopes needed to grant the application access during OAuth 
+  - `"tokenUrl"` - (*string*) the 3rd party backend URL for authentication if not using direct authorization with Spotify
+  - `"forcePkce"` - (*boolean*) used to force the application to use PKCE for authentication disregarding what other configs are set
+  - `"showDialog"` - (*boolean*) determines if Spotify's OAuth page is opened in a new window or not
+
+These configurations can also be set as environment variables instead of a json file. The names for each config will be `SHOWTUNES_{configName}` where `configName` will be in
+upper camel case. For example: `spotifyApiUrl` as an environment variable will be `SHOWTUNES_SPOTIFY_API_URL`.
+
+Environment variables will always overwrite anything in the config file.
+
+## Dynamic Colors
+
+One feature within this application is the ability to style certain elements dynamically based on the album artwork of the
+song currently playing. This functionality is enabled when its required configuration `"env" / "albumColorUrl"` is set.
+
+The application expects the API endpoint to receive a GET request with a `url` param containing the URL to the album artwork.
+The endpoint is then expected to send a response object of type `SmartColorResponse`, where `color` contains the hex color value (such as `#ABC123`).
+
+The expected functionality of this endpoint is to analyze the image from the given URL, and send back the most common color to be used as theming within the application.
+
+Current theming options are an exact color matched Spotify code and the selection of a material theme color that matches the dynamic color the closest. The usage of this is
+configurable within the application, and these options are disabled if an `albumColorUrl` is not configured.
+
+See the `/color` endpoint within https://github.com/zembrodt/showtunes-api for an example implementation.

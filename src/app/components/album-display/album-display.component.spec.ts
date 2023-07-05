@@ -318,7 +318,7 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should set Spotify code smart colors on useSmartCodeColor update', () => {
-    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of('#ABC123'));
+    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of({ color: '#ABC123' }));
     coverArtProducer.next(TEST_IMAGE_RESPONSE);
     albumProducer.next(TEST_ALBUM_MODEL);
     expect(component.smartBackgroundColor).toBeFalsy();
@@ -350,7 +350,7 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should set smart color when using dynamic accent theme', () => {
-    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of('#ABC123'));
+    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of({ color: '#ABC123' }));
     coverArtProducer.next(TEST_IMAGE_RESPONSE);
     albumProducer.next(TEST_ALBUM_MODEL);
     expect(component.smartBackgroundColor).toBeFalsy();
