@@ -20,7 +20,10 @@ export class LoginComponent implements OnInit {
     this.token$.subscribe(token => {
       // Redirect to Spotify OAuth if no token exists
       if (!token) {
-        this.navigateToUrl(this.spotifyService.getAuthorizeRequestUrl());
+        this.spotifyService.getAuthorizeRequestUrl()
+          .then((authorizeRequestUrl) => {
+            this.navigateToUrl(authorizeRequestUrl);
+          });
       } else {
         this.router.navigateByUrl('/dashboard');
       }

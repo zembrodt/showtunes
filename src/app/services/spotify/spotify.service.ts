@@ -24,31 +24,22 @@ import {
 } from '../../core/playback/playback.actions';
 import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
-import { generateRandomString, getIdFromSpotifyUri, parseAlbum, parseDevice, parsePlaylist, parseTrack } from '../../core/util';
+import {
+  generateCodeChallenge,
+  generateCodeVerifier,
+  generateRandomString,
+  getIdFromSpotifyUri,
+  parseAlbum,
+  parseDevice,
+  parsePlaylist,
+  parseTrack,
+} from '../../core/util';
+import { SmartColorResponse } from '../../models/album.model';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { PlaylistResponse } from '../../models/playlist.model';
 import { TokenResponse } from '../../models/token.model';
 import { StorageService } from '../storage/storage.service';
-
-export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
-
-const stateKey = 'STATE';
-
-// Spotify endpoints
-const accountsUrl  = 'https://accounts.spotify.com';
-const authEndpoint = accountsUrl + '/authorize';
-
-// Configurable values
-const stateLength = 40;
-const expiryThreshold = 30 * 1000; // 30s
-const SCOPES = [
-  'user-library-read',
-  'user-library-modify',
-  'user-read-playback-state',
-  'user-modify-playback-state'
-];
-const SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
 export enum SpotifyAPIResponse {
   Success,
@@ -57,21 +48,39 @@ export enum SpotifyAPIResponse {
   Error
 }
 
+export enum AuthType {
+  PKCE,
+  Secret,
+  ThirdParty
+}
+
 @Injectable({providedIn: 'root'})
 export class SpotifyService {
-  static initialized = false;
-  protected static clientId: string;
-  protected static clientSecret: string = null;
-  protected static tokenUrl: string = null;
+  public static initialized = false;
+  private static clientId: string;
+  private static clientSecret: string = null;
+  private static scopes: string = null;
+  private static tokenUrl: string = null;
+  private static authType: AuthType;
   public static spotifyApiUrl: string;
   public static spotifyEndpoints: SpotifyEndpoints;
   public static albumColorUrl: string;
-  protected static redirectUri: string;
-  protected static isDirectSpotifyRequest = false;
+  private static redirectUri: string;
+  private static showAuthDialog = true;
+
+  public static readonly PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
+  private static readonly ACCOUNTS_ENDPOINT = 'https://accounts.spotify.com';
+  private static readonly AUTH_ENDPOINT = `${SpotifyService.ACCOUNTS_ENDPOINT}/authorize`;
+  public static readonly TOKEN_ENDPOINT = `${SpotifyService.ACCOUNTS_ENDPOINT}/api/token`;
+  private static readonly STATE_KEY = 'STATE';
+  private static readonly CODE_VERIFIER_KEY = 'CODE_VERIFIER';
+  private static readonly STATE_LENGTH = 40;
+  private static readonly SKIP_PREVIOUS_THRESHOLD = 3000; // ms
 
   @Select(AuthState.token) private authToken$: BehaviorSubject<AuthToken>;
   private authToken: AuthToken = null;
   private state: string = null;
+  private codeVerifier = null;
 
   @Select(PlaybackState.track) private track$: BehaviorSubject<TrackModel>;
   private track: TrackModel = null;
@@ -111,11 +120,16 @@ export class SpotifyService {
 
       this.tokenUrl = AppConfig.settings.auth.tokenUrl;
       this.clientSecret = AppConfig.settings.auth.clientSecret;
-      if (!this.tokenUrl && !this.clientSecret) {
-        console.error('No URL to retrieve Spotify API tokens or Spotify API client secret configured');
-        this.initialized = false;
+      this.scopes = AppConfig.settings.auth.scopes;
+      this.showAuthDialog = AppConfig.settings.auth.showDialog;
+
+      if (AppConfig.settings.auth.forcePkce || (!this.tokenUrl && !this.clientSecret)) {
+        this.authType = AuthType.PKCE;
+      } else if (this.tokenUrl) {
+        this.authType = AuthType.ThirdParty;
+      } else {
+        this.authType = AuthType.Secret;
       }
-      this.isDirectSpotifyRequest = !this.tokenUrl;
 
       this.spotifyApiUrl = AppConfig.settings.env.spotifyApiUrl;
       if (!this.spotifyApiUrl) {
@@ -145,6 +159,7 @@ export class SpotifyService {
 
   constructor(private http: HttpClient, private storage: StorageService, private store: Store) {
     this.setState();
+    this.setCodeVerifier();
   }
 
   initSubscriptions(): void {
@@ -161,45 +176,78 @@ export class SpotifyService {
   }
 
   requestAuthToken(code: string, isRefresh: boolean): Promise<void> {
-    // Create request body
-    const body = new URLSearchParams();
-    body.set('code', code);
-    body.set('grant_type', 'authorization_code');
-    if (!isRefresh) {
-      body.set('redirect_uri', SpotifyService.redirectUri);
-    }
-
-    // Create request headers
-    const headers = new HttpHeaders().set(
+    let headers = new HttpHeaders().set(
       'Content-Type', 'application/x-www-form-urlencoded'
     );
-    if (!SpotifyService.isDirectSpotifyRequest) {
-      headers.set('Authorization', `Basic ${btoa(`${SpotifyService.clientId}:${AppConfig.settings.auth.clientSecret}`)}`);
+    // Set Authorization header if needed
+    if (SpotifyService.authType === AuthType.Secret) {
+      headers = headers.set(
+        'Authorization', `Basic ${new Buffer(`${SpotifyService.clientId}:${SpotifyService.clientSecret}`).toString('base64')}`
+      );
     }
 
-    return new Promise<void>((resolve, reject) => {
-      const clientResponse = !isRefresh ?
-        this.http.post<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'}) :
-        this.http.put<TokenResponse>(SpotifyService.tokenUrl, body.toString(), {headers, observe: 'response'});
-
-      clientResponse.subscribe((response) => {
-          const token = response.body;
-          const authToken: AuthToken = {
-            accessToken: token.access_token,
-            tokenType: token.token_type,
-            expiry: token.expiry,
-            scope: token.scope,
-            refreshToken: token.refresh_token
-          };
-          this.store.dispatch(new SetAuthToken(authToken));
-          resolve();
-        },
-          (error) => {
-          const errStr = `Error requesting token: ${JSON.stringify(error)}`;
-          console.error(errStr);
-          reject(errStr);
-        });
+    const body = new URLSearchParams({
+      grant_type: (!isRefresh ? 'authorization_code' : 'refresh_token'),
+      client_id: SpotifyService.clientId,
+      ...(!isRefresh) && {
+        code,
+        redirect_uri: SpotifyService.redirectUri,
+        code_verifier: this.codeVerifier
+      },
+      ...(isRefresh) && {
+        refresh_token: code
+      }
     });
+
+    return new Promise<void>((resolve, reject) => {
+      const endpoint = SpotifyService.authType === AuthType.ThirdParty ? SpotifyService.tokenUrl : SpotifyService.TOKEN_ENDPOINT;
+      this.http.post<TokenResponse>(endpoint, body, {headers, observe: 'response'})
+        .subscribe((response) => {
+            const token = response.body;
+            let expiry: Date;
+            if (SpotifyService.authType === AuthType.ThirdParty) {
+              expiry = new Date(token.expiry);
+            } else {
+              expiry = new Date();
+              expiry.setSeconds(expiry.getSeconds() + token.expires_in);
+            }
+
+            const authToken: AuthToken = {
+              accessToken: token.access_token,
+              tokenType: token.token_type,
+              expiry,
+              scope: token.scope,
+              refreshToken: token.refresh_token
+            };
+            this.store.dispatch(new SetAuthToken(authToken));
+            resolve();
+          },
+          (error) => {
+            const errMsg = `Error requesting token: ${JSON.stringify(error)}`;
+            console.error(errMsg);
+            reject(errMsg);
+          });
+    });
+  }
+
+  getAuthorizeRequestUrl(): Promise<string> {
+    const args = new URLSearchParams({
+      response_type: 'code',
+      client_id: SpotifyService.clientId,
+      scope: SpotifyService.scopes,
+      redirect_uri: SpotifyService.redirectUri,
+      state: this.getState(),
+      show_dialog: `${SpotifyService.showAuthDialog}`
+    });
+    if (SpotifyService.authType === AuthType.PKCE) {
+      return generateCodeChallenge(this.getCodeVerifier()).then((codeChallenge) => {
+        args.set('code_challenge_method', 'S256');
+        args.set('code_challenge', codeChallenge);
+        return `${SpotifyService.AUTH_ENDPOINT}?${args}`;
+      });
+    } else {
+      return Promise.resolve(`${SpotifyService.AUTH_ENDPOINT}?${args}`);
+    }
   }
 
   pollCurrentPlayback(pollingInterval: number): void {
@@ -246,7 +294,7 @@ export class SpotifyService {
 
           // Check if volume was muted externally to save previous value
           if (playback.device && playback.device.volume_percent === 0 && this.device.volume > 0) {
-            this.storage.set(PREVIOUS_VOLUME, this.device.volume.toString());
+            this.storage.set(SpotifyService.PREVIOUS_VOLUME, this.device.volume.toString());
           }
 
           // Get device changes
@@ -316,7 +364,8 @@ export class SpotifyService {
 
   skipPrevious(forcePrevious: boolean): void {
     // Check if we should skip to previous track or start of current
-    if (!forcePrevious && this.progress > SKIP_PREVIOUS_THRESHOLD && !((SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
+    if (!forcePrevious && this.progress > SpotifyService.SKIP_PREVIOUS_THRESHOLD
+        && !((SpotifyService.SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
       this.setTrackPosition(0);
     } else {
       this.http.post(SpotifyService.spotifyEndpoints.getPreviousEndpoint(), {},
@@ -472,27 +521,16 @@ export class SpotifyService {
       });
   }
 
-  getAuthorizeRequestUrl(): string {
-    if (!this.state) {
-      this.setState();
-    }
-    return `${authEndpoint}?response_type=code` +
-      `&client_id=${SpotifyService.clientId}` +
-      (SCOPES ? `&scope=${encodeURIComponent(SCOPES.join(' '))}` : '') +
-      `&redirect_uri=${SpotifyService.redirectUri}` +
-      `&state=${this.state}&show_dialog=true`;
-  }
-
-  getAlbumColor(coverArtUrl: string): Observable<string> {
+  getAlbumColor(coverArtUrl: string): Observable<SmartColorResponse> {
     let requestParams = new HttpParams();
     requestParams = requestParams.append('url', encodeURIComponent(coverArtUrl));
     // Check we have an album color URL set
     if (SpotifyService.albumColorUrl) {
-      return this.http.get<string>(SpotifyService.albumColorUrl, {
+      return this.http.get<SmartColorResponse>(SpotifyService.albumColorUrl, {
         params: requestParams
       });
     }
-    return of<string>(null);
+    return of<SmartColorResponse>(null);
   }
 
   compareState(state: string): boolean {
@@ -502,64 +540,41 @@ export class SpotifyService {
   logout(): void {
     this.store.dispatch(new SetAuthToken(null));
     this.state = null;
+    this.codeVerifier = null;
     this.authToken = null;
-    this.storage.remove(stateKey);
+    this.storage.remove(SpotifyService.STATE_KEY);
     this.storage.removeAuthToken();
-  }
-
-  private checkTokenExpiry(): AuthToken {
-    const expiresIn = this.tokenExpiresIn();
-    if (expiresIn < 0) {
-      // Need to authorize a new login, redirect to authorization
-      // this.router.navigateByUrl('/login');
-    } else if (expiresIn < expiryThreshold) {
-      // Token is expiring soon or has expired. Refresh the token
-      this.requestAuthToken(this.authToken.refreshToken, true)
-        .then((res) => {
-          return res;
-        }).catch((reason) => {
-          console.error(`Spotify request failed: ${reason}`);
-          this.logout();
-          // this.router.navigateByUrl('/login');
-        });
-    }
-    return null;
-  }
-
-  private tokenExpiresIn(): number {
-    if (this.authToken) {
-      const expiresIn = Date.parse(this.authToken.expiry) - Date.now();
-      if (expiresIn >= 0) {
-        return expiresIn;
-      } else {
-        return 0;
-      }
-    }
-    return -1; // no auth token exists
   }
 
   /**
    * Checks a Spotify API error response against common error response codes
    * @param res
    */
-  checkErrorResponse(res: HttpErrorResponse): SpotifyAPIResponse {
+  checkErrorResponse(res: HttpErrorResponse): Promise<SpotifyAPIResponse> {
     if (res.status === 401) {
       // Expired token
-      this.checkTokenExpiry();
-      return SpotifyAPIResponse.ReAuthenticated;
+      return this.requestAuthToken(this.authToken.refreshToken, true)
+        .then(() => {
+          return SpotifyAPIResponse.ReAuthenticated;
+        })
+        .catch((reason) => {
+          console.error(`Spotify request failed to reauthenticate after token expiry: ${reason}`);
+          this.logout();
+          return SpotifyAPIResponse.Error;
+        });
     }
     else if (res.status === 403) {
       // Bad OAuth request
       this.logout();
-      return SpotifyAPIResponse.Error;
+      return Promise.resolve(SpotifyAPIResponse.Error);
     }
     else if (res.status === 429) {
       console.error('Spotify rate limits exceeded');
       this.logout();
-      return SpotifyAPIResponse.Error;
+      return Promise.resolve(SpotifyAPIResponse.Error);
     } else {
       console.error(`Unexpected response ${res.status}: ${res.statusText}`);
-      return SpotifyAPIResponse.Error;
+      return Promise.resolve(SpotifyAPIResponse.Error);
     }
   }
 
@@ -582,11 +597,33 @@ export class SpotifyService {
     }
   }
 
+  private getState(): string {
+    if (!this.state) {
+      this.setState();
+    }
+    return this.state;
+  }
+
   private setState(): void {
-    this.state = this.storage.get(stateKey);
+    this.state = this.storage.get(SpotifyService.STATE_KEY);
     if (this.state === null) {
-      this.state = generateRandomString(stateLength);
-      this.storage.set(stateKey, this.state);
+      this.state = generateRandomString(SpotifyService.STATE_LENGTH);
+      this.storage.set(SpotifyService.STATE_KEY, this.state);
+    }
+  }
+
+  private getCodeVerifier(): string {
+    if (!this.codeVerifier) {
+      this.setCodeVerifier();
+    }
+    return this.codeVerifier;
+  }
+
+  private setCodeVerifier(): void {
+    this.codeVerifier = this.storage.get(SpotifyService.CODE_VERIFIER_KEY);
+    if (!this.codeVerifier) {
+      this.codeVerifier = generateCodeVerifier(43, 128);
+      this.storage.set(SpotifyService.CODE_VERIFIER_KEY, this.codeVerifier);
     }
   }
 

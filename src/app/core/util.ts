@@ -87,13 +87,60 @@ export function calculateColorDistance(c1: Color, c2: Color): number {
   return null;
 }
 
+/**
+ * Generates a code challenge by SHA-256 encrypting the code verifier and encoding it
+ * @param codeVerifier the code verifier generated from {@link generateCodeVerifier}
+ */
+export async function generateCodeChallenge(codeVerifier: string): Promise<string> {
+  function base64encode(s: ArrayBuffer): string {
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(s)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  return base64encode(digest);
+}
+
+/**
+ * Generates a random string of the provided length from the provided list of characters
+ * @param length length of the random string to generate
+ * @param chars a string containing all the valid characters to generate the string from
+ */
+function generateRandomStringFromChars(length: number, chars: string): string {
+  let text = '';
+  for (let i = 0; i < length; i++) {
+    text += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return text;
+}
+
 const validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+/**
+ * Generates a random string from alphanumeric characters
+ * @param length the length of the random string
+ */
 export function generateRandomString(length: number): string {
-  let arr = new Uint8Array(length);
-  window.crypto.getRandomValues(arr);
-  arr = arr.map(x => validChars.charCodeAt(x % validChars.length));
-  return String.fromCharCode.apply(null, arr);
+  return generateRandomStringFromChars(length, validChars);
+}
+
+const validCodeVerifierChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.~';
+
+/**
+ * Generates a code verifier as a random string from the valid list of code verifier characters
+ * @param minLength the minimum length of the random string
+ * @param maxLength the maximum length of the random string
+ */
+export function generateCodeVerifier(minLength: number, maxLength: number): string {
+  if (minLength > maxLength || minLength < 0) {
+    return '';
+  }
+  const length = minLength !== maxLength ? Math.random() * (maxLength - minLength + 1) + minLength : minLength;
+  return generateRandomStringFromChars(length, validCodeVerifierChars);
 }
 
 export function parseTrack(track: TrackResponse): TrackModel {
@@ -190,7 +237,7 @@ function getDeviceIcon(deviceType: string): string {
         icon = 'cast';
         break;
       default:
-        console.log(`Unsupported device type: '${deviceType}'`);
+        console.warn(`Unsupported device type: '${deviceType}'`);
     }
   }
   return icon;

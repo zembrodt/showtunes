@@ -14,6 +14,6 @@ export interface AuthToken {
   accessToken: string;
   tokenType: string;
   scope: string;
-  expiry: string;
+  expiry: Date;
   refreshToken: string;
 }

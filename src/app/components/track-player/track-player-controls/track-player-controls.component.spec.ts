@@ -16,7 +16,7 @@ import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { callComponentChange } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
-import { PREVIOUS_VOLUME, SpotifyService } from '../../../services/spotify/spotify.service';
+import { SpotifyService } from '../../../services/spotify/spotify.service';
 import { StorageService } from '../../../services/storage/storage.service';
 import { DevicesComponent } from '../../devices/devices.component';
 import { TrackPlayerControlsComponent } from './track-player-controls.component';
@@ -413,7 +413,7 @@ describe('TrackPlayerControlsComponent', () => {
   it('should change Spotify volume to 0 on volume mute when volume > 0', () => {
     component.volume = 1;
     component.onVolumeMute();
-    expect(storage.set).toHaveBeenCalledWith(PREVIOUS_VOLUME, '1');
+    expect(storage.set).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME, '1');
     expect(spotify.setVolume).toHaveBeenCalledWith(0);
   });
 
@@ -421,7 +421,7 @@ describe('TrackPlayerControlsComponent', () => {
     storage.get = jasmine.createSpy().and.returnValue('10');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
     expect(spotify.setVolume).toHaveBeenCalledWith(10);
   });
 
@@ -429,7 +429,7 @@ describe('TrackPlayerControlsComponent', () => {
     storage.get = jasmine.createSpy().and.returnValue('abc');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
     expect(spotify.setVolume).toHaveBeenCalledWith(50);
   });
 
@@ -437,7 +437,7 @@ describe('TrackPlayerControlsComponent', () => {
     storage.get = jasmine.createSpy().and.returnValue('0');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
     expect(spotify.setVolume).toHaveBeenCalledWith(50);
   });
 

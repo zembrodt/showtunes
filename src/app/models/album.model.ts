@@ -15,3 +15,7 @@ export interface AlbumResponse {
     spotify: string;
   };
 }
+
+export interface SmartColorResponse {
+  color: string;
+}

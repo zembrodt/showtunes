@@ -1,12 +1,11 @@
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MockProvider } from 'ng-mocks';
 import { AppConfig } from '../../app.config';
 import { SpotifyInterceptor } from './spotify.interceptor';
 import { SpotifyAPIResponse, SpotifyService } from './spotify.service';
-
 
 describe('SpotifyInterceptor', () => {
   let spotify: SpotifyService;
@@ -24,7 +23,10 @@ describe('SpotifyInterceptor', () => {
       auth: {
         clientId: 'test-client-id',
         clientSecret: 'test-client-secret',
-        tokenUrl: 'token-url'
+        scopes: 'test-scope',
+        tokenUrl: 'token-url',
+        forcePkce: true,
+        showDialog: true
       },
       logging: null
     };
@@ -48,8 +50,8 @@ describe('SpotifyInterceptor', () => {
     http = TestBed.inject(HttpClient);
   });
 
-  it('should catch HTTP response error and retry request on reauthentication', () => {
-    spotify.checkErrorResponse = jasmine.createSpy().and.returnValue(SpotifyAPIResponse.ReAuthenticated);
+  it('should catch HTTP response error and retry request on reauthentication', fakeAsync(() => {
+    spotify.checkErrorResponse = jasmine.createSpy().and.returnValue(Promise.resolve(SpotifyAPIResponse.ReAuthenticated));
     http.get('/test').subscribe(
       (data) => expect(data).toBeTruthy(),
       (err) => {
@@ -61,17 +63,19 @@ describe('SpotifyInterceptor', () => {
     request.error(new ProgressEvent('401 Invalid token'), {
       status: 401,
       statusText: 'Invalid token'
+
     });
+    tick();
     request = httpMock.expectOne('/test');
     request.flush({
       status: 200,
       statusText: 'Ok'
     });
     httpMock.verify();
-  });
+  }));
 
   it('should catch HTTP response error and fail when cannot reauthenticate', () => {
-    spotify.checkErrorResponse = jasmine.createSpy().and.returnValue(SpotifyAPIResponse.Error);
+    spotify.checkErrorResponse = jasmine.createSpy().and.returnValue(Promise.resolve(SpotifyAPIResponse.Error));
     http.get('/test').subscribe(
       (data) => {
         console.log(data);
@@ -104,6 +108,25 @@ describe('SpotifyInterceptor', () => {
     httpMock.verify();
 
     expect(request.request.headers.get('Authorization')).toEqual('test-token');
+  });
+
+  it('should not add the Authorization header when making a request for the Spotify API token endpoint', () => {
+    const tokenEndpoint = `spotify-url/${SpotifyService.TOKEN_ENDPOINT}`;
+    http.get(tokenEndpoint).subscribe(
+      (data) => expect(data).toBeTruthy(),
+      (err) => {
+        console.log(err);
+        fail('Should not have thrown error');
+    });
+
+    const request = httpMock.expectOne(tokenEndpoint);
+    request.flush({
+      status: 200,
+      statusText: 'Ok'
+    });
+    httpMock.verify();
+
+    expect(request.request.headers.get('Authorization')).toBeNull();
   });
 
   it('should throw an error when making a request to the Spotify API URL but no authToken', () => {

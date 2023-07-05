@@ -147,10 +147,11 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   private setSmartColor(): void {
     if (AppConfig.settings.env.albumColorUrl && this.coverArt && this.coverArt.url) {
-      this.spotifyService.getAlbumColor(this.coverArt.url).subscribe((smartColor) => {
-        this.smartBackgroundColor = smartColor.replace('#', '');
+      this.spotifyService.getAlbumColor(this.coverArt.url).subscribe((response) => {
+        const smartColor = response && response.color ? response.color.replace('#', '') : null;
         // Check we have a valid code color value
-        if (isHexColor(this.smartBackgroundColor)) {
+        if (isHexColor(smartColor)) {
+          this.smartBackgroundColor = smartColor;
           this.store.dispatch(new ChangeSmartColor(this.smartBackgroundColor));
           // Determine if the bar code should be white or black
           // See https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color

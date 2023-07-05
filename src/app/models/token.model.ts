@@ -3,5 +3,6 @@ export interface TokenResponse {
   token_type: string;
   scope: string;
   expiry: string;
+  expires_in: number;
   refresh_token: string;
 }

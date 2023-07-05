@@ -73,7 +73,19 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
       { developmentMode: !environment.production }
       ),
     NgxsStoragePluginModule.forRoot({
-      key: [ AUTH_STATE_NAME, SETTINGS_STATE_NAME ]
+      key: [ AUTH_STATE_NAME, SETTINGS_STATE_NAME ],
+      afterDeserialize: (obj: any, key: string) => {
+        if (key === AUTH_STATE_NAME && obj.token && obj.token.expiry) {
+          return {
+            ...obj,
+            token: {
+              ...obj.token,
+              expiry: new Date(obj.token.expiry)
+            }
+          };
+        }
+        return obj;
+      }
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({
       disabled: environment.production
