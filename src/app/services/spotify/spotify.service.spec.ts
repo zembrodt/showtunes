@@ -469,36 +469,71 @@ describe('SpotifyService', () => {
     }));
   }));
 
-  it('should set the auth token with response from requesting a new auth token and handle expiry response', fakeAsync(() => {
-    SpotifyService['authType'] = AuthType.ThirdParty;
-    SpotifyService['tokenUrl'] = 'test-token-url';
-    const response = new HttpResponse({
-      body: {
-        access_token: 'test-access-token',
-        token_type: 'test-type',
-        expiry: new Date().toString(),
-        scope: 'test-scope',
-        refresh_token: 'test-refresh-token'
-      },
-      status: 200,
-      statusText: 'OK'
-    });
-    http.post = jasmine.createSpy().and.returnValue(of(response));
+  it('should set the auth token with response from requesting a new auth token using third party and handle expiry response',
+    fakeAsync(() => {
+      SpotifyService['authType'] = AuthType.ThirdParty;
+      SpotifyService['tokenUrl'] = 'test-token-url';
+      const response = new HttpResponse({
+        body: {
+          access_token: 'test-access-token',
+          token_type: 'test-type',
+          expiry: new Date().toString(),
+          scope: 'test-scope',
+          refresh_token: 'test-refresh-token'
+        },
+        status: 200,
+        statusText: 'OK'
+      });
+      http.post = jasmine.createSpy().and.returnValue(of(response));
 
-    service.requestAuthToken('test-code', false);
-    expect(http.post).toHaveBeenCalledOnceWith(
-      jasmine.any(String),
-      jasmine.any(URLSearchParams),
-      jasmine.any(Object)
-    );
-    expect(store.dispatch).toHaveBeenCalledWith(new SetAuthToken({
-      accessToken: response.body.access_token,
-      tokenType: response.body.token_type,
-      scope: response.body.scope,
-      expiry: new Date(response.body.expiry),
-      refreshToken: response.body.refresh_token
-    }));
+      service.requestAuthToken('test-code', false);
+      expect(http.post).toHaveBeenCalledOnceWith(
+        jasmine.any(String),
+        jasmine.any(URLSearchParams),
+        jasmine.any(Object)
+      );
+      expect(store.dispatch).toHaveBeenCalledWith(new SetAuthToken({
+        accessToken: response.body.access_token,
+        tokenType: response.body.token_type,
+        scope: response.body.scope,
+        expiry: new Date(response.body.expiry),
+        refreshToken: response.body.refresh_token
+      }));
   }));
+
+  it('should set the auth token with response from requesting a new auth token using third party and handle expires_in response',
+    fakeAsync(() => {
+      SpotifyService['authType'] = AuthType.ThirdParty;
+      SpotifyService['tokenUrl'] = 'test-token-url';
+      const response = new HttpResponse({
+        body: {
+          access_token: 'test-access-token',
+          token_type: 'test-type',
+          expires_in: Date.now(),
+          scope: 'test-scope',
+          refresh_token: 'test-refresh-token'
+        },
+        status: 200,
+        statusText: 'OK'
+      });
+      http.post = jasmine.createSpy().and.returnValue(of(response));
+
+      service.requestAuthToken('test-code', false);
+      expect(http.post).toHaveBeenCalledOnceWith(
+        jasmine.any(String),
+        jasmine.any(URLSearchParams),
+        jasmine.any(Object)
+      );
+      const expiryResponse = new Date();
+      expiryResponse.setSeconds(expiryResponse.getSeconds() + response.body.expires_in);
+      expect(store.dispatch).toHaveBeenCalledWith(new SetAuthToken({
+        accessToken: response.body.access_token,
+        tokenType: response.body.token_type,
+        scope: response.body.scope,
+        expiry: expiryResponse,
+        refreshToken: response.body.refresh_token
+      }));
+    }));
 
   it('should output error when requestAuthToken fails', fakeAsync(() => {
     http.post = jasmine.createSpy().and.returnValue(throwError({status: 405}));

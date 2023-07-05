@@ -205,7 +205,7 @@ export class SpotifyService {
         .subscribe((response) => {
             const token = response.body;
             let expiry: Date;
-            if (SpotifyService.authType === AuthType.ThirdParty) {
+            if (SpotifyService.authType === AuthType.ThirdParty && token.expiry) {
               expiry = new Date(token.expiry);
             } else {
               expiry = new Date();
