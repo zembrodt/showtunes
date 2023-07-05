@@ -35,7 +35,7 @@ module.exports = function (config) {
         displayName: 'ChromeHeadless'
       }
     },
-    singleRun: false,
+    singleRun: true,
     restartOnFileChange: true
   });
 };
