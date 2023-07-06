@@ -21,7 +21,10 @@ module.exports = function (config) {
     },
     coverageReporter: {
       type: 'json',
-      dir:'./coverage'
+      dir: './coverage',
+      subdir: (browser) => {
+        return browser.toLowerCase().split(/[ /-]/)[0];
+      }
     },
     reporters: ['spec', 'coverage'],
     port: 9876,
