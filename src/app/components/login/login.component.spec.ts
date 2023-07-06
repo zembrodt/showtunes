@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -21,8 +21,8 @@ describe('LoginComponent', () => {
   let tokenProducer: BehaviorSubject<AuthToken>;
   let navigateToUrlSpy;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [
         LoginComponent,
         MockComponent(LoadingComponent)
@@ -34,13 +34,7 @@ describe('LoginComponent', () => {
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
     router = TestBed.inject(Router);
-  });
 
-  beforeAll(() => {
-    window.onbeforeunload = () => 'Prevent page reload';
-  });
-
-  beforeEach(() => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
 
@@ -50,6 +44,10 @@ describe('LoginComponent', () => {
     spotify.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
 
     fixture.detectChanges();
+  }));
+
+  beforeAll(() => {
+    window.onbeforeunload = () => 'Prevent page reload';
   });
 
   it('should create', () => {

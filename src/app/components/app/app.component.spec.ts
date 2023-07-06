@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -31,9 +31,9 @@ describe('AppComponent', () => {
   let inactiveProducer: BehaviorSubject<boolean>;
   let spotifyInitSpy: Spy<() => boolean>;
 
-  beforeEach(async () => {
+  beforeEach(waitForAsync(() => {
     inactiveProducer = new BehaviorSubject<boolean>(null);
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       declarations: [
         AppComponent,
         MockComponent(RouterOutlet),
@@ -54,9 +54,7 @@ describe('AppComponent', () => {
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
     playback = TestBed.inject(PlaybackService);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(AppComponent);
     app = fixture.componentInstance;
 
@@ -70,7 +68,7 @@ describe('AppComponent', () => {
     spotifyInitSpy = spyOn(SpotifyService, 'initialize').and.returnValue(true);
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create the app', () => {
     expect(app).toBeTruthy();

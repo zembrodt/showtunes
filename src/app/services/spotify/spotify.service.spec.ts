@@ -2,7 +2,7 @@
 
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { fakeAsync, TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { Router } from '@angular/router';
 import { NgxsModule, Store } from '@ngxs/store';
@@ -321,6 +321,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       jasmine.any(URLSearchParams),
@@ -339,6 +340,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       jasmine.any(URLSearchParams),
@@ -356,6 +358,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       jasmine.any(URLSearchParams),
@@ -372,6 +375,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyService.TOKEN_ENDPOINT,
       jasmine.any(URLSearchParams),
@@ -384,6 +388,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyService.TOKEN_ENDPOINT,
       jasmine.any(URLSearchParams),
@@ -396,6 +401,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(new HttpResponse({body: {}, status: 200, statusText: 'OK'})));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyService['tokenUrl'],
       jasmine.any(URLSearchParams),
@@ -415,6 +421,7 @@ describe('SpotifyService', () => {
     });
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       expectedBody,
@@ -431,6 +438,7 @@ describe('SpotifyService', () => {
     });
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       expectedBody,
@@ -453,6 +461,7 @@ describe('SpotifyService', () => {
     http.post = jasmine.createSpy().and.returnValue(of(response));
 
     service.requestAuthToken('test-code', false);
+    flushMicrotasks();
     expect(http.post).toHaveBeenCalledOnceWith(
       jasmine.any(String),
       jasmine.any(URLSearchParams),
@@ -487,6 +496,7 @@ describe('SpotifyService', () => {
       http.post = jasmine.createSpy().and.returnValue(of(response));
 
       service.requestAuthToken('test-code', false);
+      flushMicrotasks();
       expect(http.post).toHaveBeenCalledOnceWith(
         jasmine.any(String),
         jasmine.any(URLSearchParams),
@@ -519,6 +529,7 @@ describe('SpotifyService', () => {
       http.post = jasmine.createSpy().and.returnValue(of(response));
 
       service.requestAuthToken('test-code', false);
+      flushMicrotasks();
       expect(http.post).toHaveBeenCalledOnceWith(
         jasmine.any(String),
         jasmine.any(URLSearchParams),
@@ -537,14 +548,17 @@ describe('SpotifyService', () => {
 
   it('should output error when requestAuthToken fails', fakeAsync(() => {
     http.post = jasmine.createSpy().and.returnValue(throwError({status: 405}));
+    let error;
     service.requestAuthToken('test-code', false)
-      .catch((error) => expect(error).toBeTruthy());
+      .catch((err) => error = err);
+    flushMicrotasks();
+    expect(error).toBeTruthy();
     expect(http.post).toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
     expect(console.error).toHaveBeenCalled();
   }));
 
-  it('should create the authorize request url with correct params when auth type is Secret', async () => {
+  it('should create the authorize request url with correct params when auth type is Secret', fakeAsync(() => {
     SpotifyService['authType'] = AuthType.Secret;
     service['state'] = 'test-state';
     const expectedParams = new URLSearchParams({
@@ -556,11 +570,15 @@ describe('SpotifyService', () => {
       show_dialog: 'true'
     });
     const expectedUrl = `${SpotifyService['AUTH_ENDPOINT']}?${expectedParams.toString()}`;
+    let actualUrl;
+    service.getAuthorizeRequestUrl().then((url) => actualUrl = url);
 
-    expect(await service.getAuthorizeRequestUrl()).toEqual(expectedUrl);
-  });
+    flushMicrotasks();
+    expect(actualUrl).toEqual(expectedUrl);
+  }));
 
-  it('should create the authorize request url with code challenge params when auth type is PKCE', async () => {
+  it('should create the authorize request url with code challenge params when auth type is PKCE', fakeAsync(() => {
+    spyOn(window.crypto.subtle, 'digest').and.returnValue(Promise.resolve(new ArrayBuffer(8)));
     service['state'] = 'test-state';
     service['codeVerifier'] = 'test-code-verifier';
     const expectedParams = new URLSearchParams({
@@ -571,12 +589,15 @@ describe('SpotifyService', () => {
       state: 'test-state',
       show_dialog: 'true',
       code_challenge_method: 'S256',
-      code_challenge: '0FLIKahrX7kqxncwhV5WD82lu_wi5GA8FsRSLubaOpU'
+      code_challenge: 'AAAAAAAAAAA'
     });
     const expectedUrl = `${SpotifyService['AUTH_ENDPOINT']}?${expectedParams.toString()}`;
+    let actualUrl;
+    service.getAuthorizeRequestUrl().then((url) => actualUrl = url);
 
-    expect(await service.getAuthorizeRequestUrl()).toEqual(expectedUrl);
-  });
+    flushMicrotasks();
+    expect(actualUrl).toEqual(expectedUrl);
+  }));
 
   it('should get current playback on pollCurrentPlayback', fakeAsync(() => {
     const response = generateResponse<CurrentPlaybackResponse>(TEST_PLAYBACK_RESPONSE, 200);
@@ -1342,19 +1363,22 @@ describe('SpotifyService', () => {
     expect(storage.set).toHaveBeenCalledWith(SpotifyService['CODE_VERIFIER_KEY'], service['codeVerifier']);
   });
 
-  it('should reauthenticate when error response is an expired token', async () => {
+  it('should reauthenticate when error response is an expired token', fakeAsync(() => {
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.resolve(null));
     const expiredToken = {
       ...TEST_AUTH_TOKEN,
       expiry: new Date(Date.UTC(1999, 1, 1))
     };
     tokenProducer.next(expiredToken);
-    const apiResponse = await service.checkErrorResponse(generateErrorResponse(401));
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(401)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
     expect(service.requestAuthToken).toHaveBeenCalledWith(expiredToken.refreshToken, true);
     expect(apiResponse).toEqual(SpotifyAPIResponse.ReAuthenticated);
-  });
+  }));
 
-  it('should logout when an error occurs requesting a new auth token after auth token has expired', async () => {
+  it('should logout when an error occurs requesting a new auth token after auth token has expired', fakeAsync(() => {
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.reject('test-error'));
     spyOn(service, 'logout');
     const expiredToken = {
@@ -1362,31 +1386,43 @@ describe('SpotifyService', () => {
       expiry: new Date(Date.UTC(1999, 1, 1))
     };
     tokenProducer.next(expiredToken);
-    const apiResponse = await service.checkErrorResponse(generateErrorResponse(401));
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(401)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
     expect(service.requestAuthToken).toHaveBeenCalledWith(expiredToken.refreshToken, true);
     expect(console.error).toHaveBeenCalledOnceWith(jasmine.any(String));
     expect(service.logout).toHaveBeenCalled();
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
-  });
+  }));
 
-  it('should logout when error response is a bad OAuth request', async () => {
+  it('should logout when error response is a bad OAuth request', fakeAsync(() => {
     spyOn(service, 'logout');
-    const apiResponse = await service.checkErrorResponse(generateErrorResponse(403));
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(403)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
     expect(service.logout).toHaveBeenCalled();
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
-  });
+  }));
 
-  it('should logout and log an error when error response is Spotify rate limits exceeded', async () => {
+  it('should logout and log an error when error response is Spotify rate limits exceeded', fakeAsync(() => {
     spyOn(service, 'logout');
-    const apiResponse = await service.checkErrorResponse(generateErrorResponse(429));
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(429)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
     expect(service.logout).toHaveBeenCalled();
     expect(console.error).toHaveBeenCalled();
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
-  });
+  }));
 
-  it('should log an error when error response is unknown', async () => {
-    const apiResponse = await service.checkErrorResponse(generateErrorResponse(404));
+  it('should log an error when error response is unknown', fakeAsync(() => {
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(404)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
     expect(console.error).toHaveBeenCalled();
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
-  });
+  }));
 });

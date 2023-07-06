@@ -1,7 +1,8 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClient } from '@angular/common/http';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DebugElement } from '@angular/core';
+import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { FormsModule } from '@angular/forms';
@@ -39,11 +40,6 @@ import { cssRgbToHex } from '../../core/util';
 import { SpotifyService } from '../../services/spotify/spotify.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { SettingsMenuComponent } from './settings-menu.component';
-
-async function openMenu(loader: HarnessLoader): Promise<void> {
-  const button = await loader.getHarness(MatButtonHarness);
-  return button.click();
-}
 
 const THEME_INDEX = 0;
 const CONTROLS_INDEX = 1;
@@ -83,8 +79,8 @@ describe('SettingsMenuComponent', () => {
   let barColorProducer: BehaviorSubject<string>;
   let useDynamicThemeAccentProducer: BehaviorSubject<boolean>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [
         SettingsMenuComponent,
         MockComponent(ColorPickerComponent)
@@ -114,9 +110,7 @@ describe('SettingsMenuComponent', () => {
     store = TestBed.inject(Store);
     spotify = TestBed.inject(SpotifyService);
     router = TestBed.inject(Router);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(SettingsMenuComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -144,120 +138,144 @@ describe('SettingsMenuComponent', () => {
     };
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display the menu when the button is clicked', async () => {
-    const button = await loader.getHarness(MatButtonHarness);
+  it('should display the menu when the button is clicked', fakeAsync(() => {
+    let button: MatButtonHarness;
+    loader.getHarness(MatButtonHarness).then((harness) => button = harness);
+    flushMicrotasks();
     expect(button).toBeTruthy();
-    await button.click();
-    const settings = await rootLoader.getHarness(MatMenuHarness);
-    expect(settings).toBeTruthy();
-    expect(await settings.isOpen()).toBeTrue();
-  });
 
-  it('should display the theme toggle setting', async () => {
-    await openMenu(loader);
+    button.click();
+    flushMicrotasks();
+
+    let settings: MatMenuHarness;
+    rootLoader.getHarness(MatMenuHarness).then((harness) => settings = harness);
+    flushMicrotasks();
+
+    expect(settings).toBeTruthy();
+
+    let actualIsOpen = null;
+    settings.isOpen().then((isOpen) => actualIsOpen = isOpen);
+    flushMicrotasks();
+    expect(actualIsOpen).toBeTrue();
+  }));
+
+  it('should display the theme toggle setting', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(THEME_INDEX + 1);
     const theme = items[THEME_INDEX];
     expect(theme.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('dark_mode');
     expect(theme.query(By.directive(MatSlideToggle))).toBeTruthy();
-  });
+  }));
 
-  it('should add the app-icon class to theme toggle when light theme', async () => {
+  it('should add the app-icon class to theme toggle when light theme', fakeAsync(() => {
     themeProducer.next('light-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     expect(theme.query(By.directive(MatIcon)).classes['app-icon']).toBeTruthy();
-  });
+  }));
 
-  it('should not add the app-icon class to theme toggle when dark theme', async () => {
+  it('should not add the app-icon class to theme toggle when dark theme', fakeAsync(() => {
     themeProducer.next('dark-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     expect(theme.query(By.directive(MatIcon)).classes['app-icon']).toBeFalsy();
-  });
+  }));
 
-  it('should set the theme icon color to null when light theme', async () => {
+  it('should set the theme icon color to null when light theme', fakeAsync(() => {
     themeProducer.next('light-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const icon = theme.query(By.directive(MatIcon)).componentInstance as MatIcon;
     expect(icon.color).toBeFalsy();
-  });
+  }));
 
-  it('should set the theme icon color to accent when dark theme', async () => {
+  it('should set the theme icon color to accent when dark theme', fakeAsync(() => {
     themeProducer.next('dark-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const icon = theme.query(By.directive(MatIcon)).componentInstance as MatIcon;
     expect(icon.color).toEqual('accent');
-  });
+  }));
 
-  it('should set theme toggle to uncheck when light theme', async () => {
+  it('should set theme toggle to uncheck when light theme', fakeAsync(() => {
     themeProducer.next('light-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const toggle = theme.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
-  });
+  }));
 
-  it('should set theme toggle to check when dark theme', async () => {
+  it('should set theme toggle to check when dark theme', fakeAsync(() => {
     themeProducer.next('dark-theme');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const toggle = theme.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
-  });
+  }));
 
-  it('should set the theme toggle to primary color', async () => {
-    await openMenu(loader);
+  it('should set the theme toggle to primary color', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const toggle = theme.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.color).toEqual('primary');
-  });
+  }));
 
-  it('should call onDarkModeChange when theme toggle clicked', async () => {
+  it('should call onDarkModeChange when theme toggle clicked', fakeAsync(() => {
     spyOn(component, 'onDarkModeChange');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const toggle = theme.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onDarkModeChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when theme toggle clicked', async () => {
+  it('should stopPropagation when theme toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const theme = fixture.debugElement.queryAll(By.css('.menu-item'))[THEME_INDEX];
     const toggle = theme.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the player control option toggle group setting', async () => {
-    await openMenu(loader);
+  it('should display the player control option toggle group setting', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(CONTROLS_INDEX + 1);
     const playerOptions = items[CONTROLS_INDEX];
     expect(playerOptions.query(By.directive(MatButtonToggleGroup))).toBeTruthy();
-  });
+  }));
 
-  it('should display the player control options', async () => {
-    await openMenu(loader);
+  it('should display the player control options', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     const buttons = playerOptions.queryAll(By.directive(MatButtonToggle));
@@ -268,220 +286,236 @@ describe('SettingsMenuComponent', () => {
     expect(buttons[CONTROLS_FADE_INDEX].query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('play_circle_outline');
     expect((buttons[CONTROLS_ON_INDEX].componentInstance as MatButtonToggle).value).toEqual(PlayerControlsOptions.On);
     expect(buttons[CONTROLS_ON_INDEX].query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('play_circle_filled');
-  });
+  }));
 
-  it('should set player control group value to off when showPlayerControls is off', async () => {
+  it('should set player control group value to off when showPlayerControls is off', fakeAsync(() => {
     showPlayerControlsProducer.next(PlayerControlsOptions.Off);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     const off = playerOptions.queryAll(By.directive(MatButtonToggle))[CONTROLS_OFF_INDEX].componentInstance as MatButtonToggle;
     expect(off.checked).toBeTrue();
-  });
+  }));
 
-  it('should set player control group value to fade when showPlayerControls is fade', async () => {
+  it('should set player control group value to fade when showPlayerControls is fade', fakeAsync(() => {
     showPlayerControlsProducer.next(PlayerControlsOptions.Fade);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     const fade = playerOptions.queryAll(By.directive(MatButtonToggle))[CONTROLS_FADE_INDEX].componentInstance as MatButtonToggle;
     expect(fade.checked).toBeTrue();
-  });
+  }));
 
-  it('should set player control group value to fade when showPlayerControls is fade', async () => {
+  it('should set player control group value to fade when showPlayerControls is fade', fakeAsync(() => {
     showPlayerControlsProducer.next(PlayerControlsOptions.On);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     const on = playerOptions.queryAll(By.directive(MatButtonToggle))[CONTROLS_ON_INDEX].componentInstance as MatButtonToggle;
     expect(on.checked).toBeTrue();
-  });
+  }));
 
-  it('should call onShowPlayerControlsChange when player controls clicked', async () => {
+  it('should call onShowPlayerControlsChange when player controls clicked', fakeAsync(() => {
     spyOn(component, 'onShowPlayerControlsChange');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     playerOptions.triggerEventHandler('change', null);
     expect(component.onShowPlayerControlsChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stop propagation when player controls clicked', async () => {
+  it('should stop propagation when player controls clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const item = fixture.debugElement.queryAll(By.css('.menu-item'))[CONTROLS_INDEX];
     const playerOptions = item.query(By.directive(MatButtonToggleGroup));
     playerOptions.triggerEventHandler('click', event);
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should set player controls off when off button clicked', async () => {
+  it('should set player controls off when off button clicked', fakeAsync(() => {
     spyOn(component, 'onShowPlayerControlsChange');
     showPlayerControlsProducer.next(PlayerControlsOptions.On);
     fixture.detectChanges();
-    await openMenu(loader);
-    const offButton = (await rootLoader.getAllHarnesses(MatButtonToggleHarness))[CONTROLS_OFF_INDEX];
-    expect(await offButton.isChecked()).toBeFalse();
-    await offButton.check();
+    openMenuHelper(loader);
+
+    toggleHarnessAtIndexHelper(rootLoader, CONTROLS_OFF_INDEX);
+
     const toggle = fixture.debugElement.queryAll(By.directive(MatButtonToggle))[CONTROLS_OFF_INDEX].componentInstance as MatButtonToggle;
-    expect(await offButton.isChecked()).toBeTrue();
     expect(component.onShowPlayerControlsChange).toHaveBeenCalledWith(new MatButtonToggleChange(toggle, PlayerControlsOptions.Off));
-  });
+  }));
 
-  it('should set player controls to fade when fade button clicked', async () => {
+  it('should set player controls to fade when fade button clicked', fakeAsync(() => {
     spyOn(component, 'onShowPlayerControlsChange');
     showPlayerControlsProducer.next(PlayerControlsOptions.On);
     fixture.detectChanges();
-    await openMenu(loader);
-    const fadeButton = (await rootLoader.getAllHarnesses(MatButtonToggleHarness))[CONTROLS_FADE_INDEX];
-    expect(await fadeButton.isChecked()).toBeFalse();
-    await fadeButton.check();
-    const toggle = fixture.debugElement.queryAll(By.directive(MatButtonToggle))[CONTROLS_FADE_INDEX].componentInstance as MatButtonToggle;
-    expect(await fadeButton.isChecked()).toBeTrue();
-    expect(component.onShowPlayerControlsChange).toHaveBeenCalledWith(new MatButtonToggleChange(toggle, PlayerControlsOptions.Fade));
-  });
+    openMenuHelper(loader);
 
-  it('should set player controls on when on button clicked', async () => {
+    toggleHarnessAtIndexHelper(rootLoader, CONTROLS_FADE_INDEX);
+
+    const toggle = fixture.debugElement.queryAll(By.directive(MatButtonToggle))[CONTROLS_FADE_INDEX].componentInstance as MatButtonToggle;
+    expect(component.onShowPlayerControlsChange).toHaveBeenCalledWith(new MatButtonToggleChange(toggle, PlayerControlsOptions.Fade));
+  }));
+
+  it('should set player controls on when on button clicked', fakeAsync(() => {
     spyOn(component, 'onShowPlayerControlsChange');
     showPlayerControlsProducer.next(PlayerControlsOptions.Off);
     fixture.detectChanges();
-    await openMenu(loader);
-    const onButton = (await rootLoader.getAllHarnesses(MatButtonToggleHarness))[CONTROLS_ON_INDEX];
-    expect(await onButton.isChecked()).toBeFalse();
-    await onButton.check();
-    const toggle = fixture.debugElement.queryAll(By.directive(MatButtonToggle))[CONTROLS_ON_INDEX].componentInstance as MatButtonToggle;
-    expect(await onButton.isChecked()).toBeTrue();
-    expect(component.onShowPlayerControlsChange).toHaveBeenCalledWith(new MatButtonToggleChange(toggle, PlayerControlsOptions.On));
-  });
+    openMenuHelper(loader);
 
-  it('should display the playlist toggle setting', async () => {
-    await openMenu(loader);
+    toggleHarnessAtIndexHelper(rootLoader, CONTROLS_ON_INDEX);
+
+    const toggle = fixture.debugElement.queryAll(By.directive(MatButtonToggle))[CONTROLS_ON_INDEX].componentInstance as MatButtonToggle;
+    expect(component.onShowPlayerControlsChange).toHaveBeenCalledWith(new MatButtonToggleChange(toggle, PlayerControlsOptions.On));
+  }));
+
+  it('should display the playlist toggle setting', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(PLAYLIST_INDEX + 1);
     const playlist = items[PLAYLIST_INDEX];
     expect(playlist.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('queue_music');
     expect(playlist.query(By.directive(MatSlideToggle))).toBeTruthy();
-  });
+  }));
 
-  it('should set playlist toggle to uncheck when not show playlist', async () => {
+  it('should set playlist toggle to uncheck when not show playlist', fakeAsync(() => {
     showPlaylistNameProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const playlist = fixture.debugElement.queryAll(By.css('.menu-item'))[PLAYLIST_INDEX];
     const toggle = playlist.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
-  });
+  }));
 
-  it('should set playlist toggle to check when show playlist', async () => {
+  it('should set playlist toggle to check when show playlist', fakeAsync(() => {
     showPlaylistNameProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const playlist = fixture.debugElement.queryAll(By.css('.menu-item'))[PLAYLIST_INDEX];
     const toggle = playlist.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
-  });
+  }));
 
-  it('should set the playlist toggle to primary color', async () => {
-    await openMenu(loader);
+  it('should set the playlist toggle to primary color', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const playlist = fixture.debugElement.queryAll(By.css('.menu-item'))[PLAYLIST_INDEX];
     const toggle = playlist.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.color).toEqual('primary');
-  });
+  }));
 
-  it('should call onShowPlaylistNameChange when playlist toggle clicked', async () => {
+  it('should call onShowPlaylistNameChange when playlist toggle clicked', fakeAsync(() => {
     spyOn(component, 'onShowPlaylistNameChange');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const playlist = fixture.debugElement.queryAll(By.css('.menu-item'))[PLAYLIST_INDEX];
     const toggle = playlist.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onShowPlaylistNameChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when playlist toggle clicked', async () => {
+  it('should stopPropagation when playlist toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const playlist = fixture.debugElement.queryAll(By.css('.menu-item'))[PLAYLIST_INDEX];
     const toggle = playlist.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the spotify code toggle setting', async () => {
-    await openMenu(loader);
+  it('should display the spotify code toggle setting', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(SHOW_CODE_INDEX);
     const code = items[SHOW_CODE_INDEX];
     expect(code.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('qr_code_2');
     expect(code.query(By.directive(MatSlideToggle))).toBeTruthy();
-  });
+  }));
 
-  it('should set spotify code toggle to uncheck when not show spotify code', async () => {
+  it('should set spotify code toggle to uncheck when not show spotify code', fakeAsync(() => {
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const code = fixture.debugElement.queryAll(By.css('.menu-item'))[SHOW_CODE_INDEX];
     const toggle = code.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
-  });
+  }));
 
-  it('should set spotify code toggle to check when show spotify code', async () => {
+  it('should set spotify code toggle to check when show spotify code', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const code = fixture.debugElement.queryAll(By.css('.menu-item'))[SHOW_CODE_INDEX];
     const toggle = code.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
-  });
+  }));
 
-  it('should set the spotify code toggle to primary color', async () => {
-    await openMenu(loader);
+  it('should set the spotify code toggle to primary color', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const code = fixture.debugElement.queryAll(By.css('.menu-item'))[SHOW_CODE_INDEX];
     const toggle = code.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.color).toEqual('primary');
-  });
+  }));
 
-  it('should call onShowBarCodeChange when spotify code toggle clicked', async () => {
+  it('should call onShowBarCodeChange when spotify code toggle clicked', fakeAsync(() => {
     spyOn(component, 'onShowBarCodeChange');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const code = fixture.debugElement.queryAll(By.css('.menu-item'))[SHOW_CODE_INDEX];
     const toggle = code.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onShowBarCodeChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when spotify code toggle clicked', async () => {
+  it('should stopPropagation when spotify code toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const code = fixture.debugElement.queryAll(By.css('.menu-item'))[SHOW_CODE_INDEX];
     const toggle = code.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the smart color toggle setting', async () => {
-    await openMenu(loader);
+  it('should display the smart color toggle setting', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(SMART_COLOR_INDEX);
     const smartColor = items[SMART_COLOR_INDEX];
     expect(smartColor.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('lightbulb');
     expect(smartColor.query(By.directive(MatSlideToggle))).toBeTruthy();
-  });
+  }));
 
-  it('should display all the smart color settings when smart color toggled', async () => {
+  it('should display all the smart color settings when smart color toggled', fakeAsync(() => {
     component.showSmartColorSettings = true;
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     const smartSettings = items[SMART_SETTINGS_INDEX];
     const icons = smartSettings.queryAll(By.directive(MatIcon));
@@ -490,13 +524,14 @@ describe('SettingsMenuComponent', () => {
     expect(icons[SMART_ACCENT_INDEX].nativeElement.textContent.trim()).toEqual('play_circle_outline');
     expect(icons[SMART_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
     expect(toggles.length).toEqual(2);
-  });
+  }));
 
-  it('should display the smart accent setting when smart color toggled and not showSpotifyCode', async () => {
+  it('should display the smart accent setting when smart color toggled and not showSpotifyCode', fakeAsync(() => {
     component.showSmartColorSettings = true;
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     const smartSettings = items[SMART_SETTINGS_INDEX];
     const icons = smartSettings.queryAll(By.directive(MatIcon));
@@ -504,157 +539,173 @@ describe('SettingsMenuComponent', () => {
     expect(icons.length).toEqual(1);
     expect(icons[SMART_ACCENT_INDEX].nativeElement.textContent.trim()).toEqual('play_circle_outline');
     expect(toggles.length).toEqual(1);
-  });
+  }));
 
-  it('should set smart settings toggle to check when showSmartColorSettings and smartCodeColorUrlSet', async () => {
+  it('should set smart settings toggle to check when showSmartColorSettings and smartCodeColorUrlSet', fakeAsync(() => {
     component.showSmartColorSettings = true;
     component.smartCodeColorUrlSet = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
     expect(toggle.disabled).toBeFalse();
-  });
+  }));
 
-  it('should set smart settings toggle to uncheck when not showSmartColorSettings and smartCodeColorUrlSet', async () => {
+  it('should set smart settings toggle to uncheck when not showSmartColorSettings and smartCodeColorUrlSet', fakeAsync(() => {
     component.showSmartColorSettings = false;
     component.smartCodeColorUrlSet = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeFalse();
-  });
+  }));
 
-  it('should set smart settings toggle to uncheck and disabled when showSmartColorSettings and not smartCodeColorUrlSet', async () => {
+  it('should set smart settings toggle to uncheck and disabled when showSmartColorSettings and not smartCodeColorUrlSet', fakeAsync(() => {
     component.showSmartColorSettings = true;
     component.smartCodeColorUrlSet = false;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeTrue();
-  });
+  }));
 
-  it('should set smart settings toggle to uncheck and disabled when not showSmartColorSettings and not smartCodeColorUrlSet', async () => {
-    component.showSmartColorSettings = false;
-    component.smartCodeColorUrlSet = false;
-    fixture.detectChanges();
-    await openMenu(loader);
-    const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
-      .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
-    expect(toggle.checked).toBeFalse();
-    expect(toggle.disabled).toBeTrue();
-  });
+  it('should set smart settings toggle to uncheck and disabled when not showSmartColorSettings and not smartCodeColorUrlSet',
+    fakeAsync(() => {
+      component.showSmartColorSettings = false;
+      component.smartCodeColorUrlSet = false;
+      fixture.detectChanges();
+      openMenuHelper(loader);
 
-  it('should set smart accent toggle to check and not disabled when useDynamicThemeAccent and smartColorUrlSet', async () => {
+      const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
+        .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
+      expect(toggle.checked).toBeFalse();
+      expect(toggle.disabled).toBeTrue();
+  }));
+
+  it('should set smart accent toggle to check and not disabled when useDynamicThemeAccent and smartColorUrlSet', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(true);
     component.smartCodeColorUrlSet = true;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
     expect(toggle.disabled).toBeFalse();
-  });
+  }));
 
-  it('should set smart accent toggle to uncheck and not disabled when not useDynamicThemeAccent and smartColorUrlSet', async () => {
+  it('should set smart accent toggle to uncheck and not disabled when not useDynamicThemeAccent and smartColorUrlSet', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(false);
     component.smartCodeColorUrlSet = true;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeFalse();
-  });
+  }));
 
-  it('should set smart accent toggle to uncheck and disabled when useDynamicThemeAccent and not smartColorUrlSet', async () => {
+  it('should set smart accent toggle to uncheck and disabled when useDynamicThemeAccent and not smartColorUrlSet', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(true);
     component.smartCodeColorUrlSet = false;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeTrue();
-  });
+  }));
 
-  it('should set smart accent toggle to uncheck and disabled when not useDynamicThemeAccent and not smartColorUrlSet', async () => {
+  it('should set smart accent toggle to uncheck and disabled when not useDynamicThemeAccent and not smartColorUrlSet', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(false);
     component.smartCodeColorUrlSet = false;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeTrue();
-  });
+  }));
 
-  it('should set smart code toggle to check and not disabled when use smart code color and smart code color url set', async () => {
+  it('should set smart code toggle to check and not disabled when use smart code color and smart code color url set', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(true);
     component.smartCodeColorUrlSet = true;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
     expect(toggle.disabled).toBeFalse();
-  });
+  }));
 
-  it('should set smart code toggle to uncheck and not disabled when not use smart code color and smart code color url set', async () => {
-    showSpotifyCodeProducer.next(true);
-    useSmartCodeColorProducer.next(false);
-    component.smartCodeColorUrlSet = true;
-    component.showSmartColorSettings = true;
-    fixture.detectChanges();
-    await openMenu(loader);
-    const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
-    const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
-    expect(toggle.checked).toBeFalse();
-    expect(toggle.disabled).toBeFalse();
-  });
+  it('should set smart code toggle to uncheck and not disabled when not use smart code color and smart code color url set',
+    fakeAsync(() => {
+      showSpotifyCodeProducer.next(true);
+      useSmartCodeColorProducer.next(false);
+      component.smartCodeColorUrlSet = true;
+      component.showSmartColorSettings = true;
+      fixture.detectChanges();
+      openMenuHelper(loader);
 
-  it('should set smart code toggle to uncheck and disabled when use smart code color and smart code color url not set', async () => {
+      const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
+      const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
+      expect(toggle.checked).toBeFalse();
+      expect(toggle.disabled).toBeFalse();
+  }));
+
+  it('should set smart code toggle to uncheck and disabled when use smart code color and smart code color url not set', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(true);
     component.smartCodeColorUrlSet = false;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
     expect(toggle.disabled).toBeTrue();
-  });
+  }));
 
-  it('should set smart code toggle to uncheck and disabled when not use smart code color and smart code color url not set', async () => {
+  it('should set smart code toggle to uncheck and disabled when not use smart code color and smart code color url not set',
+    fakeAsync(() => {
+      showSpotifyCodeProducer.next(true);
+      useSmartCodeColorProducer.next(false);
+      component.smartCodeColorUrlSet = false;
+      component.showSmartColorSettings = true;
+      fixture.detectChanges();
+      openMenuHelper(loader);
+
+      const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
+      const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
+      expect(toggle.checked).toBeFalse();
+      expect(toggle.disabled).toBeTrue();
+  }));
+
+  it('should set the smart setting toggles to primary color', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
-    useSmartCodeColorProducer.next(false);
-    component.smartCodeColorUrlSet = false;
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
-    const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
-    const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX].componentInstance as MatSlideToggle;
-    expect(toggle.checked).toBeFalse();
-    expect(toggle.disabled).toBeTrue();
-  });
+    openMenuHelper(loader);
 
-  it('should set the smart setting toggles to primary color', async () => {
-    showSpotifyCodeProducer.next(true);
-    component.showSmartColorSettings = true;
-    fixture.detectChanges();
-    await openMenu(loader);
     const smartColorToggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
@@ -663,340 +714,374 @@ describe('SettingsMenuComponent', () => {
     expect(smartColorToggle.color).toEqual('primary');
     expect(smartAccentToggle.color).toEqual('primary');
     expect(smartCodeToggle.color).toEqual('primary');
-  });
+  }));
 
-  it('should call onShowSmartColorSettings when smart color toggle clicked', async () => {
+  it('should call onShowSmartColorSettings when smart color toggle clicked', fakeAsync(() => {
     spyOn(component, 'onShowSmartColorSettings');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onShowSmartColorSettings).toHaveBeenCalled();
-  });
+  }));
 
-  it('should call onUseDynamicThemeAccent when smart accent toggle clicked', async () => {
+  it('should call onUseDynamicThemeAccent when smart accent toggle clicked', fakeAsync(() => {
     spyOn(component, 'onUseDynamicThemeAccent');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX];
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onUseDynamicThemeAccent).toHaveBeenCalled();
-  });
+  }));
 
-  it('should call onUseSmartCodeColor when smart code toggle clicked', async () => {
+  it('should call onUseSmartCodeColor when smart code toggle clicked', fakeAsync(() => {
     spyOn(component, 'onUseSmartCodeColor');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX];
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onUseSmartCodeColor).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when smart color toggle clicked', async () => {
+  it('should stopPropagation when smart color toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const toggle = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_COLOR_INDEX]
       .query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when smart accent toggle clicked', async () => {
+  it('should stopPropagation when smart accent toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_ACCENT_INDEX];
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when smart code toggle clicked', async () => {
+  it('should stopPropagation when smart code toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const smartSettings = fixture.debugElement.queryAll(By.css('.menu-item'))[SMART_SETTINGS_INDEX];
     const toggle = smartSettings.queryAll(By.directive(MatSlideToggle))[SMART_CODE_INDEX];
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the bar color toggle setting when not useSmartCodeColor and show spotify code', async () => {
+  it('should display the bar color toggle setting when not useSmartCodeColor and show spotify code', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     expect(items.length).toBeGreaterThanOrEqual(BAR_COLOR_INDEX + 1);
     const barColor = items[BAR_COLOR_INDEX];
     expect(barColor.query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('invert_colors');
     expect(barColor.query(By.directive(MatSlideToggle))).toBeTruthy();
-  });
+  }));
 
-  it('should not display the bar color toggle setting when useSmartCodeColor and show spotify code', async () => {
+  it('should not display the bar color toggle setting when useSmartCodeColor and show spotify code', fakeAsync(() => {
     useSmartCodeColorProducer.next(true);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     const icon = items[items.length - 2].query(By.directive(MatIcon));
     expect(icon.nativeElement.textContent.trim()).not.toEqual('invert_colors');
-  });
+  }));
 
-  it('should not display the bar color toggle setting when useSmartCodeColor and not show spotify code', async () => {
+  it('should not display the bar color toggle setting when useSmartCodeColor and not show spotify code', fakeAsync(() => {
     useSmartCodeColorProducer.next(true);
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     const icon = items[items.length - 2].query(By.directive(MatIcon));
     expect(icon.nativeElement.textContent.trim()).not.toEqual('invert_colors');
-  });
+  }));
 
-  it('should not display the bar color toggle setting when not useSmartCodeColor and not show spotify code', async () => {
+  it('should not display the bar color toggle setting when not useSmartCodeColor and not show spotify code', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const items = fixture.debugElement.queryAll(By.css('.menu-item'));
     const icon = items[items.length - 2].query(By.directive(MatIcon));
     expect(icon.nativeElement.textContent.trim()).not.toEqual('invert_colors');
-  });
+  }));
 
-  it('should set bar color toggle to check when bar color is black', async () => {
+  it('should set bar color toggle to check when bar color is black', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(false);
     component.showSmartColorSettings = true;
     barColorProducer.next(BAR_COLOR_BLACK);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const barColor = fixture.debugElement.queryAll(By.css('.menu-item'))[BAR_COLOR_INDEX];
     const toggle = barColor.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeTrue();
-  });
+  }));
 
-  it('should set bar color toggle to uncheck when bar color is not black', async () => {
+  it('should set bar color toggle to uncheck when bar color is not black', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(false);
     component.showSmartColorSettings = true;
     barColorProducer.next(BAR_COLOR_WHITE);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const barColor = fixture.debugElement.queryAll(By.css('.menu-item'))[BAR_COLOR_INDEX];
     const toggle = barColor.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.checked).toBeFalse();
-  });
+  }));
 
-  it('should set the bar color toggle to primary color', async () => {
+  it('should set the bar color toggle to primary color', fakeAsync(() => {
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(false);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const barColor = fixture.debugElement.queryAll(By.css('.menu-item'))[BAR_COLOR_INDEX];
     const toggle = barColor.query(By.directive(MatSlideToggle)).componentInstance as MatSlideToggle;
     expect(toggle.color).toEqual('primary');
-  });
+  }));
 
-  it('should call onBarColorChange when bar color toggle clicked', async () => {
+  it('should call onBarColorChange when bar color toggle clicked', fakeAsync(() => {
     spyOn(component, 'onBarColorChange');
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(false);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const barColor = fixture.debugElement.queryAll(By.css('.menu-item'))[BAR_COLOR_INDEX];
     const toggle = barColor.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('toggleChange', null);
     fixture.detectChanges();
     expect(component.onBarColorChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should stopPropagation when bar color toggle clicked', async () => {
+  it('should stopPropagation when bar color toggle clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
     showSpotifyCodeProducer.next(true);
     useSmartCodeColorProducer.next(false);
     component.showSmartColorSettings = true;
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const barColor = fixture.debugElement.queryAll(By.css('.menu-item'))[BAR_COLOR_INDEX];
     const toggle = barColor.query(By.directive(MatSlideToggle));
     toggle.triggerEventHandler('click', event);
     fixture.detectChanges();
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the color picker when not useSmartCodeColor and showSpotifyCode', async () => {
+  it('should display the color picker when not useSmartCodeColor and showSpotifyCode', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     expect(colorPicker).toBeTruthy();
-  });
+  }));
 
-  it('should not display the color picker when useSmartCodeColor and showSpotifyCode', async () => {
+  it('should not display the color picker when useSmartCodeColor and showSpotifyCode', fakeAsync(() => {
     useSmartCodeColorProducer.next(true);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     expect(colorPicker).toBeFalsy();
-  });
+  }));
 
-  it('should not display the color picker when useSmartCodeColor and not showSpotifyCode', async () => {
+  it('should not display the color picker when useSmartCodeColor and not showSpotifyCode', fakeAsync(() => {
     useSmartCodeColorProducer.next(true);
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     expect(colorPicker).toBeFalsy();
-  });
+  }));
 
-  it('should not display the color picker when not useSmartCodeColor and not showSpotifyCode', async () => {
+  it('should not display the color picker when not useSmartCodeColor and not showSpotifyCode', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     expect(colorPicker).toBeFalsy();
-  });
+  }));
 
-  it('should set the color picker\'s color as backgroundColor', async () => {
+  it('should set the color picker\'s color as backgroundColor', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     backgroundColorProducer.next('ABC123');
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent)).componentInstance as ColorPickerComponent;
     expect(colorPicker.color).toEqual('ABC123');
-  });
+  }));
 
-  it('should set the color picker\'s placeholderColor as component\'s placeholderColor', async () => {
+  it('should set the color picker\'s placeholderColor as component\'s placeholderColor', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent)).componentInstance as ColorPickerComponent;
     expect(colorPicker.placeholderColor).toEqual(component.placeholderColor);
-  });
+  }));
 
-  it('should set the color picker\'s presetColors as component\'s presetColors', async () => {
+  it('should set the color picker\'s presetColors as component\'s presetColors', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent)).componentInstance as ColorPickerComponent;
     expect(colorPicker.presetColors).toEqual(component.presetColors);
-  });
+  }));
 
-  it('should set the color picker\'s colorReset$ as colorPickerResetEvent', async () => {
+  it('should set the color picker\'s colorReset$ as colorPickerResetEvent', fakeAsync(() => {
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent)).componentInstance as ColorPickerComponent;
     expect(colorPicker.colorReset$).toEqual(component.colorPickerResetEvent.asObservable());
-  });
+  }));
 
-  it('should trigger onColorChange when color picker color change', async () => {
+  it('should trigger onColorChange when color picker color change', fakeAsync(() => {
     spyOn(component, 'onColorChange');
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     colorPicker.triggerEventHandler('colorChange', null);
     expect(component.onColorChange).toHaveBeenCalled();
-  });
+  }));
 
-  it('should trigger stopPropagation when color picker is clicked', async () => {
+  it('should trigger stopPropagation when color picker is clicked', fakeAsync(() => {
     const event = new Event('click');
     spyOn(event, 'stopPropagation');
     useSmartCodeColorProducer.next(false);
     showSpotifyCodeProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const colorPicker = fixture.debugElement.query(By.directive(ColorPickerComponent));
     colorPicker.triggerEventHandler('click', event);
     expect(event.stopPropagation).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the accent color selector when not useDynamicThemeAccent', async () => {
+  it('should display the accent color selector when not useDynamicThemeAccent', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(false);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     expect(accentColorSelector).toBeTruthy();
-  });
+  }));
 
-  it('should not display the accent color selector when useDynamicThemeAccent', async () => {
+  it('should not display the accent color selector when useDynamicThemeAccent', fakeAsync(() => {
     useDynamicThemeAccentProducer.next(true);
     fixture.detectChanges();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     expect(accentColorSelector).toBeFalsy();
-  });
+  }));
 
-  it('should display the default accent color selector label text', async () => {
-    await openMenu(loader);
+  it('should display the default accent color selector label text', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const accentColorField = fixture.debugElement.query(By.directive(MatFormField));
     const label = accentColorField.query(By.directive(MatLabel));
     expect(label.nativeElement.textContent.trim()).toEqual('Accent Color');
-  });
+  }));
 
-  it('should display all preset accent color options', async () => {
-    await openMenu(loader);
+  it('should display all preset accent color options', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     expect(options.length).toEqual(DYNAMIC_THEME_COLORS.getColors().length + 1);
-  });
+  }));
 
-  it('should display the unselect option', async () => {
-    await openMenu(loader);
+  it('should display the unselect option', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     expect(options.length).toBeGreaterThanOrEqual(1);
     expect(options[0].nativeElement.textContent.trim()).toEqual('Unselect');
-  });
+  }));
 
-  it('should display the unselect option', async () => {
+  it('should display the unselect option', fakeAsync(() => {
     const presetColors = DYNAMIC_THEME_COLORS.getColors();
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     expect(options.length).toBeGreaterThanOrEqual(1);
     for (let i = 0; i < presetColors.length; i++) {
@@ -1005,75 +1090,91 @@ describe('SettingsMenuComponent', () => {
       expect(option.nativeElement.textContent.trim()).toEqual(presetColors[i].displayName);
       expect(cssRgbToHex(textSpan.nativeElement.style.color)).toEqual(presetColors[i].hex.toUpperCase());
     }
-  });
+  }));
 
-  it('should call onAccentColorChange on accent option selection', async () => {
+  it('should call onAccentColorChange on accent option selection', fakeAsync(() => {
     spyOn(component, 'onAccentColorChange');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     options[1].nativeElement.click();
     fixture.detectChanges();
+
     expect(component.onAccentColorChange).toHaveBeenCalled();
-  });
+    flush();
+  }));
 
-  it('should update the customAccentColor object when accent color selected', async () => {
+  it('should update the customAccentColor object when accent color selected', fakeAsync(() => {
     component.customAccentColor = null;
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     options[1].nativeElement.click();
     fixture.detectChanges();
-    expect(component.customAccentColor).toBeTruthy();
-  });
 
-  it('should update the customAccentColor object to null when accent color unselected', async () => {
+    expect(component.customAccentColor).toBeTruthy();
+    flush();
+  }));
+
+  it('should update the customAccentColor object to null when accent color unselected', fakeAsync(() => {
     component.customAccentColor = DYNAMIC_THEME_COLORS.getColors()[0];
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const accentColorSelector = fixture.debugElement.query(By.directive(MatSelect));
     accentColorSelector.nativeElement.click();
     fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.directive(MatOption));
     options[0].nativeElement.click();
     fixture.detectChanges();
-    expect(component.customAccentColor).toBeNull();
-  });
 
-  it('should display the logout button', async () => {
-    await openMenu(loader);
+    expect(component.customAccentColor).toBeNull();
+    flush();
+  }));
+
+  it('should display the logout button', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const buttons = fixture.debugElement.queryAll(By.css('.menu-help button'));
     expect(buttons.length).toBeGreaterThanOrEqual(LOGOUT_INDEX + 1);
     expect(buttons[LOGOUT_INDEX].query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('logout');
-  });
+  }));
 
-  it('should call logout when the logout button is clicked', async () => {
+  it('should call logout when the logout button is clicked', fakeAsync(() => {
     spyOn(component, 'logout');
     const event = new Event('click');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const button = fixture.debugElement.queryAll(By.css('.menu-help button'))[LOGOUT_INDEX];
     button.triggerEventHandler('click', event);
     expect(component.logout).toHaveBeenCalled();
-  });
+  }));
 
-  it('should display the help button', async () => {
-    await openMenu(loader);
+  it('should display the help button', fakeAsync(() => {
+    openMenuHelper(loader);
+
     const buttons = fixture.debugElement.queryAll(By.css('.menu-help button'));
     expect(buttons.length).toBeGreaterThanOrEqual(HELP_INDEX + 1);
     expect(buttons[HELP_INDEX].query(By.directive(MatIcon)).nativeElement.textContent.trim()).toEqual('help_outline');
-  });
+  }));
 
-  it('should call openHelpDialog when the help button is clicked', async () => {
+  it('should call openHelpDialog when the help button is clicked', fakeAsync(() => {
     spyOn(component, 'openHelpDialog');
     const event = new Event('click');
-    await openMenu(loader);
+    openMenuHelper(loader);
+
     const button = fixture.debugElement.queryAll(By.css('.menu-help button'))[HELP_INDEX];
     button.triggerEventHandler('click', event);
     expect(component.openHelpDialog).toHaveBeenCalled();
-  });
+  }));
 
   it('should set smartCodeColorUrlSet to false if no albumColorUrl in config', () => {
     AppConfig.settings.env.albumColorUrl = null;
@@ -1216,3 +1317,34 @@ describe('SettingsMenuComponent', () => {
       });
   });
 });
+
+function openMenuHelper(loader: HarnessLoader): void {
+  let button: MatButtonHarness;
+  loader.getHarness(MatButtonHarness).then((harness) => button = harness);
+  flushMicrotasks();
+  expect(button).toBeTruthy();
+
+  button.click();
+  flushMicrotasks();
+}
+
+function toggleHarnessAtIndexHelper(harnessLoader: HarnessLoader, index: number): void {
+  let harnesses: MatButtonToggleHarness[];
+  harnessLoader.getAllHarnesses(MatButtonToggleHarness).then((toggleHarnesses) => harnesses = toggleHarnesses);
+  flushMicrotasks();
+
+  const buttonHarness = harnesses[index];
+  expect(buttonHarness).toBeTruthy();
+
+  let actualIsChecked = null;
+  buttonHarness.isChecked().then((isChecked) => actualIsChecked = isChecked);
+  flushMicrotasks();
+  expect(actualIsChecked).toBeFalse();
+
+  buttonHarness.check();
+  flushMicrotasks();
+
+  buttonHarness.isChecked().then((isChecked) => actualIsChecked = isChecked);
+  flushMicrotasks();
+  expect(actualIsChecked).toBeTrue();
+}

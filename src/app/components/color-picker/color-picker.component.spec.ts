@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,8 +34,8 @@ describe('ColorPickerComponent', () => {
   let colorPickerResetEvent: Subject<void>;
   let themeProducer: BehaviorSubject<string>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [ ColorPickerComponent ],
       imports: [
         BrowserAnimationsModule,
@@ -48,9 +48,7 @@ describe('ColorPickerComponent', () => {
         NgxsModule.forRoot([], { developmentMode: true })
       ]
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(ColorPickerComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -63,7 +61,7 @@ describe('ColorPickerComponent', () => {
     component.colorReset$ = colorPickerResetEvent.asObservable();
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuItem, MatMenuModule } from '@angular/material/menu';
@@ -49,8 +49,8 @@ describe('DevicesComponent', () => {
   let currentDeviceProducer: BehaviorSubject<DeviceModel>;
   let availableDevicesProducer: BehaviorSubject<DeviceModel[]>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [ DevicesComponent ],
       imports: [
         BrowserAnimationsModule,
@@ -61,9 +61,7 @@ describe('DevicesComponent', () => {
       providers: [ MockProvider(SpotifyService) ]
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(DevicesComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -73,7 +71,7 @@ describe('DevicesComponent', () => {
     availableDevicesProducer = mockSelectors.defineNgxsSelector<DeviceModel[]>(component, 'availableDevices$');
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,3 +1,4 @@
+import { fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { AlbumResponse } from '../models/album.model';
 import { ArtistResponse } from '../models/artist.model';
@@ -234,15 +235,15 @@ describe('util package', () => {
   });
 
   describe('generateCodeChallenge', () => {
-    it('should be truthy', async () => {
-      expect(await generateCodeChallenge('test')).toBeTruthy();
-    });
+    it('should use SHA-256 encryption', fakeAsync(() => {
+      spyOn(window.crypto.subtle, 'digest').and.returnValue(Promise.resolve(new ArrayBuffer(8)));
+      let codeChallenge;
+      generateCodeChallenge('test').then((retVal) => codeChallenge = retVal);
 
-    it('should use SHA-256 encryption', async () => {
-      spyOn(window.crypto.subtle, 'digest');
-      await generateCodeChallenge('test');
+      flushMicrotasks();
       expect(window.crypto.subtle.digest).toHaveBeenCalledWith('SHA-256', jasmine.any(Uint8Array));
-    });
+      expect(codeChallenge).toBeTruthy();
+    }));
   });
 
   describe('generateRandomString', () => {
