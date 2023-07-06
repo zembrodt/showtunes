@@ -261,17 +261,23 @@ describe('util package', () => {
 
   describe('generateCodeVerifier', () => {
     it('should generate a random string of specific length when minLength = maxLength', () => {
-      expect(generateCodeVerifier(2, 2).length).toEqual(2);
+      for (let i = 0; i < 100; i++) {
+        expect(generateCodeVerifier(2, 2).length).toEqual(2);
+      }
     });
 
     it('should generate a random string of a length within the bounds', () => {
-      const codeVerifier = generateCodeVerifier(5, 10);
-      expect(codeVerifier.length >= 5).toBeTrue();
-      expect(codeVerifier.length <= 10).toBeTrue();
+      for (let i = 0; i < 100; i++) {
+        const codeVerifier = generateCodeVerifier(5, 10);
+        expect(codeVerifier.length >= 5).toBeTrue();
+        expect(codeVerifier.length <= 10).toBeTrue();
+      }
     });
 
     it('should return a random string of valid code verifier characters', () => {
-      expect(generateCodeVerifier(5, 10)).toMatch('^[a-zA-Z0-9_\\-.~]+$');
+      for (let i = 0; i < 100; i++) {
+        expect(generateCodeVerifier(5, 10)).toMatch('^[a-zA-Z0-9_\\-.~]+$');
+      }
     });
 
     it('should return empty string for length 0', () => {
