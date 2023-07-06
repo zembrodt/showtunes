@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -41,8 +41,8 @@ describe('HelpDialogComponent', () => {
     let fixture: ComponentFixture<HelpDialogComponent>;
     let dialogRef: MatDialogRef<HelpDialogComponent>;
 
-    beforeEach(async () => {
-      await TestBed.configureTestingModule({
+    beforeEach(waitForAsync(() => {
+      TestBed.configureTestingModule({
         declarations: [SettingsMenuComponent],
         imports: [
           FontAwesomeModule,
@@ -56,13 +56,11 @@ describe('HelpDialogComponent', () => {
         ]
       }).compileComponents();
       dialogRef = TestBed.inject(MatDialogRef);
-    });
 
-    beforeEach(() => {
       fixture = TestBed.createComponent(HelpDialogComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
-    });
+    }));
 
     it('should create', () => {
       expect(component).toBeTruthy();
@@ -218,8 +216,8 @@ describe('HelpDialogComponent', () => {
     let component: HelpDialogComponent;
     let fixture: ComponentFixture<HelpDialogComponent>;
 
-    beforeEach(async () => {
-      await TestBed.configureTestingModule({
+    beforeEach(waitForAsync(() => {
+      TestBed.configureTestingModule({
         declarations: [SettingsMenuComponent],
         imports: [
           FontAwesomeModule,
@@ -232,13 +230,11 @@ describe('HelpDialogComponent', () => {
           { provide: MAT_DIALOG_DATA, useValue: dataDark }
         ]
       }).compileComponents();
-    });
 
-    beforeEach(() => {
       fixture = TestBed.createComponent(HelpDialogComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
-    });
+    }));
 
     it('should create', () => {
       expect(component).toBeTruthy();

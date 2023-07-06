@@ -1,7 +1,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClient } from '@angular/common/http';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatProgressBar, MatProgressBarModule } from '@angular/material/progress-bar';
@@ -79,8 +79,8 @@ describe('AlbumDisplayComponent', () => {
     };
   });
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [ AlbumDisplayComponent ],
       imports: [
         FlexLayoutModule,
@@ -100,9 +100,7 @@ describe('AlbumDisplayComponent', () => {
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
     store = TestBed.inject(Store);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(AlbumDisplayComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -118,7 +116,7 @@ describe('AlbumDisplayComponent', () => {
     useDynamicThemeAccentProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useDynamicThemeAccent$');
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

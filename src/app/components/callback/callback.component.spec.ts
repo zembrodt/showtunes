@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
@@ -22,9 +22,9 @@ describe('CallbackComponent', () => {
   let tokenProducer: BehaviorSubject<AuthToken>;
   let paramMapProducer: BehaviorSubject<ParamMap>;
 
-  beforeEach(async () => {
+  beforeEach(waitForAsync(() => {
     paramMapProducer = new BehaviorSubject<ParamMap>(convertToParamMap({code: 'initial_code'}));
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       declarations: [
         CallbackComponent,
         MockComponent(LoadingComponent)
@@ -40,9 +40,7 @@ describe('CallbackComponent', () => {
     store = TestBed.inject(Store);
     router = TestBed.inject(Router);
     spotify = TestBed.inject(SpotifyService);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(CallbackComponent);
     component = fixture.componentInstance;
 
@@ -52,7 +50,7 @@ describe('CallbackComponent', () => {
     spotify.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

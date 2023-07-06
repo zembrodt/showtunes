@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatSlider, MatSliderChange, MatSliderModule } from '@angular/material/slider';
 import { MatSliderHarness } from '@angular/material/slider/testing';
@@ -17,8 +17,8 @@ describe('TrackPlayerProgressComponent', () => {
   let loader: HarnessLoader;
   let spotify: SpotifyService;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [ TrackPlayerProgressComponent ],
       imports: [
         MatSliderModule,
@@ -27,14 +27,12 @@ describe('TrackPlayerProgressComponent', () => {
       providers: [ MockProvider(SpotifyService) ]
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TrackPlayerProgressComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

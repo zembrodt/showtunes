@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  browser-tools: circleci/browser-tools@1.3.0
-  codecov: codecov/codecov@3.2.2
+  browser-tools: circleci/browser-tools@1.4.1
+  codecov: codecov/codecov@3.2.5
 
 jobs:
   build:
@@ -31,4 +31,4 @@ jobs:
       - store_artifacts:
           path: coverage
       - codecov/upload:
-          file: "coverage/ChromeHeadless/coverage-final.json"
+          file: "coverage/chrome/coverage-final.json"

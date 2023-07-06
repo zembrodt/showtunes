@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { By } from '@angular/platform-browser';
 import { MockComponent } from 'ng-mocks';
@@ -64,17 +64,15 @@ describe('TrackPlayerComponent', () => {
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
   let showPlaylistNameProducer: BehaviorSubject<boolean>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
       declarations: [
         TrackPlayerComponent,
         MockComponent(TrackPlayerProgressComponent),
         MockComponent(TrackPlayerControlsComponent)
       ],
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TrackPlayerComponent);
     component = fixture.componentInstance;
 
@@ -92,7 +90,7 @@ describe('TrackPlayerComponent', () => {
     showPlaylistNameProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'showPlaylistName$');
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

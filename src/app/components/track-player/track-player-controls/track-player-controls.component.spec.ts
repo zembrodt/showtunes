@@ -1,7 +1,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ElementRef } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatButtonHarness } from '@angular/material/button/testing';
@@ -41,9 +41,9 @@ describe('TrackPlayerControlsComponent', () => {
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
   let inactivityProducer: BehaviorSubject<boolean>;
 
-  beforeEach(async () => {
+  beforeEach(waitForAsync(() => {
     inactivityProducer = new BehaviorSubject<boolean>(null);
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       declarations: [
         TrackPlayerControlsComponent,
         MockComponent(DevicesComponent)
@@ -65,9 +65,7 @@ describe('TrackPlayerControlsComponent', () => {
     }).compileComponents();
     spotify = TestBed.inject(SpotifyService);
     storage = TestBed.inject(StorageService);
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TrackPlayerControlsComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -75,22 +73,29 @@ describe('TrackPlayerControlsComponent', () => {
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(component, 'showPlayerControls$');
 
     fixture.detectChanges();
-  });
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should contain the player buttons', async () => {
+  it('should contain the player buttons', fakeAsync(() => {
     const buttonsFound = new Set<string>();
-    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    let buttons: MatButtonHarness[];
+    loader.getAllHarnesses(MatButtonHarness).then((matButtons) => buttons = matButtons);
+    flushMicrotasks();
     expect(buttons.length).toEqual(BUTTON_COUNT);
 
-    await Promise.all(buttons.map(async (button) => {
-      const icon = await button.getHarness(MatIconHarness);
+    buttons.map((button) => {
+      let icon: MatIconHarness;
+      button.getHarness(MatIconHarness).then((harness) => icon = harness);
+      flushMicrotasks();
       expect(icon).toBeTruthy();
-      buttonsFound.add(await icon.getName());
-    }));
+      let iconName;
+      icon.getName().then((name) => iconName = name);
+      flushMicrotasks();
+      buttonsFound.add(iconName);
+    });
 
     expect(buttonsFound.size).toEqual(BUTTON_COUNT);
     expect(buttonsFound).toContain('shuffle');
@@ -100,7 +105,7 @@ describe('TrackPlayerControlsComponent', () => {
     expect(buttonsFound).toContain('repeat');
     expect(buttonsFound).toContain('volume_up');
     expect(buttonsFound).toContain('thumb_up');
-  });
+  }));
 
   it('should contain the volume slider', () => {
     const slider = fixture.debugElement.query(By.directive(MatSlider));

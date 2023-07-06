@@ -139,7 +139,7 @@ export function generateCodeVerifier(minLength: number, maxLength: number): stri
   if (minLength > maxLength || minLength < 0) {
     return '';
   }
-  const length = minLength !== maxLength ? Math.random() * (maxLength - minLength + 1) + minLength : minLength;
+  const length = Math.floor(Math.random() * (maxLength - minLength + 1) + minLength);
   return generateRandomStringFromChars(length, validCodeVerifierChars);
 }
 

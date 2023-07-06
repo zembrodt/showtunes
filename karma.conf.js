@@ -10,7 +10,8 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      require('@angular-devkit/build-angular/plugins/karma'),
+      'karma-spec-reporter'
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
@@ -20,9 +21,12 @@ module.exports = function (config) {
     },
     coverageReporter: {
       type: 'json',
-      dir:'./coverage'
+      dir: './coverage',
+      subdir: (browser) => {
+        return browser.toLowerCase().split(/[ /-]/)[0];
+      }
     },
-    reporters: ['progress', 'coverage'],
+    reporters: ['spec', 'coverage'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
@@ -35,7 +39,7 @@ module.exports = function (config) {
         displayName: 'ChromeHeadless'
       }
     },
-    singleRun: true,
-    restartOnFileChange: true
+    singleRun: false,
+    restartOnFileChange: true,
   });
 };
