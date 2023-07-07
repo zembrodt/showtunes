@@ -78,7 +78,7 @@ Explanation of configurations (**^** denotes required config):
 - `"auth"`
   - **^**`"clientId"` (*string*) the client ID for accessing Spotify's API
   - `"clientSecret"` - (*string*) the client secret for accessing Spotify's API (if using non-PKCE method)
-  - `"scopes"` - (*string*) comma-separated list of API Spotify scopes needed to grant the application access during OAuth 
+  - **^**`"scopes"` - (*string*) space-separated list of API Spotify scopes needed to grant the application access during OAuth 
   - `"tokenUrl"` - (*string*) the 3rd party backend URL for authentication if not using direct authorization with Spotify
   - `"forcePkce"` - (*boolean*) used to force the application to use PKCE for authentication disregarding what other configs are set
   - `"showDialog"` - (*boolean*) determines if Spotify's OAuth page is opened in a new window or not
