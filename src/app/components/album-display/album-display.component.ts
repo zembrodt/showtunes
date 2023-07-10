@@ -4,9 +4,10 @@ import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
+import { DominantColor, DominantColorFinder } from '../../core/dominant-color/dominant-color-finder';
 import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
-import { ChangeSmartColor } from '../../core/settings/settings.actions';
+import { ChangeDynamicColor, ChangeSmartColor } from '../../core/settings/settings.actions';
 import { BAR_COLOR_BLACK, BAR_COLOR_WHITE, DEFAULT_BAR_CODE_COLOR, DEFAULT_CODE_COLOR } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { expandHexColor, hexToRgb, isHexColor } from '../../core/util';
@@ -35,8 +36,11 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   @Select(PlaybackState.isIdle) isIdle$: Observable<boolean>;
 
-  @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
-  private useSmartCodeColor: boolean;
+  @Select(SettingsState.useSmartCodeColor) userDynamicCodeColor: Observable<boolean>;
+  private useDynamicCodeColor: boolean;
+
+  @Select(SettingsState.dynamicColor) dynamicColor$: Observable<DominantColor>;
+  private dynamicColor: DominantColor;
 
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
   private showSpotifyCode: boolean;
@@ -50,6 +54,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   @Select(SettingsState.useDynamicThemeAccent) useDynamicThemeAccent$: Observable<boolean>;
   private useDynamicThemeAccent;
 
+  private dominantColorFinder: DominantColorFinder = null;
+
   spotifyCodeUrl: string;
   smartBackgroundColor: string;
   smartBarColor: string;
@@ -60,11 +66,9 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   constructor(private spotifyService: SpotifyService, private store: Store) {}
 
   ngOnInit(): void {
-    // Set initial spotify code color
-    if (this.useSmartCodeColor || this.useDynamicThemeAccent) {
-      this.setSmartColor();
+    if (!this.dominantColorFinder) {
+      this.dominantColorFinder = new DominantColorFinder();
     }
-    this.spotifyCodeUrl = this.getSpotifyCodeUrl();
 
     this.track$
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -75,15 +79,16 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
     this.coverArt$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((coverArt) => {
-        // TODO: This adds a "loading" time to the spotify code while it fetches the new color, but album moves around while the
-        // placeholder is switched to the new code
-        /*if (!this.coverArt || coverArt.url !== this.coverArt.url) {
-          this.smartBackgroundColor = null;
-          this.smartBarColor = null;
-        }*/
         this.coverArt = coverArt;
-        if (this.useSmartCodeColor) {
-          this.setSmartColor();
+        // Calculate the dynamic color from the cover art
+        if (this.coverArt.url) {
+          this.dominantColorFinder.getColor(this.coverArt.url).then((dominantColor) => {
+            if (dominantColor && isHexColor(dominantColor.hex)) {
+              this.store.dispatch(new ChangeDynamicColor(dominantColor));
+            } else {
+              this.store.dispatch(new ChangeDynamicColor(null));
+            }
+          });
         }
       });
     this.backgroundColor$
@@ -98,26 +103,23 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
         this.barColor = barColor;
         this.spotifyCodeUrl = this.getSpotifyCodeUrl();
       });
-    this.useSmartCodeColor$
+    this.userDynamicCodeColor
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((useSmartCodeColor) => {
-        this.useSmartCodeColor = useSmartCodeColor;
-        if (useSmartCodeColor) {
-          this.setSmartColor();
-        }
-        this.spotifyCodeUrl = this.getSpotifyCodeUrl();
+      .subscribe((useDynamicCodeColor) => {
+        this.useDynamicCodeColor = useDynamicCodeColor;
+        this.setSpotifyCodeUrl();
+      });
+    this.dynamicColor$.pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((dynamicColor) => {
+        this.dynamicColor = dynamicColor;
+        this.setSpotifyCodeUrl();
       });
     this.showSpotifyCode$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((showSpotifyCode) => this.showSpotifyCode = showSpotifyCode);
     this.useDynamicThemeAccent$
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((useDynamicThemeAccent) => {
-        this.useDynamicThemeAccent = useDynamicThemeAccent;
-        if (useDynamicThemeAccent) {
-          this.setSmartColor();
-        }
-      });
+      .subscribe((useDynamicThemeAccent) => this.useDynamicThemeAccent = useDynamicThemeAccent);
   }
 
   ngOnDestroy(): void {
@@ -139,10 +141,20 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   }
 
   private getSpotifyCodeUrl(): string {
-    if (this.useSmartCodeColor && AppConfig.settings.env.albumColorUrl) {
+    if (this.useDynamicCodeColor && AppConfig.settings.env.albumColorUrl) {
       return this.createSpotifyCodeUrl(this.smartBackgroundColor, this.smartBarColor);
     }
     return this.createSpotifyCodeUrl(this.backgroundColor, this.barColor);
+  }
+
+  private setSpotifyCodeUrl(): void {
+    console.log('dynamicColor=' + JSON.stringify(this.dynamicColor));
+    if (this.dynamicColor && this.useDynamicCodeColor) {
+      this.spotifyCodeUrl = this.createSpotifyCodeUrl(this.dynamicColor.hex, this.dynamicColor.foregroundFontColor);
+    } else {
+      // Set to default
+      this.spotifyCodeUrl = this.createSpotifyCodeUrl(this.backgroundColor, this.barColor);
+    }
   }
 
   private setSmartColor(): void {

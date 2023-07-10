@@ -91,6 +91,11 @@ describe('util package', () => {
       expect(isHexColor('ABC123')).toBeTrue();
     });
 
+    it('should return true for valid hex with prepended "#" character', () => {
+      expect(isHexColor('#AAA')).toBeTrue();
+      expect(isHexColor('#FFFFFF')).toBeTrue();
+    });
+
     it('should return false with valid hex that is not a color', () => {
       expect(isHexColor('A')).toBeFalse();
       expect(isHexColor('12345')).toBeFalse();
@@ -121,18 +126,23 @@ describe('util package', () => {
       expect(expandHexColor('0')).toEqual('0');
       expect(expandHexColor('FFFFFF')).toEqual('FFFFFF');
     });
+
+    it('should keep existing "#" character if applicable', () => {
+      expect(expandHexColor('#123')).toEqual('#112233');
+      expect(expandHexColor('#FFFFFF')).toEqual('#FFFFFF');
+    });
   });
 
   describe('hexToRgb', () => {
     it('should return a Color object with valid hex color of length 3', () => {
-      expect(hexToRgb('000')).toEqual({r: 0, g: 0, b: 0});
-      expect(hexToRgb('FFF')).toEqual({r: 255, g: 255, b: 255});
+      expect(hexToRgb('000')).toEqual({r: 0, g: 0, b: 0, a: 255});
+      expect(hexToRgb('FFF')).toEqual({r: 255, g: 255, b: 255, a: 255});
     });
 
     it('should return a Color object with valid hex color of length 6', () => {
-      expect(hexToRgb('000000')).toEqual({r: 0, g: 0, b: 0});
-      expect(hexToRgb('FFFFFF')).toEqual({r: 255, g: 255, b: 255});
-      expect(hexToRgb('ABC123')).toEqual({r: 171, g: 193, b: 35});
+      expect(hexToRgb('000000')).toEqual({r: 0, g: 0, b: 0, a: 255});
+      expect(hexToRgb('FFFFFF')).toEqual({r: 255, g: 255, b: 255, a: 255});
+      expect(hexToRgb('ABC123')).toEqual({r: 171, g: 193, b: 35, a: 255});
     });
 
     it('should return null with valid hex that is not a color', () => {
@@ -151,24 +161,31 @@ describe('util package', () => {
       expect(hexToRgb('')).toBeNull();
       expect(hexToRgb(null)).toBeNull();
     });
+
+    it('should ignore a prepended "#" character', () => {
+      expect(hexToRgb('#FFF')).toEqual({r: 255, g: 255, b: 255, a: 255});
+      expect(hexToRgb('#000000')).toEqual({r: 0, g: 0, b: 0, a: 255});
+    });
   });
 
   describe('isRgbColor', () => {
     it('should return true for valid RGB color', () => {
-      expect(isRgbColor({ r: 0, g: 0, b: 0 })).toBeTrue();
-      expect(isRgbColor({ r: 100, g: 100, b: 100 })).toBeTrue();
-      expect(isRgbColor({ r: 255, g: 255, b: 255 })).toBeTrue();
+      expect(isRgbColor({ r: 0, g: 0, b: 0, a: 0 })).toBeTrue();
+      expect(isRgbColor({ r: 100, g: 100, b: 100, a: 100 })).toBeTrue();
+      expect(isRgbColor({ r: 255, g: 255, b: 255, a: 255 })).toBeTrue();
     });
 
     it('should return false for values outside a valid RGB range', () => {
-      expect(isRgbColor({ r: -1, g: -1, b: -1 })).toBeFalse();
-      expect(isRgbColor({ r: 256, g: 256, b: 256 })).toBeFalse();
-      expect(isRgbColor({ r: -1, g: 0, b: 0 })).toBeFalse();
-      expect(isRgbColor({ r: 0, g: -1, b: 0 })).toBeFalse();
-      expect(isRgbColor({ r: 0, g: 0, b: -1 })).toBeFalse();
-      expect(isRgbColor({ r: 256, g: 255, b: 255 })).toBeFalse();
-      expect(isRgbColor({ r: 255, g: 256, b: 255 })).toBeFalse();
-      expect(isRgbColor({ r: 255, g: 255, b: 256 })).toBeFalse();
+      expect(isRgbColor({ r: -1, g: -1, b: -1, a: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 256, b: 256, a: 256 })).toBeFalse();
+      expect(isRgbColor({ r: -1, g: 0, b: 0, a: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: -1, b: 0, a: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: 0, b: -1, a: 0 })).toBeFalse();
+      expect(isRgbColor({ r: 0, g: 0, b: 0, a: -1 })).toBeFalse();
+      expect(isRgbColor({ r: 256, g: 255, b: 255, a: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 256, b: 255, a: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 255, b: 256, a: 255 })).toBeFalse();
+      expect(isRgbColor({ r: 255, g: 255, b: 255, a: 256 })).toBeFalse();
     });
 
     it('should return false if no color', () => {
@@ -179,20 +196,20 @@ describe('util package', () => {
 
   describe('rgbToHex', () => {
     it('should return hex color for valid RGB values', () => {
-      expect(rgbToHex({ r: 0, g: 0, b: 0 })).toEqual('000000');
-      expect(rgbToHex({ r: 255, g: 255, b: 255 })).toEqual('FFFFFF');
-      expect(rgbToHex({ r: 171, g: 193, b: 35 })).toEqual('ABC123');
+      expect(rgbToHex({ r: 0, g: 0, b: 0, a: 0 })).toEqual('000000');
+      expect(rgbToHex({ r: 255, g: 255, b: 255, a: 255 })).toEqual('FFFFFF');
+      expect(rgbToHex({ r: 171, g: 193, b: 35, a: 255 })).toEqual('ABC123');
     });
 
     it('should return null if not valid RGB values', () => {
-      expect(rgbToHex({ r: -1, g: -1, b: -1 })).toBeNull();
-      expect(rgbToHex({ r: -1, g: 0, b: 0 })).toBeNull();
-      expect(rgbToHex({ r: 0, g: -1, b: 0 })).toBeNull();
-      expect(rgbToHex({ r: 0, g: 0, b: -1 })).toBeNull();
-      expect(rgbToHex({ r: 256, g: 256, b: 256 })).toBeNull();
-      expect(rgbToHex({ r: 256, g: 255, b: 255 })).toBeNull();
-      expect(rgbToHex({ r: 255, g: 256, b: 255 })).toBeNull();
-      expect(rgbToHex({ r: 255, g: 255, b: 256 })).toBeNull();
+      expect(rgbToHex({ r: -1, g: -1, b: -1, a: -1 })).toBeNull();
+      expect(rgbToHex({ r: -1, g: 0, b: 0, a: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: -1, b: 0, a: 0 })).toBeNull();
+      expect(rgbToHex({ r: 0, g: 0, b: -1, a: 0 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 256, b: 256, a: 255 })).toBeNull();
+      expect(rgbToHex({ r: 256, g: 255, b: 255, a: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 256, b: 255, a: 255 })).toBeNull();
+      expect(rgbToHex({ r: 255, g: 255, b: 256, a: 255 })).toBeNull();
       expect(rgbToHex(null)).toBeNull();
       expect(rgbToHex(undefined)).toBeNull();
     });
@@ -219,16 +236,16 @@ describe('util package', () => {
 
   describe('calculateColorDistance', () => {
     it('should return the correct euclidean distance between two RGB colors', () => {
-      const c1: Color = { r: 4, g: 3, b: 2 };
-      const c2: Color = { r: 2, g: 1, b: 4 };
+      const c1: Color = { r: 4, g: 3, b: 2, a: 0 };
+      const c2: Color = { r: 2, g: 1, b: 4, a: 0 };
       expect(calculateColorDistance(c1, c2)).toEqual(Math.sqrt(12));
     });
 
     it('should return null when either color is null or undefined', () => {
-      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, null)).toBeNull();
-      expect(calculateColorDistance({ r: 1, g: 2, b: 3 }, undefined)).toBeNull();
-      expect(calculateColorDistance(null, { r: 1, g: 2, b: 3 })).toBeNull();
-      expect(calculateColorDistance(undefined, { r: 1, g: 2, b: 3 })).toBeNull();
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3, a: 0 }, null)).toBeNull();
+      expect(calculateColorDistance({ r: 1, g: 2, b: 3, a: 0 }, undefined)).toBeNull();
+      expect(calculateColorDistance(null, { r: 1, g: 2, b: 3, a: 0 })).toBeNull();
+      expect(calculateColorDistance(undefined, { r: 1, g: 2, b: 3, a: 0 })).toBeNull();
       expect(calculateColorDistance(null, null)).toBeNull();
       expect(calculateColorDistance(undefined, undefined)).toBeNull();
     });

@@ -1,3 +1,4 @@
+import { DominantColor } from '../dominant-color/dominant-color-finder';
 import { capitalizeWords, Color, hexToRgb, isHexColor } from '../util';
 
 export const SETTINGS_STATE_NAME = 'SHOWTUNES_SETTINGS';
@@ -74,6 +75,7 @@ export interface SettingsModel {
   showPlaylistName: boolean;
   showSpotifyCode: boolean;
   useSmartCodeColor: boolean;
+  dynamicColor: DominantColor;
   smartColor: string;
   spotifyCode: {
     backgroundColor: string;
@@ -90,6 +92,7 @@ export const DEFAULT_SETTINGS: SettingsModel = {
   showPlaylistName: true,
   showSpotifyCode: true,
   useSmartCodeColor: false,
+  dynamicColor: null,
   smartColor: null,
   spotifyCode: {
     backgroundColor: DEFAULT_CODE_COLOR,

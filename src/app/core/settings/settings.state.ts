@@ -1,10 +1,11 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Injectable } from '@angular/core';
 import { Action, NgxsOnInit, Selector, State, StateContext } from '@ngxs/store';
+import { DominantColor } from '../dominant-color/dominant-color-finder';
 import { calculateColorDistance, hexToRgb, isHexColor } from '../util';
 import {
   ChangeCustomAccentColor,
-  ChangeDynamicAccentColor,
+  ChangeDynamicAccentColor, ChangeDynamicColor,
   ChangePlayerControls,
   ChangeSmartColor,
   ChangeSpotifyCodeBackgroundColor,
@@ -58,6 +59,11 @@ export class SettingsState implements NgxsOnInit {
   @Selector()
   static smartColor(state: SettingsModel): string {
     return state.smartColor;
+  }
+
+  @Selector()
+  static dynamicColor(state: SettingsModel): DominantColor {
+    return state.dynamicColor;
   }
 
   @Selector()
@@ -134,6 +140,24 @@ export class SettingsState implements NgxsOnInit {
     } else {
       ctx.patchState({
         smartColor: null,
+        dynamicAccentColor: null
+      });
+    }
+    this.updateOverlayContainer(state.theme, state.customAccentColor, ctx.getState().dynamicAccentColor);
+  }
+
+  @Action(ChangeDynamicColor)
+  changeDynamicColor(ctx: StateContext<SettingsModel>, action: ChangeDynamicColor): void {
+    ctx.patchState({dynamicColor: action.dynamicColor});
+    const state = ctx.getState();
+    if ((action.dynamicColor && isHexColor(action.dynamicColor.hex))) {
+      ctx.patchState({
+        dynamicColor: action.dynamicColor,
+        dynamicAccentColor: this.calculateDynamicAccentColor(action.dynamicColor.hex)
+      });
+    } else {
+      ctx.patchState({
+        dynamicColor: null,
         dynamicAccentColor: null
       });
     }
