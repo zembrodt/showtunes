@@ -10,7 +10,6 @@ export interface DominantColor {
 }
 
 export class DominantColorFinder {
-  private static readonly bytesPerPixel = 4;
   private static readonly maxBrightness = 655;
   private static readonly minDarkness = 100;
 
@@ -39,7 +38,7 @@ export class DominantColorFinder {
 
         try {
           const data = this.canvas.getImageData(img);
-          const rawImage = new RawImage(data, img.width, img.height, DominantColorFinder.bytesPerPixel);
+          const rawImage = new RawImage(data, img.width, img.height);
           const dominantColor = this.findDominantColor(rawImage);
 
           return resolve({
