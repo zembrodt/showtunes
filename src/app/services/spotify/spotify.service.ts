@@ -34,7 +34,6 @@ import {
   parsePlaylist,
   parseTrack,
 } from '../../core/util';
-import { SmartColorResponse } from '../../models/album.model';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { MultipleDevicesResponse } from '../../models/device.model';
 import { PlaylistResponse } from '../../models/playlist.model';
@@ -64,7 +63,6 @@ export class SpotifyService {
   private static authType: AuthType;
   public static spotifyApiUrl: string;
   public static spotifyEndpoints: SpotifyEndpoints;
-  public static albumColorUrl: string;
   private static redirectUri: string;
   private static showAuthDialog = true;
 
@@ -144,11 +142,6 @@ export class SpotifyService {
       } else {
         console.error('No domain set for Spotify OAuth callback URL');
         this.initialized = false;
-      }
-
-      this.albumColorUrl = AppConfig.settings.env.albumColorUrl;
-      if (!this.albumColorUrl) {
-        console.warn('No album color URL is configured. Related features are disabled');
       }
     } catch (error) {
       console.error(`Failed to initialize spotify service: ${error}`);
@@ -519,18 +512,6 @@ export class SpotifyService {
           this.store.dispatch(new ChangeDevice(device));
         }
       });
-  }
-
-  getAlbumColor(coverArtUrl: string): Observable<SmartColorResponse> {
-    let requestParams = new HttpParams();
-    requestParams = requestParams.append('url', encodeURIComponent(coverArtUrl));
-    // Check we have an album color URL set
-    if (SpotifyService.albumColorUrl) {
-      return this.http.get<SmartColorResponse>(SpotifyService.albumColorUrl, {
-        params: requestParams
-      });
-    }
-    return of<SmartColorResponse>(null);
   }
 
   compareState(state: string): boolean {

@@ -179,8 +179,7 @@ describe('SpotifyService', () => {
       env: {
         name: 'test-name',
         domain: 'test-domain',
-        spotifyApiUrl: 'spotify-url',
-        albumColorUrl: 'album-url'
+        spotifyApiUrl: 'spotify-url'
       },
       auth: {
         clientId: 'test-client-id',
@@ -293,13 +292,6 @@ describe('SpotifyService', () => {
     AppConfig.settings.env.domain = null;
     expect(SpotifyService.initialize()).toBeFalse();
     expect(console.error).toHaveBeenCalled();
-  });
-
-  it('should log a warning message if no configured albumColorUrl', () => {
-    spyOn(console, 'warn');
-    AppConfig.settings.env.albumColorUrl = null;
-    expect(SpotifyService.initialize()).toBeTrue();
-    expect(console.warn).toHaveBeenCalled();
   });
 
   it('should fail to initialize if issue retrieving AppConfig', () => {
@@ -1253,31 +1245,6 @@ describe('SpotifyService', () => {
     );
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDevice(device));
   }));
-
-  it('should retrieve album color from env url if exists', () => {
-    http.get = jasmine.createSpy().and.returnValue(of('test-color'));
-    service.getAlbumColor('cover-art-url').subscribe((color) => {
-      expect(color).toEqual('test-color');
-    });
-    expect(http.get).toHaveBeenCalledOnceWith(
-      AppConfig.settings.env.albumColorUrl,
-      { params: jasmine.any(HttpParams) }
-    );
-    const spyParams = (http.get as jasmine.Spy).calls.mostRecent().args[1].params as HttpParams;
-    expect(spyParams.keys().length).toEqual(1);
-    expect(spyParams.get('url')).toEqual('cover-art-url');
-  });
-
-  it('should return null for album color if env url does not exist', () => {
-    spyOn(console, 'warn');
-    AppConfig.settings.env.albumColorUrl = null;
-    SpotifyService.initialize();
-    service.getAlbumColor('cover-art-url').subscribe((color) => {
-      expect(color).toBeNull();
-    });
-    expect(console.warn).toHaveBeenCalled();
-    expect(http.get).not.toHaveBeenCalled();
-  });
 
   it('should compare states to true when current state not null and equal', () => {
     service['state'] = 'test-state';

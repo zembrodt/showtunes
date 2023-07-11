@@ -25,13 +25,8 @@ export class ToggleSpotifyCode {
   static readonly type = `${SETTINGS_ACTION_NAME} Toggle Spotify Code`;
 }
 
-export class ToggleSmartCodeColor {
-  static readonly type = `${SETTINGS_ACTION_NAME} Toggle Smart Code Color`;
-}
-
-export class ChangeSmartColor {
-  static readonly type = `${SETTINGS_ACTION_NAME} Change Smart Color`;
-  constructor(public smartColor: string) {}
+export class ToggleDynamicCodeColor {
+  static readonly type = `${SETTINGS_ACTION_NAME} Toggle Dynamic Code Color`;
 }
 
 export class ChangeDynamicColor {

@@ -1,7 +1,9 @@
+/* tslint:disable:no-string-literal */
+
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClient } from '@angular/common/http';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed, waitForAsync } from '@angular/core/testing';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatProgressBar, MatProgressBarModule } from '@angular/material/progress-bar';
@@ -10,15 +12,15 @@ import { By } from '@angular/platform-browser';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
+import { DominantColor, DominantColorFinder } from '../../core/dominant-color/dominant-color-finder';
 import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
-import { ChangeSmartColor } from '../../core/settings/settings.actions';
-import { DEFAULT_BAR_CODE_COLOR, DEFAULT_CODE_COLOR } from '../../core/settings/settings.model';
+import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { FontColor } from '../../core/util';
 import { ImageResponse } from '../../models/image.model';
 import { SpotifyService } from '../../services/spotify/spotify.service';
-
 import { AlbumDisplayComponent } from './album-display.component';
 
 const TEST_IMAGE_RESPONSE: ImageResponse = {
@@ -48,6 +50,17 @@ const TEST_TRACK_MODEL: TrackModel = {
   uri: 'track-uri'
 };
 
+const TEST_DOMINANT_COLOR: DominantColor = {
+  hex: 'ABC123',
+  rgb: {
+    r: 100,
+    g: 100,
+    b: 100,
+    a: 255
+  },
+  foregroundFontColor: FontColor.White
+};
+
 describe('AlbumDisplayComponent', () => {
   const mockSelectors = new NgxsSelectorMock<AlbumDisplayComponent>();
   let component: AlbumDisplayComponent;
@@ -60,16 +73,18 @@ describe('AlbumDisplayComponent', () => {
   let trackProducer: BehaviorSubject<TrackModel>;
   let albumProducer: BehaviorSubject<AlbumModel>;
   let isIdleProducer: BehaviorSubject<boolean>;
-  let useSmartCodeColorProducer: BehaviorSubject<boolean>;
+  let useDynamicCodeColorProducer: BehaviorSubject<boolean>;
+  let dynamicColorProducer: BehaviorSubject<DominantColor>;
   let showSpotifyCodeProducer: BehaviorSubject<boolean>;
   let backgroundColorProducer: BehaviorSubject<string>;
   let barColorProducer: BehaviorSubject<string>;
   let useDynamicThemeAccentProducer: BehaviorSubject<boolean>;
 
+  let mockDominantColorFinder: MockDominantColorFinder;
+
   beforeAll(() => {
     AppConfig.settings = {
       env: {
-        albumColorUrl: 'test-album-color-url',
         spotifyApiUrl: null,
         name: null,
         domain: null
@@ -109,11 +124,15 @@ describe('AlbumDisplayComponent', () => {
     trackProducer = mockSelectors.defineNgxsSelector<TrackModel>(component, 'track$');
     albumProducer = mockSelectors.defineNgxsSelector<AlbumModel>(component, 'album$');
     isIdleProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isIdle$');
-    useSmartCodeColorProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useSmartCodeColor$');
+    useDynamicCodeColorProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useDynamicCodeColor$');
+    dynamicColorProducer = mockSelectors.defineNgxsSelector<DominantColor>(component, 'dynamicColor$');
     showSpotifyCodeProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'showSpotifyCode$');
     backgroundColorProducer = mockSelectors.defineNgxsSelector<string>(component, 'backgroundColor$');
     barColorProducer = mockSelectors.defineNgxsSelector<string>(component, 'barColor$');
     useDynamicThemeAccentProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useDynamicThemeAccent$');
+
+    mockDominantColorFinder = new MockDominantColorFinder();
+    component['dominantColorFinder'] = mockDominantColorFinder;
 
     fixture.detectChanges();
   }));
@@ -214,32 +233,71 @@ describe('AlbumDisplayComponent', () => {
     expect(loading).toBeFalsy();
   });
 
-  it('should update Spotify code URL when the track is updated', () => {
-    component.spotifyCodeUrl = 'test';
+  it('should set Spotify code URL when the track$ is updated', () => {
+    component['setSpotifyCodeUrl'] = jasmine.createSpy();
     trackProducer.next(TEST_TRACK_MODEL);
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).not.toEqual('test');
+    expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
-  it('should update Spotify code URL when the background color is updated', () => {
-    component.spotifyCodeUrl = 'test';
+  it('should update dynamic color when coverArt$ is updated and dominantColorFinder returns a result', fakeAsync(() => {
+    mockDominantColorFinder.expects(Promise.resolve(TEST_DOMINANT_COLOR));
+    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    flushMicrotasks();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+  }));
+
+  it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder returns null', fakeAsync(() => {
+    mockDominantColorFinder.expects(Promise.resolve(null));
+    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    flushMicrotasks();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
+  }));
+
+  it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder returns an invalid hex', fakeAsync(() => {
+    mockDominantColorFinder.expects(Promise.resolve({
+      ...TEST_DOMINANT_COLOR,
+      hex: 'bad-hex'
+    }));
+    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    flushMicrotasks();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
+  }));
+
+  it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder rejects its promise', fakeAsync(() => {
+    mockDominantColorFinder.expects(Promise.reject('test-error'));
+    spyOn(console, 'error');
+    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    flushMicrotasks();
+    expect(console.error).toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
+  }));
+
+  it('should set Spotify code URL when the backgroundColor$ is updated', () => {
+    component['setSpotifyCodeUrl'] = jasmine.createSpy();
     backgroundColorProducer.next('bg-color');
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).not.toEqual('test');
+    expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
-  it('should update Spotify code URL when the bar color is updated', () => {
-    component.spotifyCodeUrl = 'test';
+  it('should set Spotify code URL when the barColor$ is updated', () => {
+    component['setSpotifyCodeUrl'] = jasmine.createSpy();
     barColorProducer.next('bar-color');
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).not.toEqual('test');
+    expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
-  it('should update Spotify code URL when use smart code color is updated', () => {
-    component.spotifyCodeUrl = 'test';
-    useSmartCodeColorProducer.next(true);
+  it('should set Spotify code URL when useDynamicCodeColor$ is updated', () => {
+    component['setSpotifyCodeUrl'] = jasmine.createSpy();
+    useDynamicCodeColorProducer.next(true);
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).not.toEqual('test');
+    expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
+  });
+
+  it('should set Spotify code URL when dynamicColor$ is updated', () => {
+    component['setSpotifyCodeUrl'] = jasmine.createSpy();
+    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
+    expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
   it('should create a Spotify code URL', () => {
@@ -291,73 +349,37 @@ describe('AlbumDisplayComponent', () => {
     expect(component.spotifyCodeUrl).toBeNull();
   });
 
-  it('should create Spotify code URL with smart colors when using smart color code', () => {
-    component.smartBackgroundColor = 'smart-bg-color';
-    component.smartBarColor = 'smart-bar-color';
+  it('should create Spotify code URL with dynamic colors when using dynamic color code', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
+    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
     trackProducer.next(TEST_TRACK_MODEL);
-    useSmartCodeColorProducer.next(true);
+    useDynamicCodeColorProducer.next(true);
     fixture.detectChanges();
     expect(component.spotifyCodeUrl).toEqual(
-      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2Fsmart-bg-color%2Fsmart-bar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
+      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2F${TEST_DOMINANT_COLOR.hex}%2F${TEST_DOMINANT_COLOR.foregroundFontColor}%2F512%2F${TEST_TRACK_MODEL.uri}`);
   });
 
-  it('should create Spotify code URL without smart colors when not using smart color code', () => {
-    component.smartBackgroundColor = 'smart-bg-color';
-    component.smartBarColor = 'smart-bar-color';
+  it('should create Spotify code URL without dynamic colors when not using dynamic color code', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
+    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
     trackProducer.next(TEST_TRACK_MODEL);
-    useSmartCodeColorProducer.next(false);
+    useDynamicCodeColorProducer.next(false);
     fixture.detectChanges();
     expect(component.spotifyCodeUrl).toEqual(
       `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2Fbg-color%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
   });
-
-  it('should set Spotify code smart colors on useSmartCodeColor update', () => {
-    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of({ color: '#ABC123' }));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
-    albumProducer.next(TEST_ALBUM_MODEL);
-    expect(component.smartBackgroundColor).toBeFalsy();
-    expect(component.smartBarColor).toBeFalsy();
-    expect(store.dispatch).not.toHaveBeenCalled();
-    useSmartCodeColorProducer.next(true);
-    fixture.detectChanges();
-    expect(spotify.getAlbumColor).toHaveBeenCalled();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor('ABC123'));
-    expect(component.smartBackgroundColor).toEqual('ABC123');
-    expect(component.smartBarColor).not.toBeFalsy();
-  });
-
-  it('should set Spotify code smart colors to default values on invalid smart album color', () => {
-    spyOn(console, 'error');
-    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of('bad-hex'));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
-    albumProducer.next(TEST_ALBUM_MODEL);
-    expect(component.smartBackgroundColor).toBeFalsy();
-    expect(component.smartBarColor).toBeFalsy();
-    expect(store.dispatch).not.toHaveBeenCalled();
-    useSmartCodeColorProducer.next(true);
-    fixture.detectChanges();
-    expect(spotify.getAlbumColor).toHaveBeenCalled();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor(null));
-    expect(component.smartBackgroundColor).toEqual(DEFAULT_CODE_COLOR);
-    expect(component.smartBarColor).toEqual(DEFAULT_BAR_CODE_COLOR);
-    expect(console.error).toHaveBeenCalledTimes(1);
-  });
-
-  it('should set smart color when using dynamic accent theme', () => {
-    spotify.getAlbumColor = jasmine.createSpy().and.returnValue(of({ color: '#ABC123' }));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
-    albumProducer.next(TEST_ALBUM_MODEL);
-    expect(component.smartBackgroundColor).toBeFalsy();
-    expect(component.smartBarColor).toBeFalsy();
-    expect(store.dispatch).not.toHaveBeenCalled();
-    useDynamicThemeAccentProducer.next(true);
-    fixture.detectChanges();
-    expect(spotify.getAlbumColor).toHaveBeenCalled();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeSmartColor('ABC123'));
-    expect(component.smartBackgroundColor).toEqual('ABC123');
-  });
 });
+
+class MockDominantColorFinder extends DominantColorFinder {
+  private expectedDominantColor: Promise<DominantColor> = Promise.resolve(null);
+
+  expects(expectedDominantColor: Promise<DominantColor>): void {
+    this.expectedDominantColor = expectedDominantColor;
+  }
+
+  getColor(src: string): Promise<DominantColor> {
+    return this.expectedDominantColor;
+  }
+}

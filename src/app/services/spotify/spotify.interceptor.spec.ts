@@ -17,8 +17,7 @@ describe('SpotifyInterceptor', () => {
       env: {
         name: 'test-name',
         domain: 'test-domain',
-        spotifyApiUrl: 'spotify-url',
-        albumColorUrl: 'album-url'
+        spotifyApiUrl: 'spotify-url'
       },
       auth: {
         clientId: 'test-client-id',

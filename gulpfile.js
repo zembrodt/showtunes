@@ -33,9 +33,6 @@ gulp.task('generate-config', () => {
     if ('SHOWTUNES_SPOTIFY_API_URL' in process.env) {
       configJson.env.spotifyApiUrl = process.env.SHOWTUNES_SPOTIFY_API_URL;
     }
-    if ('SHOWTUNES_ALBUM_COLOR_URL' in process.env) {
-      configJson.env.albumColorUrl = process.env.SHOWTUNES_ALBUM_COLOR_URL;
-    }
     if ('SHOWTUNES_CLIENT_ID' in process.env) {
       configJson.auth.clientId = process.env.SHOWTUNES_CLIENT_ID;
     }
