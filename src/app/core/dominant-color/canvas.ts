@@ -8,7 +8,6 @@ export class Canvas {
       throw new Error('Unable to create Canvas element');
     }
     this.canvas.style.display = 'none';
-    // document.body.appendChild(this.element);
     this.context = this.canvas.getContext('2d', {willReadFrequently: true});
     if (!this.context) {
       throw new Error('Unable to get Canvas 2D context');
