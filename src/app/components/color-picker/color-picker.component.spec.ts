@@ -15,6 +15,7 @@ import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxsModule } from '@ngxs/store';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { Theme } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { callComponentChange } from '../../core/testing/test-util';
 
@@ -158,7 +159,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate white selected light classes when color is white, selected color is white and light theme', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     component.color = 'FFFFFF';
     component.presetColors = ['FFFFFF'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -167,7 +168,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate no class when color is not white, selected color is white, and light theme', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     component.color = 'FFFFFF';
     component.presetColors = ['123123'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -176,7 +177,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate selected class when color is not white, selected color is not white, and light theme', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     component.color = '123123';
     component.presetColors = ['123123'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -185,7 +186,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate white unselected light classes when color is white, selected color is not white, and light theme', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     component.color = '123123';
     component.presetColors = ['FFFFFF'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -194,7 +195,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate white selected dark classes when color is white, selected color is white, and dark theme', () => {
-    themeProducer.next('dark-theme');
+    themeProducer.next(Theme.Dark);
     component.color = 'FFFFFF';
     component.presetColors = ['FFFFFF'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -203,7 +204,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate no classes when color is not white, selected color is white, and dark theme', () => {
-    themeProducer.next('dark-theme');
+    themeProducer.next(Theme.Dark);
     component.color = 'FFFFFF';
     component.presetColors = ['123123'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -212,7 +213,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate white unselected dark classes when color is white, selected color is not white, and dark theme', () => {
-    themeProducer.next('dark-theme');
+    themeProducer.next(Theme.Dark);
     component.color = '123123';
     component.presetColors = ['FFFFFF'];
     callComponentChange(fixture, 'presetColors', component.presetColors);
@@ -221,7 +222,7 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should calculate selected class when color is not white, selected color is not white, and dark theme', () => {
-    themeProducer.next('dark-theme');
+    themeProducer.next(Theme.Dark);
     component.color = '123123';
     component.presetColors = ['123123'];
     callComponentChange(fixture, 'presetColors', component.presetColors);

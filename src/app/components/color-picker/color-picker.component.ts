@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Theme } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { isHexColor, VALID_HEX_COLOR } from '../../core/util';
 
@@ -138,7 +139,7 @@ class PresetColor {
     if (currentColor === this.presetColor.toUpperCase()) {
       classes.push('selected');
       if (currentColor === WHITE_HEX) {
-        if (currentTheme === 'light-theme') {
+        if (currentTheme === Theme.Light) {
           classes.push('white-selected-light');
         } else {
           classes.push('white-selected-dark');
@@ -147,7 +148,7 @@ class PresetColor {
     } else {
       if (this.presetColor.toUpperCase() === WHITE_HEX) {
         classes.push('white-unselected');
-        if (currentTheme === 'light-theme') {
+        if (currentTheme === Theme.Light) {
           classes.push('white-unselected-light');
         } else {
           classes.push('white-unselected-dark');
