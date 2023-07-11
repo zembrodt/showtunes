@@ -7,6 +7,9 @@ const MAX_SAMPLE = 10;
 const ITERATION_COUNT = 50;
 
 export function findClusters(image: RawImage): ClusterGroup {
+  if (!image) {
+    throw new Error('Image must have a value to find a cluster group');
+  }
   image.scale(
     Math.min(image.getWidth(), RESIZE_TO),
     Math.min(image.getHeight(), RESIZE_TO));
