@@ -7,12 +7,18 @@ export class Cluster {
   private weight = 0;
 
   setCentroid(color: Color): void {
+    if (!color) {
+      throw new Error('Color must have a value to set the centroid');
+    }
     this.centroid[0] = color.r;
     this.centroid[1] = color.g;
     this.centroid[2] = color.b;
   }
 
   isAtCentroid(color: Color): boolean {
+    if (!color) {
+      return false;
+    }
     return color.r === this.centroid[0] && color.g === this.centroid[1] && color.b === this.centroid[2];
   }
 
@@ -29,13 +35,19 @@ export class Cluster {
   }
 
   addPoint(color: Color): void {
+    if (!color) {
+      throw new Error('Color must have a value to addPoint');
+    }
     this.aggregate[0] += color.r;
     this.aggregate[1] += color.g;
     this.aggregate[2] += color.b;
     this.counter++;
   }
 
-  getDistanceSqr(color: Color): number {
+  getDistanceSquared(color: Color): number {
+    if (!color) {
+      throw new Error('Color must have a value to getDistanceSquared');
+    }
     const r = color.r - this.centroid[0];
     const g = color.g - this.centroid[1];
     const b = color.b - this.centroid[2];
@@ -64,29 +76,31 @@ export class ClusterGroup {
   private clusters: Cluster[] = [];
 
   containsCentroid(color: Color): boolean {
-    this.clusters.map((cluster) => {
+    for (const cluster of this.clusters) {
       if (cluster.isAtCentroid(color)) {
         return true;
       }
-    });
+    }
     return false;
   }
 
   closest(color: Color): Cluster {
     let closestCluster: Cluster = null;
     let distanceToClosest = -1;
-    this.clusters.map((cluster) => {
-      const d = cluster.getDistanceSqr(color);
+    for (const cluster of this.clusters) {
+      const d = cluster.getDistanceSquared(color);
       if (distanceToClosest < 0 || d < distanceToClosest) {
         distanceToClosest = d;
         closestCluster = cluster;
       }
-    });
+    }
     return closestCluster;
   }
 
   addCluster(cluster: Cluster): void {
-    this.clusters.push(cluster);
+    if (cluster) {
+      this.clusters.push(cluster);
+    }
   }
 
   getClusters(): Cluster[] {
