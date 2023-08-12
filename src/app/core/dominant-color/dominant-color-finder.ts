@@ -1,5 +1,6 @@
 import { calculateForegroundFontColor, Color, FontColor, rgbToHex } from '../util';
 import { Canvas } from './canvas';
+import { ClusterGroup } from './cluster';
 import { findClusters } from './k-means';
 import { RawImage } from './raw-image';
 
@@ -13,11 +14,16 @@ export class DominantColorFinder {
   private static readonly maxBrightness = 655;
   private static readonly minDarkness = 100;
 
+  private readonly findClustersFn: (image: RawImage) => ClusterGroup;
   private canvas: Canvas = null;
+
+  constructor(findClustersFn = findClusters) {
+    this.findClustersFn = findClustersFn;
+  }
 
   public getColor(src: string): Promise<DominantColor> {
     if (!src) {
-      return Promise.reject(Error('getColor requires an image src'));
+      return Promise.reject('getColor requires an image src');
     }
 
     const img = new Image();
@@ -30,7 +36,7 @@ export class DominantColorFinder {
 
         if (!this.canvas) {
           try {
-            this.canvas = new Canvas();
+            this.canvas = this.createCanvas();
           } catch (e) {
             reject(`Error creating Canvas: ${e}`);
           }
@@ -53,12 +59,12 @@ export class DominantColorFinder {
 
       const onError = () => {
         removeListeners();
-        reject(Error(`Error loading image at ${src}`));
+        reject(`Error loading image at ${src}`);
       };
 
       const onAbort = () => {
         removeListeners();
-        reject(Error(`Loading aborted for image at ${src}`));
+        reject(`Loading aborted for image at ${src}`);
       };
 
       const removeListeners = () => {
@@ -74,7 +80,7 @@ export class DominantColorFinder {
   }
 
   private findDominantColor(img: RawImage): Color {
-    const clusters = findClusters(img);
+    const clusters = this.findClustersFn(img);
     let dominantColor: Color;
     for (let i = 0; i < clusters.getLength(); i++) {
       const centroid = clusters.getClusters()[i].getCentroid();
@@ -96,5 +102,9 @@ export class DominantColorFinder {
       }
     }
     return dominantColor;
+  }
+
+  private createCanvas(): Canvas {
+    return new Canvas();
   }
 }
