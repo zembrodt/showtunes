@@ -1,3 +1,4 @@
+import { ImageElement } from '../types';
 import { calculateForegroundFontColor, Color, FontColor, rgbToHex } from '../util';
 import { Canvas } from './canvas';
 import { ClusterGroup } from './cluster';
@@ -26,7 +27,7 @@ export class DominantColorFinder {
       return Promise.reject('getColor requires an image src');
     }
 
-    const img = new Image();
+    const img = this.createImage();
     img.crossOrigin = '';
     img.src = src;
 
@@ -106,5 +107,9 @@ export class DominantColorFinder {
 
   private createCanvas(): Canvas {
     return new Canvas();
+  }
+
+  private createImage(): ImageElement {
+    return new Image();
   }
 }

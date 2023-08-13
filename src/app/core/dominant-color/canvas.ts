@@ -1,3 +1,5 @@
+import { ImageElement } from '../types';
+
 export class Canvas {
   private readonly canvas: HTMLCanvasElement = null;
   private readonly context: CanvasRenderingContext2D = null;
@@ -16,7 +18,7 @@ export class Canvas {
     this.clearCanvas(0, 0);
   }
 
-  getImageData(image: HTMLImageElement): Uint8ClampedArray {
+  getImageData(image: ImageElement): Uint8ClampedArray {
     if (!image) {
       throw new Error('Image must not be null');
     }
@@ -25,7 +27,11 @@ export class Canvas {
     this.canvas.height = image.height;
 
     this.context.clearRect(0, 0, image.width, image.height);
-    this.context.drawImage(image, 0, 0, image.width, image.height);
+    if (image instanceof HTMLImageElement) {
+      this.context.drawImage(image, 0, 0, image.width, image.height);
+    } else {
+      throw new Error(`Image is not of type HTMLImageElement: ${JSON.stringify(image)}`);
+    }
     const imageData = this.context.getImageData(0, 0, image.width, image.height);
     if (!imageData) {
       throw new Error(`Unable to fetch image data from image at ${image.src}`);
