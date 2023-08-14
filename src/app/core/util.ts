@@ -4,9 +4,13 @@ import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
 import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback/playback.model';
 
-export const VALID_HEX_COLOR = '^[A-Fa-f0-9]{3}$|^[A-Fa-f0-9]{6}$';
-
+export const VALID_HEX_COLOR = '^#?[A-Fa-f0-9]{3}$|^#?[A-Fa-f0-9]{6}$';
 const validHexRegex = new RegExp(VALID_HEX_COLOR);
+
+/**
+ * Checks if the string is a valid hex color. Must be 3 or 6 digits. Prepended '#' is optional
+ * @param hex the color as a hex string
+ */
 export function isHexColor(hex: string): boolean {
   return validHexRegex.test(hex);
 }
@@ -15,34 +19,58 @@ export interface Color {
   r: number;
   g: number;
   b: number;
+  a: number;
 }
 
+export enum FontColor {
+  White = 'white',
+  Black = 'black'
+}
+
+/**
+ * Expands a hex color string from 3 digits to its 6 digit representation
+ * @param hex the 3 digit hex color
+ */
 export function expandHexColor(hex: string): string {
+  const containsHashtag = hex.charAt(0) === '#';
+  hex = hex.replace('#', '');
   if (hex.length === 3) {
-    return hex.substring(0, 1).repeat(2) + hex.substring(1, 2).repeat(2) + hex.substring(2, 3).repeat(2);
+    hex = hex.substring(0, 1).repeat(2) + hex.substring(1, 2).repeat(2) + hex.substring(2, 3).repeat(2);
   }
-  return hex;
+  return `${containsHashtag ? '#' : ''}${hex}`;
 }
 
+/**
+ * Converts a hex string into a {@link Color} object
+ * DAlpha value is set to 255
+ * @param hex the hex value of the color as 3 or 6 digits
+ */
 export function hexToRgb(hex: string): Color {
   if (isHexColor(hex)) {
+    hex = hex.replace('#', '');
     if (hex.length === 3) {
       hex = expandHexColor(hex);
     }
     return {
       r: parseInt(hex.substring(0, 2), 16),
       g: parseInt(hex.substring(2, 4), 16),
-      b: parseInt(hex.substring(4, 6), 16)
+      b: parseInt(hex.substring(4, 6), 16),
+      a: 255
     };
   }
   return null;
 }
 
+/**
+ * Checks if the {@link Color} object is a valid RGBA color as Uint8s
+ * @param color the {@Color} object
+ */
 export function isRgbColor(color: Color): boolean {
   if (color) {
     return color.r >= 0 && color.r <= 255
       && color.g >= 0 && color.g <= 255
-      && color.b >= 0 && color.b <= 255;
+      && color.b >= 0 && color.b <= 255
+      && color.a >= 0 && color.a <= 255;
   }
   return false;
 }
@@ -52,6 +80,11 @@ function componentToHex(c: number): string {
   return hex.length === 1 ? `0${hex}` : hex;
 }
 
+/**
+ * Convets the rgb value from a {@link Color} object into a hex string
+ * Ignores alpha value
+ * @param color the {@link Color} object
+ */
 export function rgbToHex(color: Color): string {
   if (isRgbColor(color)) {
     return `${componentToHex(color.r)}${componentToHex(color.g)}${componentToHex(color.b)}`;
@@ -59,6 +92,11 @@ export function rgbToHex(color: Color): string {
   return null;
 }
 
+/**
+ * Converts an RGB string from CSS into a string representing the color in hex
+ * Ignores the alpha value if applicable
+ * @param rgb expect string of format rgb(255, 255, 255) or rgba(255, 255, 255, 0.5)
+ */
 export function cssRgbToHex(rgb: string): string {
   if (rgb) {
     rgb = rgb.replace('rgb', '')
@@ -70,7 +108,8 @@ export function cssRgbToHex(rgb: string): string {
       return rgbToHex({
         r: parseInt(rgbValues[0].trim(), 10),
         g: parseInt(rgbValues[1].trim(), 10),
-        b: parseInt(rgbValues[2].trim(), 10)
+        b: parseInt(rgbValues[2].trim(), 10),
+        a: 255
       });
     }
   }
@@ -85,6 +124,16 @@ export function calculateColorDistance(c1: Color, c2: Color): number {
     return Math.sqrt(Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2));
   }
   return null;
+}
+
+/**
+ * Determine if a font color should be white or black based on what would contrast better against the background color
+ * See https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+ * @param backgroundColor the background color as a {@link Color} object
+ */
+export function calculateForegroundFontColor(backgroundColor: Color): FontColor {
+  return backgroundColor.r * 0.299 + backgroundColor.g * 0.587 + backgroundColor.b * 0.144 > 186 ?
+    FontColor.Black : FontColor.White;
 }
 
 /**

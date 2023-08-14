@@ -8,41 +8,22 @@ import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { AppConfig } from '../../app.config';
 import {
   ChangeCustomAccentColor,
   ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
   ChangeTheme,
+  ToggleDynamicCodeColor,
   ToggleDynamicThemeAccent,
   TogglePlaylistName,
-  ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from '../../core/settings/settings.actions';
-import {
-  BAR_COLOR_BLACK,
-  BAR_COLOR_WHITE,
-  CustomColor,
-  DEFAULT_SETTINGS,
-  DYNAMIC_THEME_COLORS,
-  PlayerControlsOptions
-} from '../../core/settings/settings.model';
+import { DEFAULT_SETTINGS, DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme, ThemeColor } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
-import { isHexColor } from '../../core/util';
+import { FontColor, isHexColor } from '../../core/util';
 import { SpotifyService } from '../../services/spotify/spotify.service';
 import { HelpDialogComponent } from './help-dialog/help-dialog.component';
-
-const LIGHT_THEME = 'light-theme';
-const DARK_THEME = 'dark-theme';
-
-const PRESET_COLORS = [
-  'FFFFFF', '010101', '3C94F0', '4B23F2', '2A48B4', '1A3366',
-  '8FBBCA', '78E9D7', '240E7D', '273FEA', '368A7D', '0B664F',
-  'AFE8BD', 'BAED54', 'FDBC59', 'F4DC31', 'F88D25', '84482F',
-  'C18B7F', 'C87951', 'FC572C', 'FC2D29', 'F40D2F', '8D0732',
-  'FEC1C9', 'B091C1', 'FB6C98', 'F91D9F', 'B31990', '543651'
-];
 
 @Component({
   selector: 'app-settings-menu',
@@ -50,6 +31,13 @@ const PRESET_COLORS = [
   styleUrls: ['./settings-menu.component.css']
 })
 export class SettingsMenuComponent implements OnInit, OnDestroy {
+  private static readonly presetColors = [
+    'FFFFFF', '010101', '3C94F0', '4B23F2', '2A48B4', '1A3366',
+    '8FBBCA', '78E9D7', '240E7D', '273FEA', '368A7D', '0B664F',
+    'AFE8BD', 'BAED54', 'FDBC59', 'F4DC31', 'F88D25', '84482F',
+    'C18B7F', 'C87951', 'FC572C', 'FC2D29', 'F40D2F', '8D0732',
+    'FEC1C9', 'B091C1', 'FB6C98', 'F91D9F', 'B31990', '543651'
+  ];
   private ngUnsubscribe = new Subject();
 
   @Select(SettingsState.theme) theme$: Observable<string>;
@@ -57,31 +45,33 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
   @Select(SettingsState.showSpotifyCode) showSpotifyCode$: Observable<boolean>;
-  @Select(SettingsState.useSmartCodeColor) useSmartCodeColor$: Observable<boolean>;
+  @Select(SettingsState.useDynamicCodeColor) useDynamicCodeColor$: Observable<boolean>;
   @Select(SettingsState.spotifyCodeBackgroundColor) backgroundColor$: Observable<string>;
   @Select(SettingsState.spotifyCodeBarColor) barColor$: Observable<string>;
   @Select(SettingsState.useDynamicThemeAccent) useDynamicThemeAccent$: Observable<boolean>;
 
   private currentTheme: string;
   private currentBarColor: string;
-  private useSmartCodeColor: boolean;
+  private useDynamicCodeColor: boolean;
   private useDynamicThemeAccent: boolean;
 
-  smartCodeColorUrlSet = false;
-  showSmartColorSettings = false;
-  customAccentColor: CustomColor = null;
+  showDynamicColorSettings = false;
+  customAccentColor: ThemeColor = null;
 
   colorPickerResetEvent = new Subject<void>();
 
   // Template constants
   readonly menuItemSpacing = '12px';
   readonly githubIcon = faGithub;
+  readonly lightTheme = Theme.Light;
+  readonly darkTheme = Theme.Dark;
+  readonly fontColorBlack = FontColor.Black;
   readonly playerControlsOff = PlayerControlsOptions.Off;
   readonly playerControlsOn = PlayerControlsOptions.On;
   readonly playerControlsFade = PlayerControlsOptions.Fade;
   readonly placeholderColor = DEFAULT_SETTINGS.spotifyCode.backgroundColor;
-  readonly presetColors = PRESET_COLORS;
-  readonly presetAccentColors = DYNAMIC_THEME_COLORS.getColors();
+  readonly presetColors = SettingsMenuComponent.presetColors;
+  readonly presetAccentColors = DYNAMIC_THEME_COLORS;
 
   constructor(private store: Store, private spotify: SpotifyService, private router: Router, public helpDialog: MatDialog) {}
 
@@ -104,26 +94,22 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.barColor$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((barColor) => this.currentBarColor = barColor);
-    this.useSmartCodeColor$
+    this.useDynamicCodeColor$
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((useSmartCodeColor) => {
-        this.useSmartCodeColor = useSmartCodeColor;
-        if (useSmartCodeColor && !this.showSmartColorSettings) {
-          this.showSmartColorSettings = true;
+      .subscribe((useDynamicCodeColor) => {
+        this.useDynamicCodeColor = useDynamicCodeColor;
+        if (useDynamicCodeColor && !this.showDynamicColorSettings) {
+          this.showDynamicColorSettings = true;
         }
       });
     this.useDynamicThemeAccent$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((useDynamicThemeAccent) => {
         this.useDynamicThemeAccent = useDynamicThemeAccent;
-        if (useDynamicThemeAccent && !this.showSmartColorSettings) {
-          this.showSmartColorSettings = true;
+        if (useDynamicThemeAccent && !this.showDynamicColorSettings) {
+          this.showDynamicColorSettings = true;
         }
       });
-
-    if (AppConfig.settings.env.albumColorUrl) {
-      this.smartCodeColorUrlSet = true;
-    }
   }
 
   ngOnDestroy(): void {
@@ -141,7 +127,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   }
 
   onDarkModeChange(): void {
-    const theme = this.currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
+    const theme = this.currentTheme === Theme.Dark ? Theme.Light : Theme.Dark;
     this.store.dispatch(new ChangeTheme(theme));
   }
 
@@ -157,11 +143,11 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ToggleSpotifyCode());
   }
 
-  onShowSmartColorSettings(): void {
-    this.showSmartColorSettings = !this.showSmartColorSettings;
-    if (!this.showSmartColorSettings) {
-      if (this.useSmartCodeColor) {
-        this.onUseSmartCodeColor();
+  onShowDynamicColorSettings(): void {
+    this.showDynamicColorSettings = !this.showDynamicColorSettings;
+    if (!this.showDynamicColorSettings) {
+      if (this.useDynamicCodeColor) {
+        this.onUseDynamicCodeColor();
       }
       if (this.useDynamicThemeAccent) {
         this.onUseDynamicThemeAccent();
@@ -169,12 +155,12 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  onUseSmartCodeColor(): void {
-    this.store.dispatch(new ToggleSmartCodeColor());
+  onUseDynamicCodeColor(): void {
+    this.store.dispatch(new ToggleDynamicCodeColor());
   }
 
   onBarColorChange(): void {
-    const barColor = this.currentBarColor === BAR_COLOR_BLACK ? BAR_COLOR_WHITE : BAR_COLOR_BLACK;
+    const barColor = this.currentBarColor === FontColor.Black ? FontColor.White : FontColor.Black;
     this.store.dispatch(new ChangeSpotifyCodeBarColor(barColor));
   }
 
@@ -203,7 +189,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
         version: environment.version,
         githubIcon: this.githubIcon,
         year: new Date().getFullYear(),
-        isLightTheme: this.currentTheme === LIGHT_THEME
+        isLightTheme: this.currentTheme === Theme.Light
       }
     });
   }

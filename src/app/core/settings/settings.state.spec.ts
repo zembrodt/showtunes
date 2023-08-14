@@ -3,21 +3,34 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
+import { DominantColor } from '../dominant-color/dominant-color-finder';
+import { FontColor } from '../util';
 import {
   ChangeCustomAccentColor,
   ChangeDynamicAccentColor,
+  ChangeDynamicColor,
   ChangePlayerControls,
-  ChangeSmartColor,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
   ChangeTheme,
+  ToggleDynamicCodeColor,
   ToggleDynamicThemeAccent,
   TogglePlaylistName,
-  ToggleSmartCodeColor,
   ToggleSpotifyCode
 } from './settings.actions';
-import { PlayerControlsOptions, SETTINGS_STATE_NAME } from './settings.model';
+import { PlayerControlsOptions, SETTINGS_STATE_NAME, Theme } from './settings.model';
 import { SettingsState } from './settings.state';
+
+const TEST_DOMINANT_COLOR: DominantColor = {
+  hex: 'DEF789',
+  rgb: {
+    r: 222,
+    g: 247,
+    b: 137,
+    a: 255
+  },
+  foregroundFontColor: FontColor.White
+};
 
 describe('SettingsState', () => {
   let store: Store;
@@ -37,16 +50,16 @@ describe('SettingsState', () => {
     store.reset({
       ...store.snapshot(),
       SHOWTUNES_SETTINGS: {
-        theme: 'dark-theme',
+        theme: Theme.Dark,
         customAccentColor: null,
         showPlayerControls: PlayerControlsOptions.On,
         showPlaylistName: true,
         showSpotifyCode: true,
-        useSmartCodeColor: true,
-        smartColor: 'ABC123',
+        useDynamicCodeColor: true,
+        dynamicColor: 'ABC123',
         spotifyCode: {
           backgroundColor: 'FFFFFF',
-          barColor: 'black'
+          barColor: FontColor.Black
         },
         useDynamicThemeAccent: false,
         dynamicAccentColor: null
@@ -59,7 +72,7 @@ describe('SettingsState', () => {
 
   it('should select theme', () => {
     const theme = selectTheme(store);
-    expect(theme).toEqual('dark-theme');
+    expect(theme).toEqual(Theme.Dark);
   });
 
   it('should select customAccentColor', () => {
@@ -85,14 +98,14 @@ describe('SettingsState', () => {
     expect(showSpotifyCode).toBeTrue();
   });
 
-  it('should select useSmartCodeColor', () => {
-    const useSmartCodeColor = selectUseSmartCodeColor(store);
-    expect(useSmartCodeColor).toBeTrue();
+  it('should select useDynamicCodeColor', () => {
+    const useDynamicCodeColor = selectUseDynamicCodeColor(store);
+    expect(useDynamicCodeColor).toBeTrue();
   });
 
-  it('should select smartColor', () => {
-    const smartColor = selectSmartColor(store);
-    expect(smartColor).toEqual('ABC123');
+  it('should select dynamicColor', () => {
+    const dynamicColor = selectDynamicColor(store);
+    expect(dynamicColor).toEqual('ABC123');
   });
 
   it('should select spotifyCode.backgroundColor', () => {
@@ -102,7 +115,7 @@ describe('SettingsState', () => {
 
   it('should select spotifyCode.barColor', () => {
     const barColor = selectSpotifyCodeBarColor(store);
-    expect(barColor).toEqual('black');
+    expect(barColor).toEqual(FontColor.Black);
   });
 
   it('should select useDynamicThemeAccent', () => {
@@ -122,16 +135,16 @@ describe('SettingsState', () => {
   });
 
   it('should change theme', () => {
-    store.dispatch(new ChangeTheme('light-theme'));
+    store.dispatch(new ChangeTheme(Theme.Light));
     const theme = selectTheme(store);
-    expect(theme).toEqual('light-theme');
+    expect(theme).toEqual(Theme.Light);
   });
 
   it('should remove existing theme and add new theme to overlayContainer on change theme', () => {
-    element.classList.add('dark-theme');
-    store.dispatch(new ChangeTheme('light-theme'));
+    element.classList.add(Theme.Dark);
+    store.dispatch(new ChangeTheme(Theme.Light));
     expect(element.classList.length).toEqual(1);
-    expect(element.classList.contains('light-theme')).toBeTrue();
+    expect(element.classList.contains(Theme.Light)).toBeTrue();
   });
 
   it('should change customAccentColor', () => {
@@ -141,9 +154,9 @@ describe('SettingsState', () => {
   });
 
   it('should remove existing theme and add new custom accent theme to overlayContainer on change customAccentColor', () => {
-    element.classList.add('dark-theme');
+    element.classList.add(Theme.Dark);
     setState(store, {
-      theme: 'light-theme'
+      theme: Theme.Light
     });
     store.dispatch(new ChangeCustomAccentColor('cyan'));
     expect(element.classList.length).toEqual(1);
@@ -152,7 +165,7 @@ describe('SettingsState', () => {
 
   it('should use the dynamic accent theme when customAccentColor is changed', () => {
     setState(store, {
-      theme: 'light-theme',
+      theme: Theme.Light,
       dynamicAccentColor: 'blue'
     });
     store.dispatch(new ChangeCustomAccentColor('cyan'));
@@ -196,85 +209,71 @@ describe('SettingsState', () => {
     expect(showSpotifyCode).toBeTrue();
   });
 
-  it('should toggle useSmartCodeColor off', () => {
-    store.dispatch(new ToggleSmartCodeColor());
-    const useSmartCodeColor = selectUseSmartCodeColor(store);
-    expect(useSmartCodeColor).toBeFalse();
+  it('should toggle useDynamicCodeColor off', () => {
+    store.dispatch(new ToggleDynamicCodeColor());
+    const useDynamicCodeColor = selectUseDynamicCodeColor(store);
+    expect(useDynamicCodeColor).toBeFalse();
   });
 
-  it('should toggle useSmartCodeColor on', () => {
+  it('should toggle useDynamicCodeColor on', () => {
     setState(store, {
-      useSmartCodeColor: false
+      useDynamicCodeColor: false
     });
-    store.dispatch(new ToggleSmartCodeColor());
-    const useSmartCodeColor = selectUseSmartCodeColor(store);
-    expect(useSmartCodeColor).toBeTrue();
+    store.dispatch(new ToggleDynamicCodeColor());
+    const useDynamicCodeColor = selectUseDynamicCodeColor(store);
+    expect(useDynamicCodeColor).toBeTrue();
   });
 
-  it('should change the smartColor if useDynamicThemeAccent', () => {
-    setState(store, {
-      useDynamicThemeAccent: true,
-      useSmartCodeColor: false
-    });
-    store.dispatch(new ChangeSmartColor('DEF789'));
-    const smartColor = selectSmartColor(store);
-    expect(smartColor).toEqual('DEF789');
+  it('should update the dynamicColor', () => {
+    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    const dynamicColor = selectDynamicColor(store);
+    expect(dynamicColor).toEqual(TEST_DOMINANT_COLOR);
   });
 
-  it('should change the smartColor if useSmartCodeColor', () => {
-    setState(store, {
-      useDynamicThemeAccent: false,
-      useSmartCodeColor: true
-    });
-    store.dispatch(new ChangeSmartColor('DEF789'));
-    const smartColor = selectSmartColor(store);
-    expect(smartColor).toEqual('DEF789');
+  it('should update dynamicAccentColor if when dynamicColor updated', () => {
+    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    const accentColor = selectDynamicAccentColor(store);
+    expect(accentColor).toEqual('gray');
   });
 
-  it('should set smartColor and dynamicAccentColor to null if not useDynamicThemeAccent and not useSmartCodeColor', () => {
+  it('should set dynamicColor and dynamicAccentColor to null if dynamicColor is updated with non-color hex value', () => {
     setState(store, {
-      useDynamicThemeAccent: false,
-      useSmartCodeColor: false
+      dynamicColor: {},
+      dynamicAccentColor: 'test-color'
     });
-    store.dispatch(new ChangeSmartColor('!@#'));
-    const smartColor = selectSmartColor(store);
+    const dominantColor: DominantColor = {
+      ...TEST_DOMINANT_COLOR,
+      hex: 'badhex'
+    };
+    store.dispatch(new ChangeDynamicColor(dominantColor));
+    const dynamicColor = selectDynamicColor(store);
     const dynamicAccentColor = selectDynamicAccentColor(store);
-    expect(smartColor).toBeNull();
+    expect(dynamicColor).toBeNull();
     expect(dynamicAccentColor).toBeNull();
   });
 
-  it('should set smartColor and dynamicAccentColor to null if not valid hex', () => {
+  it('should set dynamicColor and dynamicAccentColor to null if dynamicColor is updated with null', () => {
     setState(store, {
-      useDynamicThemeAccent: true
+      dynamicColor: {},
+      dynamicAccentColor: 'test-color'
     });
-    store.dispatch(new ChangeSmartColor('!@#'));
-    const smartColor = selectSmartColor(store);
+    store.dispatch(new ChangeDynamicColor(null));
+    const dynamicColor = selectDynamicColor(store);
     const dynamicAccentColor = selectDynamicAccentColor(store);
-    expect(smartColor).toBeNull();
+    expect(dynamicColor).toBeNull();
     expect(dynamicAccentColor).toBeNull();
   });
 
-  it('should change the smartColor add a dynamicAccentColor if useDynamicThemeAccent', () => {
+  it('should update the overlayContainer with a valid dynamicAccentColor when dynamicColor is updated', () => {
     setState(store, {
-      useDynamicThemeAccent: true,
-      dynamicAccentColor: null
-    });
-    store.dispatch(new ChangeSmartColor('456ABC'));
-    const smartColor = selectSmartColor(store);
-    const dynamicAccentColor = selectDynamicAccentColor(store);
-    expect(smartColor).toEqual('456ABC');
-    expect(dynamicAccentColor).toEqual('indigo');
-  });
-
-  it('should update the overlayContainer with a valid dynamicAccentColor', () => {
-    setState(store, {
-      theme: 'dark-theme',
+      theme: Theme.Dark,
       customAccentColor: 'cyan',
       useDynamicThemeAccent: true
     });
-    store.dispatch(new ChangeSmartColor('456ABC'));
+    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
     expect(element.classList.length).toEqual(1);
-    expect(element.classList.contains('indigo-dark-theme')).toBeTrue();
+    console.log(element.classList);
+    expect(element.classList.contains('gray-dark-theme')).toBeTrue();
   });
 
   it('should change spotifyCode.backgroundColor', () => {
@@ -282,15 +281,15 @@ describe('SettingsState', () => {
     const backgroundColor = selectSpotifyCodeBackgroundColor(store);
     const barColor = selectSpotifyCodeBarColor(store);
     expect(backgroundColor).toEqual('123456');
-    expect(barColor).toEqual('black');
+    expect(barColor).toEqual(FontColor.Black);
   });
 
   it('should change spotifyCode.barColor', () => {
-    store.dispatch(new ChangeSpotifyCodeBarColor('white'));
+    store.dispatch(new ChangeSpotifyCodeBarColor(FontColor.White));
     const backgroundColor = selectSpotifyCodeBackgroundColor(store);
     const barColor = selectSpotifyCodeBarColor(store);
     expect(backgroundColor).toEqual('FFFFFF');
-    expect(barColor).toEqual('white');
+    expect(barColor).toEqual(FontColor.White);
   });
 
   it('should toggle useDynamicThemeAccent off and set dynamicAccentColor to null', () => {
@@ -306,7 +305,7 @@ describe('SettingsState', () => {
 
   it('should toggle useDynamicThemeAccent on and set dynamicAccentColor', () => {
     setState(store, {
-      smartColor: '456ABC',
+      dynamicColor: TEST_DOMINANT_COLOR,
       useDynamicThemeAccent: false,
       dynamicAccentColor: null
     });
@@ -314,19 +313,19 @@ describe('SettingsState', () => {
     const useDynamicThemeAccent = selectUseDynamicThemeAccent(store);
     const dynamicAccentColor = selectDynamicAccentColor(store);
     expect(useDynamicThemeAccent).toBeTrue();
-    expect(dynamicAccentColor).toEqual('indigo');
+    expect(dynamicAccentColor).toEqual('gray');
   });
 
-  it('should update the overlay container with new dynamicAccentColor when useDynamicThemeAccent', () => {
+  it('should update the overlayContainer with new dynamicAccentColor when useDynamicThemeAccent', () => {
     setState(store, {
-      theme: 'light-theme',
+      theme: Theme.Light,
       customAccentColor: 'cyan',
-      smartColor: '456ABC',
+      dynamicColor: TEST_DOMINANT_COLOR,
       useDynamicThemeAccent: false
     });
     store.dispatch(new ToggleDynamicThemeAccent());
     expect(element.classList.length).toEqual(1);
-    expect(element.classList.contains('indigo-light-theme')).toBeTrue();
+    expect(element.classList.contains('gray-light-theme')).toBeTrue();
   });
 
   it('should change dynamicAccentColor', () => {
@@ -337,7 +336,7 @@ describe('SettingsState', () => {
 
   it('should update overlayContainer on dynamicAccentColor change', () => {
     setState(store, {
-      theme: 'light-theme',
+      theme: Theme.Light,
       customAccentColor: 'blue'
     });
     store.dispatch(new ChangeDynamicAccentColor('cyan'));
@@ -347,7 +346,7 @@ describe('SettingsState', () => {
 
   it('should update overlayContainer on dynamicAccentColor change to null', () => {
     setState(store, {
-      theme: 'light-theme',
+      theme: Theme.Light,
       customAccentColor: 'blue'
     });
     store.dispatch(new ChangeDynamicAccentColor(null));
@@ -376,12 +375,12 @@ function selectShowSpotifyCode(store: Store): boolean {
   return store.selectSnapshot(state => state[SETTINGS_STATE_NAME].showSpotifyCode);
 }
 
-function selectUseSmartCodeColor(store: Store): boolean {
-  return store.selectSnapshot(state => state[SETTINGS_STATE_NAME].useSmartCodeColor);
+function selectUseDynamicCodeColor(store: Store): boolean {
+  return store.selectSnapshot(state => state[SETTINGS_STATE_NAME].useDynamicCodeColor);
 }
 
-function selectSmartColor(store: Store): string {
-  return store.selectSnapshot(state => state[SETTINGS_STATE_NAME].smartColor);
+function selectDynamicColor(store: Store): string {
+  return store.selectSnapshot(state => state[SETTINGS_STATE_NAME].dynamicColor);
 }
 
 function selectSpotifyCodeBackgroundColor(store: Store): string {

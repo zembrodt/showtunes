@@ -1,3 +1,4 @@
+import { DominantColor } from '../dominant-color/dominant-color-finder';
 import { PlayerControlsOptions } from './settings.model';
 
 const SETTINGS_ACTION_NAME = '[Settings]';
@@ -24,13 +25,13 @@ export class ToggleSpotifyCode {
   static readonly type = `${SETTINGS_ACTION_NAME} Toggle Spotify Code`;
 }
 
-export class ToggleSmartCodeColor {
-  static readonly type = `${SETTINGS_ACTION_NAME} Toggle Smart Code Color`;
+export class ToggleDynamicCodeColor {
+  static readonly type = `${SETTINGS_ACTION_NAME} Toggle Dynamic Code Color`;
 }
 
-export class ChangeSmartColor {
-  static readonly type = `${SETTINGS_ACTION_NAME} Change Smart Color`;
-  constructor(public smartColor: string) {}
+export class ChangeDynamicColor {
+  static readonly type = `${SETTINGS_ACTION_NAME} Change Dynamic Color`;
+  constructor(public dynamicColor: DominantColor) {}
 }
 
 export class ChangeSpotifyCodeBackgroundColor {

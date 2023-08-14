@@ -1,18 +1,19 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Injectable } from '@angular/core';
 import { Action, NgxsOnInit, Selector, State, StateContext } from '@ngxs/store';
-import { calculateColorDistance, hexToRgb, isHexColor } from '../util';
+import { DominantColor } from '../dominant-color/dominant-color-finder';
+import { calculateColorDistance, Color, isHexColor } from '../util';
 import {
   ChangeCustomAccentColor,
   ChangeDynamicAccentColor,
+  ChangeDynamicColor,
   ChangePlayerControls,
-  ChangeSmartColor,
   ChangeSpotifyCodeBackgroundColor,
   ChangeSpotifyCodeBarColor,
   ChangeTheme,
   ToggleDynamicThemeAccent,
   TogglePlaylistName,
-  ToggleSmartCodeColor,
+  ToggleDynamicCodeColor,
   ToggleSpotifyCode
 } from './settings.actions';
 import { DEFAULT_SETTINGS, DYNAMIC_THEME_COLORS, PlayerControlsOptions, SETTINGS_STATE_NAME, SettingsModel } from './settings.model';
@@ -51,13 +52,13 @@ export class SettingsState implements NgxsOnInit {
   }
 
   @Selector()
-  static useSmartCodeColor(state: SettingsModel): boolean {
-    return state.useSmartCodeColor;
+  static useDynamicCodeColor(state: SettingsModel): boolean {
+    return state.useDynamicCodeColor;
   }
 
   @Selector()
-  static smartColor(state: SettingsModel): string {
-    return state.smartColor;
+  static dynamicColor(state: SettingsModel): DominantColor {
+    return state.dynamicColor;
   }
 
   @Selector()
@@ -116,24 +117,24 @@ export class SettingsState implements NgxsOnInit {
     ctx.patchState({showSpotifyCode: !state.showSpotifyCode});
   }
 
-  @Action(ToggleSmartCodeColor)
-  toggleSmartCodeColor(ctx: StateContext<SettingsModel>): void {
+  @Action(ToggleDynamicCodeColor)
+  toggleDynamicCodeColor(ctx: StateContext<SettingsModel>): void {
     const state = ctx.getState();
-    ctx.patchState({useSmartCodeColor: !state.useSmartCodeColor});
+    ctx.patchState({useDynamicCodeColor: !state.useDynamicCodeColor});
   }
 
-  @Action(ChangeSmartColor)
-  changeSmartColor(ctx: StateContext<SettingsModel>, action: ChangeSmartColor): void {
+  @Action(ChangeDynamicColor)
+  changeDynamicColor(ctx: StateContext<SettingsModel>, action: ChangeDynamicColor): void {
+    ctx.patchState({dynamicColor: action.dynamicColor});
     const state = ctx.getState();
-    if ((state.useDynamicThemeAccent || state.useSmartCodeColor) && isHexColor(action.smartColor)) {
-      ctx.patchState({smartColor: action.smartColor});
-      if (state.useDynamicThemeAccent) {
-        const dynamicColor = this.calculateDynamicAccentColor(action.smartColor);
-        ctx.patchState({dynamicAccentColor: dynamicColor});
-      }
+    if ((action.dynamicColor && isHexColor(action.dynamicColor.hex))) {
+      ctx.patchState({
+        dynamicColor: action.dynamicColor,
+        dynamicAccentColor: this.calculateDynamicAccentColor(action.dynamicColor.rgb)
+      });
     } else {
       ctx.patchState({
-        smartColor: null,
+        dynamicColor: null,
         dynamicAccentColor: null
       });
     }
@@ -156,8 +157,8 @@ export class SettingsState implements NgxsOnInit {
   toggleDynamicThemeAccent(ctx: StateContext<SettingsModel>): void {
     const state = ctx.getState();
     ctx.patchState({
-      dynamicAccentColor: !state.useDynamicThemeAccent && state.smartColor !== null ?
-        this.calculateDynamicAccentColor(state.smartColor) : null,
+      dynamicAccentColor: !state.useDynamicThemeAccent && state.dynamicColor !== null ?
+        this.calculateDynamicAccentColor(state.dynamicColor.rgb) : null,
       useDynamicThemeAccent: !state.useDynamicThemeAccent,
     });
     this.updateOverlayContainer(state.theme, state.customAccentColor, ctx.getState().dynamicAccentColor);
@@ -193,21 +194,20 @@ export class SettingsState implements NgxsOnInit {
   }
 
   /**
-   * Find the closest pre-defined theme color to the smart color
-   * @param smartColor a hex color
+   * Find the closest pre-defined theme color to the given color
+   * @param color a {@link Color} object
    * @private
    */
-  private calculateDynamicAccentColor(smartColor: string): string {
-    const smartColorRgb = hexToRgb(smartColor);
+  private calculateDynamicAccentColor(color: Color): string {
     let colorIndex: number = null;
     let closestColorValue: number = null;
-    DYNAMIC_THEME_COLORS.getColors().forEach((dynamicColor, index) => {
-      const distance = calculateColorDistance(smartColorRgb, dynamicColor.color);
+    DYNAMIC_THEME_COLORS.forEach((dynamicColor, index) => {
+      const distance = calculateColorDistance(color, dynamicColor.color);
       if (closestColorValue === null || distance < closestColorValue) {
         closestColorValue = distance;
         colorIndex = index;
       }
     });
-    return colorIndex !== null ? DYNAMIC_THEME_COLORS.getColors()[colorIndex].name : null;
+    return colorIndex !== null ? DYNAMIC_THEME_COLORS[colorIndex].name : null;
   }
 }

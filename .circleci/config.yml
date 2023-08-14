@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  browser-tools: circleci/browser-tools@1.4.1
+  browser-tools: circleci/browser-tools@1.4.2
   codecov: codecov/codecov@3.2.5
 
 jobs:
@@ -12,6 +12,11 @@ jobs:
     steps:
       - browser-tools/install-chrome
       - browser-tools/install-chromedriver
+      - run:
+          name: "Fix PATH"
+          command: |
+            echo "see https://github.com/CircleCI-Public/browser-tools-orb/blob/de5fa4e28909039438189815dbb42ac308e49bc9/src/scripts/install-chromedriver.sh#L187"
+            echo "export PATH='/usr/local/bin/chromedriver:$PATH'" >> $BASH_ENV
       - run:
           name: "Check Chrome install"
           command: |

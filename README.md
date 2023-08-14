@@ -74,11 +74,10 @@ Explanation of configurations (**^** denotes required config):
   - `"name"` - (*string*) the name of the environment
   - **^**`"domain"` - (*string*) the domain this app is running on
   - **^**`"spotifyApiUrl"` - (*string*) Spotify's API url
-  - `"albumColorUrl"` - (*string*) the URL for a server to return dynamic colors (see relevant section below)
 - `"auth"`
   - **^**`"clientId"` (*string*) the client ID for accessing Spotify's API
   - `"clientSecret"` - (*string*) the client secret for accessing Spotify's API (if using non-PKCE method)
-  - `"scopes"` - (*string*) comma-separated list of API Spotify scopes needed to grant the application access during OAuth 
+  - **^**`"scopes"` - (*string*) space-separated list of API Spotify scopes needed to grant the application access during OAuth 
   - `"tokenUrl"` - (*string*) the 3rd party backend URL for authentication if not using direct authorization with Spotify
   - `"forcePkce"` - (*boolean*) used to force the application to use PKCE for authentication disregarding what other configs are set
   - `"showDialog"` - (*boolean*) determines if Spotify's OAuth page is opened in a new window or not
@@ -87,18 +86,3 @@ These configurations can also be set as environment variables instead of a json 
 upper camel case. For example: `spotifyApiUrl` as an environment variable will be `SHOWTUNES_SPOTIFY_API_URL`.
 
 Environment variables will always overwrite anything in the config file.
-
-## Dynamic Colors
-
-One feature within this application is the ability to style certain elements dynamically based on the album artwork of the
-song currently playing. This functionality is enabled when its required configuration `"env" / "albumColorUrl"` is set.
-
-The application expects the API endpoint to receive a GET request with a `url` param containing the URL to the album artwork.
-The endpoint is then expected to send a response object of type `SmartColorResponse`, where `color` contains the hex color value (such as `#ABC123`).
-
-The expected functionality of this endpoint is to analyze the image from the given URL, and send back the most common color to be used as theming within the application.
-
-Current theming options are an exact color matched Spotify code and the selection of a material theme color that matches the dynamic color the closest. The usage of this is
-configurable within the application, and these options are disabled if an `albumColorUrl` is not configured.
-
-See the `/color` endpoint within https://github.com/zembrodt/showtunes-api for an example implementation.

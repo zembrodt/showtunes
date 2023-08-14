@@ -7,7 +7,7 @@ import { RouterOutlet } from '@angular/router';
 import { NgxsModule } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { PlayerControlsOptions } from '../../core/settings/settings.model';
+import { PlayerControlsOptions, Theme } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
@@ -121,101 +121,101 @@ describe('AppComponent', () => {
   });
 
   it('should use the light-theme class when light theme', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeTruthy();
-    expect(main.classes['dark-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeTruthy();
+    expect(main.classes[Theme.Dark]).toBeFalsy();
   });
 
   it('should use the dark-theme class when dark theme', () => {
-    themeProducer.next('dark-theme');
+    themeProducer.next(Theme.Dark);
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['dark-theme']).toBeTruthy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[Theme.Dark]).toBeTruthy();
   });
 
   it('should use no theme class when theme is null', () => {
     themeProducer.next(null);
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['dark-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[Theme.Dark]).toBeFalsy();
   });
 
   it('should use dynamic theme when useDynamicThemeAccent and dynamicAccentColor exists', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(true);
     dynamicAccentColorProducer.next('cyan');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['cyan-light-theme']).toBeTruthy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeTruthy();
   });
 
   it('should use dynamic theme over custom theme when useDynamicThemeAccent and dynamicAccentColor exists', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(true);
     dynamicAccentColorProducer.next('cyan');
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['cyan-light-theme']).toBeTruthy();
-    expect(main.classes['green-light-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeTruthy();
+    expect(main.classes[`green-${Theme.Light}`]).toBeFalsy();
   });
 
   it('should not use dynamic theme when not useDynamicThemeAccent and dynamicAccentColor exists', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(false);
     dynamicAccentColorProducer.next('cyan');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeTruthy();
-    expect(main.classes['cyan-light-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeTruthy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeFalsy();
   });
 
   it('should not use dynamic theme when useDynamicThemeAccent and dynamicAccentColor is null', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(true);
     dynamicAccentColorProducer.next(null);
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeTruthy();
-    expect(main.classes['cyan-light-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeTruthy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeFalsy();
   });
 
   it('should use custom theme when customAccentColor exists and not dynamic', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['green-light-theme']).toBeTruthy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[`green-${Theme.Light}`]).toBeTruthy();
   });
 
   it('should use custom theme when customAccentColor exists and not useDynamicAccentTheme and dynamicAccentColor exists', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(false);
     dynamicAccentColorProducer.next('cyan');
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['cyan-light-theme']).toBeFalsy();
-    expect(main.classes['green-light-theme']).toBeTruthy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeFalsy();
+    expect(main.classes[`green-${Theme.Light}`]).toBeTruthy();
   });
 
   it('should use custom theme when customAccentColor exists and useDynamicAccentTheme and dynamicAccentColor is null', () => {
-    themeProducer.next('light-theme');
+    themeProducer.next(Theme.Light);
     useDynamicThemeAccentProducer.next(true);
     dynamicAccentColorProducer.next(null);
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['green-light-theme']).toBeTruthy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[`green-${Theme.Light}`]).toBeTruthy();
   });
 
   it('should use no theme when useDynamicAccentTheme and dynamicAccentColor exists and theme is null', () => {
@@ -224,10 +224,10 @@ describe('AppComponent', () => {
     dynamicAccentColorProducer.next('cyan');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['dark-theme']).toBeFalsy();
-    expect(main.classes['cyan-light-theme']).toBeFalsy();
-    expect(main.classes['cyan-dark-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[Theme.Dark]).toBeFalsy();
+    expect(main.classes[`cyan-${Theme.Light}`]).toBeFalsy();
+    expect(main.classes[`cyan-${Theme.Dark}`]).toBeFalsy();
     expect(main.classes['cyan-null']).toBeFalsy();
   });
 
@@ -236,10 +236,10 @@ describe('AppComponent', () => {
     customAccentColorProducer.next('green');
     fixture.detectChanges();
     const main = fixture.debugElement.query(By.css('.showtunes-app'));
-    expect(main.classes['light-theme']).toBeFalsy();
-    expect(main.classes['dark-theme']).toBeFalsy();
-    expect(main.classes['green-light-theme']).toBeFalsy();
-    expect(main.classes['green-dark-theme']).toBeFalsy();
+    expect(main.classes[Theme.Light]).toBeFalsy();
+    expect(main.classes[Theme.Dark]).toBeFalsy();
+    expect(main.classes[`green-${Theme.Light}`]).toBeFalsy();
+    expect(main.classes[`green-${Theme.Dark}`]).toBeFalsy();
     expect(main.classes['green-null']).toBeFalsy();
   });
 

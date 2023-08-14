@@ -10,10 +10,10 @@
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}">
-        <mat-icon [ngClass]="(theme$ | async) === 'light-theme' ? 'app-icon' : ''"
-                  [color]="(theme$ | async) === 'dark-theme' ? 'accent' : null">dark_mode</mat-icon>
+        <mat-icon [ngClass]="(theme$ | async) === lightTheme ? 'app-icon' : ''"
+                  [color]="(theme$ | async) === darkTheme ? 'accent' : null">dark_mode</mat-icon>
         <mat-slide-toggle
-          [checked]="(theme$ | async) === 'dark-theme'"
+          [checked]="(theme$ | async) === darkTheme"
           [color]="'primary'"
           (toggleChange)="onDarkModeChange()"
           (click)="$event.stopPropagation();"
@@ -63,32 +63,29 @@
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">lightbulb</mat-icon>
         <mat-slide-toggle
-          [checked]="showSmartColorSettings && smartCodeColorUrlSet"
+          [checked]="showDynamicColorSettings"
           [color]="'primary'"
-          [disabled]="!smartCodeColorUrlSet"
-          (toggleChange)="onShowSmartColorSettings()"
+          (toggleChange)="onShowDynamicColorSettings()"
           (click)="$event.stopPropagation();"
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}"
-           *ngIf="showSmartColorSettings">
+           *ngIf="showDynamicColorSettings">
         <div class="app-icon"></div>
         <mat-icon class="app-icon">play_circle_outline</mat-icon>
         <mat-slide-toggle
-          [checked]="(useDynamicThemeAccent$ | async) && smartCodeColorUrlSet"
+          [checked]="(useDynamicThemeAccent$ | async)"
           [color]="'primary'"
-          [disabled]="!smartCodeColorUrlSet"
           (toggleChange)="onUseDynamicThemeAccent()"
           (click)="$event.stopPropagation();"
         ></mat-slide-toggle>
         <mat-icon class="app-icon" *ngIf="showSpotifyCode$ | async">qr_code_2</mat-icon>
         <mat-slide-toggle
-          [checked]="(useSmartCodeColor$ | async) && smartCodeColorUrlSet"
+          [checked]="(useDynamicCodeColor$ | async)"
           [color]="'primary'"
-          [disabled]="!smartCodeColorUrlSet"
-          (toggleChange)="onUseSmartCodeColor()"
+          (toggleChange)="onUseDynamicCodeColor()"
           (click)="$event.stopPropagation();"
           *ngIf="showSpotifyCode$ | async"
         ></mat-slide-toggle>
@@ -96,10 +93,10 @@
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}"
-           *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)">
+           *ngIf="!(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)">
         <mat-icon class="app-icon">invert_colors</mat-icon>
         <mat-slide-toggle
-          [checked]="(barColor$ | async) === 'black'"
+          [checked]="(barColor$ | async) === fontColorBlack"
           [color]="'primary'"
           (toggleChange)="onBarColorChange()"
           (click)="$event.stopPropagation();"
@@ -112,7 +109,7 @@
         [colorReset$]="colorPickerResetEvent.asObservable()"
         (colorChange)="onColorChange($event)"
         (click)="$event.stopPropagation();"
-        *ngIf="!(useSmartCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
+        *ngIf="!(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}"

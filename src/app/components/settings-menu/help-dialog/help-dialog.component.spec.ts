@@ -30,9 +30,9 @@ const CONTROLS_FADE_INDEX = 2;
 const CONTROLS_ON_INDEX = 3;
 const PLAYLIST_INDEX = 4;
 const SHOW_CODE_INDEX = 5;
-const SMART_COLOR_INDEX = 6;
-const SMART_ACCENT_INDEX = 7;
-const SMART_CODE_INDEX = 8;
+const DYNAMIC_COLOR_INDEX = 6;
+const DYNAMIC_ACCENT_INDEX = 7;
+const DYNAMIC_CODE_INDEX = 8;
 const BAR_COLOR_INDEX = 9;
 
 describe('HelpDialogComponent', () => {
@@ -151,19 +151,19 @@ describe('HelpDialogComponent', () => {
       expect(helpIcons[SHOW_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
     });
 
-    it('should include help for smart color toggle', () => {
+    it('should include help for dynamic color toggle', () => {
       const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
-      expect(helpIcons[SMART_COLOR_INDEX].nativeElement.textContent.trim()).toEqual('lightbulb');
+      expect(helpIcons[DYNAMIC_COLOR_INDEX].nativeElement.textContent.trim()).toEqual('lightbulb');
     });
 
-    it('should include help for smart accent toggle', () => {
+    it('should include help for dynamic accent toggle', () => {
       const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
-      expect(helpIcons[SMART_ACCENT_INDEX].nativeElement.textContent.trim()).toEqual('play_circle_outline');
+      expect(helpIcons[DYNAMIC_ACCENT_INDEX].nativeElement.textContent.trim()).toEqual('play_circle_outline');
     });
 
-    it('should include help for smart code toggle', () => {
+    it('should include help for dynamic code toggle', () => {
       const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
-      expect(helpIcons[SMART_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
+      expect(helpIcons[DYNAMIC_CODE_INDEX].nativeElement.textContent.trim()).toEqual('qr_code_2');
     });
 
     it('should include help for bar color toggle', () => {
