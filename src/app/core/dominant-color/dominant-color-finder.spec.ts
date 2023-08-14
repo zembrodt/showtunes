@@ -226,6 +226,10 @@ describe('DominantColorFinder', () => {
   });
 });
 
+/**
+ * Used to generate a mock function to dependency inject the findClusters function into DominantColorFinder
+ * @param points the points to make up each Cluster's centroid in the ClusterGroup
+ */
 function generateMockFindClustersFn(...points: Color[]): (img: RawImage) => ClusterGroup {
   const clusterGroup = new ClusterGroup();
   for (const point of points) {
@@ -237,6 +241,9 @@ function generateMockFindClustersFn(...points: Color[]): (img: RawImage) => Clus
   return (_: RawImage) => clusterGroup;
 }
 
+/**
+ * Mocks the Canvas object to overwrite what imageData to return on getImageData.
+ */
 class MockCanvas extends Canvas {
   private readonly imageData: Uint8ClampedArray = null;
 

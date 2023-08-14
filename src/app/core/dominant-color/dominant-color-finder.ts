@@ -22,6 +22,10 @@ export class DominantColorFinder {
     this.findClustersFn = findClustersFn;
   }
 
+  /**
+   * Retrieves the dominant color of an image given it's URL
+   * @param src the URL to an image
+   */
   public getColor(src: string): Promise<DominantColor> {
     if (!src) {
       return Promise.reject('getColor requires an image src');
@@ -80,11 +84,20 @@ export class DominantColorFinder {
     });
   }
 
+  /**
+   * Finds the dominant color given a raw image
+   * @param img the RawImage to find the dominant color in
+   * @private
+   * @return Color the dominant color
+   */
   private findDominantColor(img: RawImage): Color {
     const clusters = this.findClustersFn(img);
     let dominantColor: Color;
+    // Loop through the each cluster to find which one has an appropriate color. Skips any clusters that are too bright/dark according
+    // to the configured maxBrightness and minDarkness values
     for (let i = 0; i < clusters.getLength(); i++) {
       const centroid = clusters.getClusters()[i].getCentroid();
+      // Sum the RGB values to compare against maxBrightness and minDarkness
       const summedColor = centroid[0] + centroid[1] + centroid[2];
       if (summedColor < DominantColorFinder.maxBrightness && summedColor > DominantColorFinder.minDarkness) {
         dominantColor = {
@@ -94,6 +107,7 @@ export class DominantColorFinder {
           a: 255
         };
       } else if (i === 0) {
+        // Set the first color as valid if no others exist
         dominantColor = {
           r: centroid[0],
           g: centroid[1],

@@ -6,6 +6,9 @@ export interface Pixel {
   color: Color;
 }
 
+/**
+ * Creates a 2D array of Pixel objects to represent an image from the given array of data
+ */
 export class RawImage {
   static readonly step = 4; // bytes per pixel
 

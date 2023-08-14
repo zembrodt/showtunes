@@ -18,6 +18,10 @@ export class Canvas {
     this.clearCanvas(0, 0);
   }
 
+  /**
+   * Uses a canvas element to retrieve the image data from the passed image element
+   * @param image must be of type HTMLImageElement
+   */
   getImageData(image: ImageElement): Uint8ClampedArray {
     if (!image) {
       throw new Error('Image must not be null');
