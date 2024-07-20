@@ -1,7 +1,7 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse, HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
 import { SetAuthToken } from '../../core/auth/auth.actions';
@@ -216,8 +216,8 @@ export class SpotifyService {
               scope: token.scope,
               refreshToken: token.refresh_token
             };
-            this.store.dispatch(new SetAuthToken(authToken));
-            resolve();
+            this.store.dispatch(new SetAuthToken(authToken))
+              .subscribe(() => resolve());
           },
           (error) => {
             const errMsg = `Error requesting token: ${JSON.stringify(error)}`;
@@ -531,13 +531,8 @@ export class SpotifyService {
     this.storage.removeAuthToken();
   }
 
-  /**
-   * Checks a Spotify API error response against common error response codes
-   * @param res
-   */
-  checkErrorResponse(res: HttpErrorResponse): Promise<SpotifyAPIResponse> {
-    if (res.status === 401) {
-      // Expired token
+  private refreshAuthToken(): Promise<SpotifyAPIResponse> {
+    if (this.authToken && this.authToken.refreshToken) {
       return this.requestAuthToken(this.authToken.refreshToken, true)
         .then(() => {
           return SpotifyAPIResponse.ReAuthenticated;
@@ -548,19 +543,48 @@ export class SpotifyService {
           return SpotifyAPIResponse.Error;
         });
     }
-    else if (res.status === 403) {
-      // Bad OAuth request
-      this.logout();
-      return Promise.resolve(SpotifyAPIResponse.Error);
+    return Promise.reject('Refresh token not present');
+  }
+
+  /**
+   * Checks a Spotify API error response against common error response codes
+   * @param res
+   */
+  checkErrorResponse(res: HttpErrorResponse): Promise<SpotifyAPIResponse> {
+    switch (res.status) {
+      case HttpStatusCode.Unauthorized:
+        // Expired token
+        this.store.dispatch(new SetPlayerState(PlayerState.Refreshing));
+        return this.refreshAuthToken();
+      case HttpStatusCode.Forbidden:
+        // Bad OAuth request
+        this.logout();
+        return Promise.resolve(SpotifyAPIResponse.Error);
+      case HttpStatusCode.TooManyRequests:
+        console.error('Spotify rate limits exceeded');
+        this.logout();
+        return Promise.resolve(SpotifyAPIResponse.Error);
+      default:
+        console.error(`Unexpected response ${res.status}: ${res.statusText}`);
+        return Promise.resolve(SpotifyAPIResponse.Error);
     }
-    else if (res.status === 429) {
-      console.error('Spotify rate limits exceeded');
-      this.logout();
-      return Promise.resolve(SpotifyAPIResponse.Error);
-    } else {
-      console.error(`Unexpected response ${res.status}: ${res.statusText}`);
-      return Promise.resolve(SpotifyAPIResponse.Error);
+  }
+
+  /**
+   * Checks if the auth token is present and if its expiry value is within the threshold. If so, it refreshes the token
+   */
+  checkAuthTokenWithinExpiryThreshold(): Promise<SpotifyAPIResponse> {
+    const now = new Date();
+    if (this.authToken) {
+      if (!this.authToken.expiry) {
+        return Promise.reject('No expiry value present on token');
+      }
+      else if (this.authToken.expiry && this.authToken.expiry.getTime() - now.getTime() <= SpotifyService.AUTH_TOKEN_REFRESH_THRESHOLD) {
+        return this.refreshAuthToken();
+      }
     }
+    // Token is not within expiry threshold
+    return Promise.resolve(SpotifyAPIResponse.Success);
   }
 
   /**
@@ -574,10 +598,10 @@ export class SpotifyService {
   }
 
   private checkResponseWithPlayback(res: HttpResponse<any>, hasResponse: boolean, isPlayback: boolean): SpotifyAPIResponse {
-    if (res.status === 200 && (hasResponse || isPlayback)) {
+    if (res.status === HttpStatusCode.Ok && (hasResponse || isPlayback)) {
       return SpotifyAPIResponse.Success;
     }
-    else if (res.status === 204 && (!hasResponse || isPlayback)) {
+    else if (res.status === HttpStatusCode.NoContent && (!hasResponse || isPlayback)) {
       return isPlayback ? SpotifyAPIResponse.NoPlayback : SpotifyAPIResponse.Success;
     }
   }

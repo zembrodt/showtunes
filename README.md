@@ -74,6 +74,7 @@ Explanation of configurations (**^** denotes required config):
   - `"name"` - (*string*) the name of the environment
   - **^**`"domain"` - (*string*) the domain this app is running on
   - **^**`"spotifyApiUrl"` - (*string*) Spotify's API url
+  - **^**`"spotifyAccountsUrl"` - (*string*) Spotify's Accounts url
 - `"auth"`
   - **^**`"clientId"` (*string*) the client ID for accessing Spotify's API
   - `"clientSecret"` - (*string*) the client secret for accessing Spotify's API (if using non-PKCE method)
