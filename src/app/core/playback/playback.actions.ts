@@ -1,4 +1,4 @@
-import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback.model';
+import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from './playback.model';
 
 const PLAYBACK_ACTION_NAME = '[Playback]';
 
@@ -62,7 +62,7 @@ export class SetLiked {
   constructor(public isLiked: boolean) { }
 }
 
-export class SetIdle {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Set Idle`;
-  constructor(public isIdle: boolean) { }
+export class SetPlayerState {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Player State`;
+  constructor(public playerState: PlayerState) { }
 }

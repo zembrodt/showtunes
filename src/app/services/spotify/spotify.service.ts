@@ -16,13 +16,13 @@ import {
   ChangeRepeatState,
   ChangeTrack,
   SetAvailableDevices,
-  SetIdle,
   SetLiked,
+  SetPlayerState,
   SetPlaying,
   SetProgress,
   SetShuffle
 } from '../../core/playback/playback.actions';
-import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
+import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import {
   generateCodeChallenge,
@@ -311,9 +311,9 @@ export class SpotifyService {
           this.store.dispatch(new SetPlaying(playback.is_playing));
           this.store.dispatch(new SetShuffle(playback.shuffle_state));
           this.store.dispatch(new ChangeRepeatState(playback.repeat_state));
-          this.store.dispatch(new SetIdle(false));
+          this.store.dispatch(new SetPlayerState(PlayerState.Playing));
         } else {
-          this.store.dispatch(new SetIdle(true));
+          this.store.dispatch(new SetPlayerState(PlayerState.Idling));
         }
       // else locked
         // update progress to current + pollingInterval

@@ -10,13 +10,22 @@ import {
   ChangeRepeatState,
   ChangeTrack,
   SetAvailableDevices,
-  SetIdle,
+  SetPlayerState,
   SetLiked,
   SetPlaying,
   SetProgress,
   SetShuffle
 } from './playback.actions';
-import { AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PLAYBACK_STATE_NAME, PlaybackModel, PlaylistModel, TrackModel } from './playback.model';
+import {
+  AlbumModel,
+  DEFAULT_PLAYBACK,
+  DeviceModel,
+  PLAYBACK_STATE_NAME,
+  PlaybackModel,
+  PlayerState,
+  PlaylistModel,
+  TrackModel
+} from './playback.model';
 
 @State<PlaybackModel>({
   name: PLAYBACK_STATE_NAME,
@@ -92,8 +101,8 @@ export class PlaybackState {
   }
 
   @Selector()
-  static isIdle(state: PlaybackModel): boolean {
-    return state.isIdle;
+  static playerState(state: PlaybackModel): PlayerState {
+    return state.playerState;
   }
 
   @Action(ChangeTrack)
@@ -158,8 +167,8 @@ export class PlaybackState {
     ctx.patchState({isLiked: action.isLiked});
   }
 
-  @Action(SetIdle)
-  setIdle(ctx: StateContext<PlaybackModel>, action: SetIdle): void {
-    ctx.patchState({isIdle: action.isIdle});
+  @Action(SetPlayerState)
+  setIdle(ctx: StateContext<PlaybackModel>, action: SetPlayerState): void {
+    ctx.patchState({playerState: action.playerState});
   }
 }

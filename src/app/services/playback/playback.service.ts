@@ -3,6 +3,7 @@ import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AuthState } from '../../core/auth/auth.state';
+import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { SpotifyService } from '../spotify/spotify.service';
 
@@ -14,8 +15,8 @@ export class PlaybackService implements OnDestroy {
   private ngUnsubscribe = new Subject();
 
   private interval$ = new BehaviorSubject(PLAYBACK_POLLING);
-  @Select(PlaybackState.isIdle) isIdle$: Observable<boolean>;
-  private isIdle = true;
+  @Select(PlaybackState.playerState) playerState$: Observable<PlayerState>;
+  private playerState = PlayerState.Idling;
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
@@ -26,7 +27,11 @@ export class PlaybackService implements OnDestroy {
       this.interval$
         .pipe(
           switchMap(value => {
-            return this.isAuthenticated ? interval(value) : NEVER;
+            // Don't poll playback if not authenticated or currently refreshing the auth token
+            if (this.isAuthenticated && this.playerState !== PlayerState.Refreshing) {
+              return interval(value);
+            }
+            return NEVER;
           }),
           takeUntil(this.ngUnsubscribe))
         .subscribe((pollingInterval) => {
@@ -34,12 +39,12 @@ export class PlaybackService implements OnDestroy {
         });
     }
 
-    if (this.isIdle$) {
-      this.isIdle$
+    if (this.playerState$) {
+      this.playerState$
         .pipe(takeUntil(this.ngUnsubscribe))
-        .subscribe(isIdle => {
-          this.isIdle = isIdle;
-          this.interval$.next(isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+        .subscribe(playerState => {
+          this.playerState = playerState;
+          this.interval$.next(playerState === PlayerState.Playing ? PLAYBACK_POLLING : IDLE_POLLING);
         });
     }
 
@@ -49,7 +54,7 @@ export class PlaybackService implements OnDestroy {
         .subscribe(isAuthenticated => {
           this.isAuthenticated = isAuthenticated;
           // Send a new polling value to either start or stop playback
-          this.interval$.next(this.isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+          this.interval$.next(this.playerState === PlayerState.Playing ? PLAYBACK_POLLING : IDLE_POLLING);
         });
     }
   }

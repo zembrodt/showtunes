@@ -11,13 +11,13 @@ import {
   ChangeRepeatState,
   ChangeTrack,
   SetAvailableDevices,
-  SetIdle,
   SetLiked,
+  SetPlayerState,
   SetPlaying,
   SetProgress,
   SetShuffle
 } from './playback.actions';
-import { AlbumModel, ArtistModel, DeviceModel, PLAYBACK_STATE_NAME, PlaylistModel, TrackModel } from './playback.model';
+import { AlbumModel, ArtistModel, DeviceModel, PLAYBACK_STATE_NAME, PlayerState, PlaylistModel, TrackModel } from './playback.model';
 import { PlaybackState } from './playback.state';
 
 const TEST_ARTIST_1: ArtistModel = {
@@ -110,7 +110,7 @@ describe('PlaybackState', () => {
         isShuffle: true,
         repeatState: 'context',
         isLiked: true,
-        isIdle: true
+        playerState: PlayerState.Idling
       }
     });
   });
@@ -180,9 +180,9 @@ describe('PlaybackState', () => {
     expect(isLiked).toBeTrue();
   });
 
-  it('should select isIdle', () => {
-    const isIdle = selectIsIdle(store);
-    expect(isIdle).toBeTrue();
+  it('should select playerState', () => {
+    const state = selectPlayerState(store);
+    expect(state).toEqual(PlayerState.Idling);
   });
 
   it('should change track', () => {
@@ -288,10 +288,10 @@ describe('PlaybackState', () => {
     expect(isLiked).toBeFalse();
   });
 
-  it('should set isIdle', () => {
-    store.dispatch(new SetIdle(false));
-    const isIdle = selectIsIdle(store);
-    expect(isIdle).toBeFalse();
+  it('should set playerState', () => {
+    store.dispatch(new SetPlayerState(PlayerState.Refreshing));
+    const state = selectPlayerState(store);
+    expect(state).toEqual(PlayerState.Refreshing);
   });
 });
 
@@ -347,6 +347,6 @@ function selectIsLiked(store: Store): boolean {
   return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].isLiked);
 }
 
-function selectIsIdle(store: Store): boolean {
-  return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].isIdle);
+function selectPlayerState(store: Store): boolean {
+  return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].playerState);
 }

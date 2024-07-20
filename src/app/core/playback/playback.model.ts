@@ -1,5 +1,11 @@
 export const PLAYBACK_STATE_NAME = 'SHOWTUNES_PLAYBACK';
 
+export enum PlayerState {
+  Idling,
+  Playing,
+  Refreshing
+}
+
 export interface PlaybackModel {
   track: TrackModel;
   album: AlbumModel;
@@ -11,7 +17,7 @@ export interface PlaybackModel {
   isShuffle: boolean;
   repeatState: string;
   isLiked: boolean;
-  isIdle: boolean;
+  playerState: PlayerState;
 }
 
 export interface TrackModel {
@@ -102,5 +108,5 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
   isPlaying: false,
   isShuffle: false,
   repeatState: '',
-  isIdle: true
+  playerState: PlayerState.Idling
 };

@@ -15,7 +15,7 @@ import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
 import { DominantColor, DominantColorFinder } from '../../core/dominant-color/dominant-color-finder';
-import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
+import { AlbumModel, PlayerState, TrackModel } from '../../core/playback/playback.model';
 import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { FontColor } from '../../core/util';
@@ -72,7 +72,7 @@ describe('AlbumDisplayComponent', () => {
   let coverArtProducer: BehaviorSubject<ImageResponse>;
   let trackProducer: BehaviorSubject<TrackModel>;
   let albumProducer: BehaviorSubject<AlbumModel>;
-  let isIdleProducer: BehaviorSubject<boolean>;
+  let playerStateProducer: BehaviorSubject<PlayerState>;
   let useDynamicCodeColorProducer: BehaviorSubject<boolean>;
   let dynamicColorProducer: BehaviorSubject<DominantColor>;
   let showSpotifyCodeProducer: BehaviorSubject<boolean>;
@@ -86,6 +86,7 @@ describe('AlbumDisplayComponent', () => {
     AppConfig.settings = {
       env: {
         spotifyApiUrl: null,
+        spotifyAccountsUrl: null,
         name: null,
         domain: null
       },
@@ -123,7 +124,7 @@ describe('AlbumDisplayComponent', () => {
     coverArtProducer = mockSelectors.defineNgxsSelector<ImageResponse>(component, 'coverArt$');
     trackProducer = mockSelectors.defineNgxsSelector<TrackModel>(component, 'track$');
     albumProducer = mockSelectors.defineNgxsSelector<AlbumModel>(component, 'album$');
-    isIdleProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isIdle$');
+    playerStateProducer = mockSelectors.defineNgxsSelector<PlayerState>(component, 'playerState$');
     useDynamicCodeColorProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'useDynamicCodeColor$');
     dynamicColorProducer = mockSelectors.defineNgxsSelector<DominantColor>(component, 'dynamicColor$');
     showSpotifyCodeProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'showSpotifyCode$');
@@ -156,7 +157,7 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should display a loading spinner when no coverArt and is not idle', () => {
-    isIdleProducer.next(false);
+    playerStateProducer.next(PlayerState.Playing);
     fixture.detectChanges();
     const spinner = fixture.debugElement.query(By.directive(MatSpinner));
     expect(spinner).toBeTruthy();
@@ -166,14 +167,14 @@ describe('AlbumDisplayComponent', () => {
     const nullCoverArt = {...TEST_IMAGE_RESPONSE};
     nullCoverArt.url = null;
     coverArtProducer.next(nullCoverArt);
-    isIdleProducer.next(false);
+    playerStateProducer.next(PlayerState.Playing);
     fixture.detectChanges();
     const spinner = fixture.debugElement.query(By.directive(MatSpinner));
     expect(spinner).toBeTruthy();
   });
 
   it('should display start Spotify message when no coverArt and is idle', () => {
-    isIdleProducer.next(true);
+    playerStateProducer.next(PlayerState.Idling);
     fixture.detectChanges();
     const msg = fixture.debugElement.query(By.css('span'));
     expect(msg.nativeElement.textContent).toBeTruthy();
@@ -184,7 +185,7 @@ describe('AlbumDisplayComponent', () => {
     const nullCoverArt = {...TEST_IMAGE_RESPONSE};
     nullCoverArt.url = null;
     coverArtProducer.next(nullCoverArt);
-    isIdleProducer.next(true);
+    playerStateProducer.next(PlayerState.Idling);
     fixture.detectChanges();
     const msg = fixture.debugElement.query(By.css('span'));
     expect(msg.nativeElement.textContent).toBeTruthy();
@@ -203,7 +204,7 @@ describe('AlbumDisplayComponent', () => {
 
   it('should display Spotify code loading when showing code and no URL and not idle', () => {
     showSpotifyCodeProducer.next(true);
-    isIdleProducer.next(false);
+    playerStateProducer.next(PlayerState.Playing);
     fixture.detectChanges();
     const icon = fixture.debugElement.query(By.css('fa-icon'));
     const loading = fixture.debugElement.query(By.directive(MatProgressBar));
@@ -213,7 +214,7 @@ describe('AlbumDisplayComponent', () => {
 
   it('should only display Spotify code icon when showing code and no URL and is idle', () => {
     showSpotifyCodeProducer.next(true);
-    isIdleProducer.next(true);
+    playerStateProducer.next(PlayerState.Idling);
     fixture.detectChanges();
     const icon = fixture.debugElement.query(By.css('fa-icon'));
     const loading = fixture.debugElement.query(By.directive(MatProgressBar));
