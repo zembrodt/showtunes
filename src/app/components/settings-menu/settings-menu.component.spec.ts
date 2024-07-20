@@ -128,6 +128,7 @@ describe('SettingsMenuComponent', () => {
     AppConfig.settings = {
       env: {
         spotifyApiUrl: null,
+        spotifyAccountsUrl: null,
         name: null,
         domain: null
       },

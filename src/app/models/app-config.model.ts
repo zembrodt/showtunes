@@ -3,6 +3,7 @@ export interface IAppConfig {
     name: string;
     domain: string;
     spotifyApiUrl: string;
+    spotifyAccountsUrl: string;
   };
   auth: {
     clientId: string;

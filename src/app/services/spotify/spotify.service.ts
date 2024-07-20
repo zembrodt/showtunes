@@ -62,18 +62,17 @@ export class SpotifyService {
   private static tokenUrl: string = null;
   private static authType: AuthType;
   public static spotifyApiUrl: string;
+  public static spotifyAccountsUrl: string;
   public static spotifyEndpoints: SpotifyEndpoints;
   private static redirectUri: string;
   private static showAuthDialog = true;
 
   public static readonly PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
-  private static readonly ACCOUNTS_ENDPOINT = 'https://accounts.spotify.com';
-  private static readonly AUTH_ENDPOINT = `${SpotifyService.ACCOUNTS_ENDPOINT}/authorize`;
-  public static readonly TOKEN_ENDPOINT = `${SpotifyService.ACCOUNTS_ENDPOINT}/api/token`;
   private static readonly STATE_KEY = 'STATE';
   private static readonly CODE_VERIFIER_KEY = 'CODE_VERIFIER';
   private static readonly STATE_LENGTH = 40;
   private static readonly SKIP_PREVIOUS_THRESHOLD = 3000; // ms
+  public static readonly AUTH_TOKEN_REFRESH_THRESHOLD = 5000; // ms
 
   @Select(AuthState.token) private authToken$: BehaviorSubject<AuthToken>;
   private authToken: AuthToken = null;
@@ -130,11 +129,15 @@ export class SpotifyService {
       }
 
       this.spotifyApiUrl = AppConfig.settings.env.spotifyApiUrl;
+      this.spotifyAccountsUrl = AppConfig.settings.env.spotifyAccountsUrl;
       if (!this.spotifyApiUrl) {
         console.error('No Spotify API URL configured');
         this.initialized = false;
+      } else if (!this.spotifyAccountsUrl) {
+        console.error('No Spotify Accounts URL configured');
+        this.initialized = false;
       } else {
-        this.spotifyEndpoints = new SpotifyEndpoints(this.spotifyApiUrl);
+        this.spotifyEndpoints = new SpotifyEndpoints(this.spotifyApiUrl, this.spotifyAccountsUrl);
       }
 
       if (AppConfig.settings.env.domain) {
@@ -193,7 +196,8 @@ export class SpotifyService {
     });
 
     return new Promise<void>((resolve, reject) => {
-      const endpoint = SpotifyService.authType === AuthType.ThirdParty ? SpotifyService.tokenUrl : SpotifyService.TOKEN_ENDPOINT;
+      const endpoint = SpotifyService.authType === AuthType.ThirdParty ?
+        SpotifyService.tokenUrl : SpotifyService.spotifyEndpoints.getTokenEndpoint();
       this.http.post<TokenResponse>(endpoint, body, {headers, observe: 'response'})
         .subscribe((response) => {
             const token = response.body;
@@ -236,10 +240,10 @@ export class SpotifyService {
       return generateCodeChallenge(this.getCodeVerifier()).then((codeChallenge) => {
         args.set('code_challenge_method', 'S256');
         args.set('code_challenge', codeChallenge);
-        return `${SpotifyService.AUTH_ENDPOINT}?${args}`;
+        return `${SpotifyService.spotifyEndpoints.getAuthorizeEndpoint()}?${args}`;
       });
     } else {
-      return Promise.resolve(`${SpotifyService.AUTH_ENDPOINT}?${args}`);
+      return Promise.resolve(`${SpotifyService.spotifyEndpoints.getAuthorizeEndpoint()}?${args}`);
     }
   }
 
@@ -629,9 +633,11 @@ export class SpotifyService {
 
 class SpotifyEndpoints {
   private readonly apiUrl: string;
+  private readonly accountsUrl: string;
 
-  constructor(apiUrl: string) {
+  constructor(apiUrl: string, accountsUrl: string) {
     this.apiUrl = apiUrl;
+    this.accountsUrl = accountsUrl;
   }
 
   getPlaybackEndpoint(): string {
@@ -684,5 +690,13 @@ class SpotifyEndpoints {
 
   getPlaylistsEndpoint(): string {
     return this.apiUrl + '/playlists';
+  }
+
+  getAuthorizeEndpoint(): string {
+    return this.accountsUrl + '/authorize';
+  }
+
+  getTokenEndpoint(): string {
+    return this.accountsUrl + '/api/token';
   }
 }
