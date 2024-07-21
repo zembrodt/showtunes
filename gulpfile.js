@@ -33,6 +33,21 @@ gulp.task('generate-config', () => {
     if ('SHOWTUNES_SPOTIFY_API_URL' in process.env) {
       configJson.env.spotifyApiUrl = process.env.SHOWTUNES_SPOTIFY_API_URL;
     }
+    if ('SHOWTUNES_SPOTIFY_ACCOUNTS_URL' in process.env) {
+      configJson.env.spotifyAccountsUrl = process.env.SHOWTUNES_SPOTIFY_ACCOUNTS_URL;
+    }
+    if ('SHOWTUNES_PLAYBACK_POLLING' in process.env) {
+      const playbackPolling = parseInt(process.env.SHOWTUNES_PLAYBACK_POLLING);
+      if (!isNaN(playbackPolling)) {
+        configJson.env.playbackPolling = playbackPolling;
+      }
+    }
+    if ('SHOWTUNES_IDLE_POLLING' in process.env) {
+      const idlePolling = parseInt(process.env.SHOWTUNES_IDLE_POLLING);
+      if (!isNaN(idlePolling)) {
+        configJson.env.idlePolling = idlePolling;
+      }
+    }
     if ('SHOWTUNES_CLIENT_ID' in process.env) {
       configJson.auth.clientId = process.env.SHOWTUNES_CLIENT_ID;
     }
@@ -50,6 +65,12 @@ gulp.task('generate-config', () => {
     }
     if ('SHOWTUNES_AUTH_SHOW_DIALOG' in process.env) {
       configJson.auth.showDialog = process.env.SHOWTUNES_AUTH_SHOW_DIALOG;
+    }
+    if ('SHOWTUNES_AUTH_EXPIRY_THRESHOLD' in process.env) {
+      const expiryThreshold = parseInt(process.env.SHOWTUNES_AUTH_EXPIRY_THRESHOLD);
+      if (!isNaN(expiryThreshold)) {
+        configJson.auth.expiryThreshold = expiryThreshold;
+      }
     }
     console.log('In gulp :: After OS Env: ' + JSON.stringify(configJson));
 
