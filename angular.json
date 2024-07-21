@@ -69,11 +69,11 @@
                 }
               ]
             },
-            "snapshot": {
+            "staging": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.snap.ts"
+                  "with": "src/environments/environment.staging.ts"
                 }
               ],
               "optimization": true,
@@ -107,6 +107,9 @@
           "configurations": {
             "production": {
               "browserTarget": "showtunes:build:production"
+            },
+            "staging": {
+              "browserTarget": "showtunes:build:staging"
             }
           }
         },
