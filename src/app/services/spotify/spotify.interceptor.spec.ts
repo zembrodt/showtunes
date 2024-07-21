@@ -61,13 +61,11 @@ describe('SpotifyInterceptor', () => {
       },
       auth: {
         clientId: 'test-client-id',
-        clientSecret: 'test-client-secret',
         scopes: 'test-scope',
         tokenUrl: 'token-url',
         forcePkce: true,
         showDialog: true
-      },
-      logging: null
+      }
     };
     SpotifyService.initialize();
 

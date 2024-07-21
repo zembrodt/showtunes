@@ -579,7 +579,7 @@ export class SpotifyService {
       if (!this.authToken.expiry) {
         return Promise.reject('No expiry value present on token');
       }
-      else if (this.authToken.expiry && this.authToken.expiry.getTime() - now.getTime() <= SpotifyService.AUTH_TOKEN_REFRESH_THRESHOLD) {
+      else if (this.authToken.expiry && this.authToken.expiry.getTime() - now.getTime() <= AppConfig.settings.auth.expiryThreshold) {
         return this.refreshAuthToken();
       }
     }

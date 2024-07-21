@@ -2,19 +2,17 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
+import { AppConfig } from '../../app.config';
 import { AuthState } from '../../core/auth/auth.state';
 import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { SpotifyService } from '../spotify/spotify.service';
 
-export const IDLE_POLLING = 3000; // ms
-export const PLAYBACK_POLLING = 1000; // ms
-
 @Injectable({providedIn: 'root'})
 export class PlaybackService implements OnDestroy {
   private ngUnsubscribe = new Subject();
 
-  private interval$ = new BehaviorSubject(PLAYBACK_POLLING);
+  private interval$ = new BehaviorSubject(AppConfig.settings.env.playbackPolling);
   @Select(PlaybackState.playerState) playerState$: Observable<PlayerState>;
   private playerState = PlayerState.Idling;
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
@@ -44,7 +42,7 @@ export class PlaybackService implements OnDestroy {
         .pipe(takeUntil(this.ngUnsubscribe))
         .subscribe(playerState => {
           this.playerState = playerState;
-          this.interval$.next(playerState === PlayerState.Playing ? PLAYBACK_POLLING : IDLE_POLLING);
+          this.interval$.next(this.calculatePollingRate(playerState));
         });
     }
 
@@ -54,9 +52,14 @@ export class PlaybackService implements OnDestroy {
         .subscribe(isAuthenticated => {
           this.isAuthenticated = isAuthenticated;
           // Send a new polling value to either start or stop playback
-          this.interval$.next(this.playerState === PlayerState.Playing ? PLAYBACK_POLLING : IDLE_POLLING);
+          this.interval$.next(this.calculatePollingRate(this.playerState));
         });
     }
+  }
+
+  private calculatePollingRate(playerState: PlayerState): number {
+    return playerState === PlayerState.Playing ?
+      AppConfig.settings.env.playbackPolling : AppConfig.settings.env.idlePolling;
   }
 
   ngOnDestroy(): void {

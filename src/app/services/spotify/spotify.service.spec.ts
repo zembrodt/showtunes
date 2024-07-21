@@ -184,13 +184,12 @@ describe('SpotifyService', () => {
       },
       auth: {
         clientId: 'test-client-id',
-        clientSecret: null,
         scopes: 'test-scope',
         tokenUrl: null,
         forcePkce: false,
-        showDialog: true
-      },
-      logging: null
+        showDialog: true,
+        expiryThreshold: 5000
+      }
     };
     SpotifyService.initialize();
 
@@ -1436,7 +1435,7 @@ describe('SpotifyService', () => {
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.resolve());
     spyOn(service, 'logout');
     const date = new Date();
-    date.setMilliseconds(date.getMilliseconds() + SpotifyService.AUTH_TOKEN_REFRESH_THRESHOLD);
+    date.setMilliseconds(date.getMilliseconds() + AppConfig.settings.auth.expiryThreshold);
     const authToken = {
       ...TEST_AUTH_TOKEN,
       expiry: date
@@ -1455,7 +1454,7 @@ describe('SpotifyService', () => {
     spyOn(service, 'requestAuthToken').and.returnValue(Promise.resolve());
     spyOn(service, 'logout');
     const date = new Date();
-    date.setMilliseconds(date.getMilliseconds() - SpotifyService.AUTH_TOKEN_REFRESH_THRESHOLD);
+    date.setMilliseconds(date.getMilliseconds() - AppConfig.settings.auth.expiryThreshold);
     const authToken = {
       ...TEST_AUTH_TOKEN,
       expiry: date
@@ -1491,7 +1490,7 @@ describe('SpotifyService', () => {
     spyOn(service, 'requestAuthToken');
     spyOn(service, 'logout');
     const date = new Date();
-    date.setMilliseconds(date.getMilliseconds() + (2 * SpotifyService.AUTH_TOKEN_REFRESH_THRESHOLD));
+    date.setMilliseconds(date.getMilliseconds() + (2 * AppConfig.settings.auth.expiryThreshold));
     const authToken = {
       ...TEST_AUTH_TOKEN,
       expiry: date

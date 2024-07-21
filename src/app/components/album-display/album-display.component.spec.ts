@@ -90,8 +90,7 @@ describe('AlbumDisplayComponent', () => {
         name: null,
         domain: null
       },
-      auth: null,
-      logging: null
+      auth: null
     };
   });
 

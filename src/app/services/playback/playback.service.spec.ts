@@ -3,10 +3,11 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
+import { AppConfig } from '../../app.config';
 import { PlayerState } from '../../core/playback/playback.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { SpotifyService } from '../spotify/spotify.service';
-import { IDLE_POLLING, PLAYBACK_POLLING, PlaybackService } from './playback.service';
+import { PlaybackService } from './playback.service';
 
 describe('PlaybackService', () => {
   const mockSelectors = new NgxsSelectorMock<PlaybackService>();
@@ -17,6 +18,17 @@ describe('PlaybackService', () => {
   let isAuthenticatedProducer: BehaviorSubject<boolean>;
 
   beforeEach(() => {
+    AppConfig.settings = {
+      env: {
+        name: 'test-name',
+        domain: 'test-domain',
+        spotifyApiUrl: 'spotify-url',
+        spotifyAccountsUrl: 'spotify-accounts',
+        idlePolling: 3000,
+        playbackPolling: 1000
+      },
+      auth: null
+    };
     TestBed.configureTestingModule({
       imports: [
         NgxsModule.forRoot([], { developmentMode: true })
@@ -45,7 +57,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Idling);
-    jasmine.clock().tick(IDLE_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.idlePolling);
     expect(spotify.pollCurrentPlayback).toHaveBeenCalled();
   });
 
@@ -53,7 +65,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Playing);
-    jasmine.clock().tick(PLAYBACK_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
     expect(spotify.pollCurrentPlayback).toHaveBeenCalled();
   });
 
@@ -61,7 +73,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Idling);
-    jasmine.clock().tick(PLAYBACK_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
@@ -69,7 +81,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Idling);
-    jasmine.clock().tick(IDLE_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.idlePolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
@@ -77,7 +89,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Playing);
-    jasmine.clock().tick(PLAYBACK_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
@@ -85,7 +97,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Playing);
-    jasmine.clock().tick(IDLE_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.idlePolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
@@ -93,7 +105,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Refreshing);
-    jasmine.clock().tick(IDLE_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.idlePolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
@@ -101,7 +113,7 @@ describe('PlaybackService', () => {
     service.initialize();
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Refreshing);
-    jasmine.clock().tick(IDLE_POLLING);
+    jasmine.clock().tick(AppConfig.settings.env.idlePolling);
     expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 });

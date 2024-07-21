@@ -75,6 +75,8 @@ Explanation of configurations (**^** denotes required config):
   - **^**`"domain"` - (*string*) the domain this app is running on
   - **^**`"spotifyApiUrl"` - (*string*) Spotify's API url
   - **^**`"spotifyAccountsUrl"` - (*string*) Spotify's Accounts url
+  - `"playbackPolling"` - (*number*) polling interval (in ms) to Spotify when a track is currently playing (default: 1000)
+  - `"idlePolling"` -(*number*) polling interval (in ms) to Spotify when no track is currently playing (default: 5000)
 - `"auth"`
   - **^**`"clientId"` (*string*) the client ID for accessing Spotify's API
   - `"clientSecret"` - (*string*) the client secret for accessing Spotify's API (if using non-PKCE method)
@@ -82,6 +84,7 @@ Explanation of configurations (**^** denotes required config):
   - `"tokenUrl"` - (*string*) the 3rd party backend URL for authentication if not using direct authorization with Spotify
   - `"forcePkce"` - (*boolean*) used to force the application to use PKCE for authentication disregarding what other configs are set
   - `"showDialog"` - (*boolean*) determines if Spotify's OAuth page is opened in a new window or not
+  - `"expiryThreshold"` - (*number*) the threshold (in ms) between the current time and an auth token's expiry time to attempt to refresh the token before it expires (default: 0)
 
 These configurations can also be set as environment variables instead of a json file. The names for each config will be `SHOWTUNES_{configName}` where `configName` will be in
 upper camel case. For example: `spotifyApiUrl` as an environment variable will be `SHOWTUNES_SPOTIFY_API_URL`.

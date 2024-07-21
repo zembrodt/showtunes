@@ -132,8 +132,7 @@ describe('SettingsMenuComponent', () => {
         name: null,
         domain: null
       },
-      auth: null,
-      logging: null
+      auth: null
     };
 
     fixture.detectChanges();
