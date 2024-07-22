@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "npx ts-node src/environments/create-build-date.ts",
     "build": "ng build",
+    "postbuild": "gulp generate-config",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
