@@ -1,7 +1,7 @@
 const buildDateJson = require('./build-date.json');
 let buildDate = null;
 if (buildDateJson) {
-  buildDate = buildDateJson.timestamp;
+  buildDate = new Date(buildDateJson.timestamp);
 }
 
 let dateString = '';

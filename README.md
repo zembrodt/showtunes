@@ -88,5 +88,16 @@ Explanation of configurations (**^** denotes required config):
 
 These configurations can also be set as environment variables instead of a json file. The names for each config will be `SHOWTUNES_{configName}` where `configName` will be in
 upper camel case. For example: `spotifyApiUrl` as an environment variable will be `SHOWTUNES_SPOTIFY_API_URL`.
+See `gulpfile.js` for exact usage.
 
 Environment variables will always overwrite anything in the config file.
+
+## Deployment
+
+When deploying the application, run the command `npm run build -- -c {environment}`.
+
+Current possible environments:
+- `production`
+- `staging`
+
+Omitting the environment configuration will default to a development release.
