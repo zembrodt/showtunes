@@ -52,6 +52,11 @@ export class SetShuffle {
   constructor(public isShuffle: boolean) { }
 }
 
+export class SetSmartShuffle {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Smart Shuffle`;
+  constructor(public isSmartShuffle: boolean) { }
+}
+
 export class ChangeRepeatState {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Repeat State`;
   constructor(public repeatState: string) { }

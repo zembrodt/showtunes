@@ -14,7 +14,7 @@ import {
   SetLiked,
   SetPlaying,
   SetProgress,
-  SetShuffle
+  SetShuffle, SetSmartShuffle
 } from './playback.actions';
 import {
   AlbumModel,
@@ -91,6 +91,11 @@ export class PlaybackState {
   }
 
   @Selector()
+  static isSmartShuffle(state: PlaybackModel): boolean {
+    return state.isSmartShuffle;
+  }
+
+  @Selector()
   static repeat(state: PlaybackModel): string {
     return state.repeatState;
   }
@@ -155,6 +160,11 @@ export class PlaybackState {
   @Action(SetShuffle)
   setShuffle(ctx: StateContext<PlaybackModel>, action: SetShuffle): void {
     ctx.patchState({isShuffle: action.isShuffle});
+  }
+
+  @Action(SetSmartShuffle)
+  setSmartShuffle(ctx: StateContext<PlaybackModel>, action: SetSmartShuffle): void {
+    ctx.patchState({isSmartShuffle: action.isSmartShuffle});
   }
 
   @Action(ChangeRepeatState)

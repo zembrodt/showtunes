@@ -11,4 +11,6 @@
   vertical-align: center !important;
 }
 
-
+.default-cursor {
+  cursor: default;
+}

@@ -9,7 +9,7 @@ import {
   ChangeDeviceIsActive,
   ChangeDeviceVolume,
   ChangePlaylist, ChangeRepeatState,
-  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle
+  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
 } from '../../../core/playback/playback.actions';
 import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from '../../../core/playback/playback.model';
 import { PlaybackState } from '../../../core/playback/playback.state';
@@ -106,6 +106,7 @@ export class SpotifyPollingService {
         this.store.dispatch(new SetProgress(playback.progress_ms));
         this.store.dispatch(new SetPlaying(playback.is_playing));
         this.store.dispatch(new SetShuffle(playback.shuffle_state));
+        this.store.dispatch(new SetSmartShuffle(playback.smart_shuffle));
         this.store.dispatch(new ChangeRepeatState(playback.repeat_state));
         this.store.dispatch(new SetPlayerState(PlayerState.Playing));
       } else {

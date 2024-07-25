@@ -24,16 +24,17 @@ const dataDark: HelpDialogData = {
   isLightTheme: false
 };
 
-const THEME_INDEX = 0;
-const CONTROLS_OFF_INDEX = 1;
-const CONTROLS_FADE_INDEX = 2;
-const CONTROLS_ON_INDEX = 3;
-const PLAYLIST_INDEX = 4;
-const SHOW_CODE_INDEX = 5;
-const DYNAMIC_COLOR_INDEX = 6;
-const DYNAMIC_ACCENT_INDEX = 7;
-const DYNAMIC_CODE_INDEX = 8;
-const BAR_COLOR_INDEX = 9;
+const SMART_SHUFFLE_INDEX = 0;
+const THEME_INDEX = 1;
+const CONTROLS_OFF_INDEX = 2;
+const CONTROLS_FADE_INDEX = 3;
+const CONTROLS_ON_INDEX = 4;
+const PLAYLIST_INDEX = 5;
+const SHOW_CODE_INDEX = 6;
+const DYNAMIC_COLOR_INDEX = 7;
+const DYNAMIC_ACCENT_INDEX = 8;
+const DYNAMIC_CODE_INDEX = 9;
+const BAR_COLOR_INDEX = 10;
 
 describe('HelpDialogComponent', () => {
   describe('MAT_DIALOG_DATA with light theme', () => {
@@ -118,7 +119,12 @@ describe('HelpDialogComponent', () => {
 
     it('should include all help info', () => {
       const helpInfo = fixture.debugElement.queryAll(By.css('ul'))[1];
-      expect(helpInfo.queryAll(By.css('li')).length).toEqual(12);
+      expect(helpInfo.queryAll(By.css('li')).length).toEqual(14);
+    });
+
+    it('should include help for smart shuffle', () => {
+      const helpIcons = fixture.debugElement.queryAll(By.css('.help-icon'));
+      expect(helpIcons[SMART_SHUFFLE_INDEX].nativeElement.textContent.trim()).toEqual('model_training');
     });
 
     it('should include help for theme toggle', () => {

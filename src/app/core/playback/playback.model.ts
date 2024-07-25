@@ -15,6 +15,7 @@ export interface PlaybackModel {
   progress: number;
   isPlaying: boolean;
   isShuffle: boolean;
+  isSmartShuffle: boolean;
   repeatState: string;
   isLiked: boolean;
   playerState: PlayerState;
@@ -107,6 +108,7 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
   isLiked: false,
   isPlaying: false,
   isShuffle: false,
+  isSmartShuffle: false,
   repeatState: '',
   playerState: PlayerState.Idling
 };

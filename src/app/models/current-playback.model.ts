@@ -7,6 +7,7 @@ export interface CurrentPlaybackResponse {
   progress_ms: number;
   is_playing: boolean;
   shuffle_state: boolean;
+  smart_shuffle: boolean;
   repeat_state: string;
   context: ContextResponse;
   device: DeviceResponse;

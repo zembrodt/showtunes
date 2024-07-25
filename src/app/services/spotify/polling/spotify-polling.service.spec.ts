@@ -17,7 +17,7 @@ import {
   ChangeDeviceIsActive,
   ChangeDeviceVolume,
   ChangePlaylist,
-  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle
+  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
 } from '../../../core/playback/playback.actions';
 import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
@@ -317,6 +317,7 @@ describe('SpotifyPollingService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new SetProgress(getTestPlaybackResponse().progress_ms));
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(getTestPlaybackResponse().is_playing));
     expect(store.dispatch).toHaveBeenCalledWith(new SetShuffle(getTestPlaybackResponse().shuffle_state));
+    expect(store.dispatch).toHaveBeenCalledWith(new SetSmartShuffle(getTestPlaybackResponse().smart_shuffle));
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlayerState(PlayerState.Playing));
   }));
 

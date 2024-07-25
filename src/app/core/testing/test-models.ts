@@ -133,6 +133,7 @@ export function getTestPlaybackResponse(): CurrentPlaybackResponse {
     progress_ms: 100,
     repeat_state: 'test-state',
     shuffle_state: true,
+    smart_shuffle: false,
     timestamp: 10
   };
 }

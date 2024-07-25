@@ -14,7 +14,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
-import { callComponentChange } from '../../../core/testing/test-util';
+import { callComponentChange, callComponentChanges } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
 import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 import { PREVIOUS_VOLUME, StorageService } from '../../../services/storage/storage.service';
@@ -126,6 +126,7 @@ describe('TrackPlayerControlsComponent', () => {
     expect(shuffle).toBeTruthy();
     expect(shuffle.classes['track-player-icon']).toBeTruthy();
     expect(shuffle.classes['track-player-icon-accent']).toBeFalsy();
+    expect(shuffle.classes['default-cursor']).toBeFalsy();
   });
 
   it('should display shuffle button with accent if shuffle is on', () => {
@@ -137,9 +138,57 @@ describe('TrackPlayerControlsComponent', () => {
     expect(shuffle).toBeTruthy();
     expect(shuffle.classes['track-player-icon']).toBeFalsy();
     expect(shuffle.classes['track-player-icon-accent']).toBeTruthy();
+    expect(shuffle.classes['default-cursor']).toBeFalsy();
   });
 
-  it('should call onToggleShuffle when shuffle button is clicked', async () => {
+  it('should display shuffle button with accent if shuffle is off and isSmartShuffle', () => {
+    component.isShuffle = false;
+    component.isSmartShuffle = true;
+    callComponentChanges(fixture, ['isShuffle', 'isSmartShuffle'], [component.isShuffle, component.isSmartShuffle]);
+    const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
+    expect(buttons.length).toEqual(BUTTON_COUNT);
+    const shuffle = buttons[SHUFFLE_BUTTON_INDEX];
+    expect(shuffle).toBeTruthy();
+    expect(shuffle.classes['track-player-icon']).toBeFalsy();
+    expect(shuffle.classes['track-player-icon-accent']).toBeTruthy();
+    expect(shuffle.classes['default-cursor']).toBeTruthy();
+  });
+
+  it('should display the shuffle icon when not isSmartShuffle', async () => {
+    component.isSmartShuffle = false;
+    callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    expect(buttons.length).toEqual(BUTTON_COUNT);
+    const shuffleButton = buttons[SHUFFLE_BUTTON_INDEX];
+    const icon = await shuffleButton.getHarness(MatIconHarness);
+    expect(icon).toBeTruthy();
+    expect(await icon.getName()).toEqual('shuffle');
+  });
+
+  it('should display the smart shuffle icon when isSmartShuffle', async () => {
+    component.isSmartShuffle = true;
+    callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    expect(buttons.length).toEqual(BUTTON_COUNT);
+    const shuffleButton = buttons[SHUFFLE_BUTTON_INDEX];
+    const icon = await shuffleButton.getHarness(MatIconHarness);
+    expect(icon).toBeTruthy();
+    expect(await icon.getName()).toEqual('model_training');
+  });
+
+  it('should display disable the smart shuffle button ripple when isSmartShuffle', async () => {
+    component.isSmartShuffle = true;
+    callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
+    const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
+    expect(buttons.length).toEqual(BUTTON_COUNT);
+    const shuffle = buttons[SHUFFLE_BUTTON_INDEX];
+    expect(shuffle.attributes['ng-reflect-disable-ripple']).toEqual('true');
+  });
+
+  it('should call onToggleShuffle when shuffle button is clicked and not isSmartShuffle', async () => {
+    component.isSmartShuffle = false;
+    callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
+
     spyOn(component, 'onToggleShuffle');
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
     expect(buttons.length).toEqual(BUTTON_COUNT);
@@ -451,6 +500,14 @@ describe('TrackPlayerControlsComponent', () => {
     expect(controls.toggleShuffle).toHaveBeenCalled();
   });
 
+  it('should not call toggleShuffle when onToggleShuffle is called', async () => {
+    component.isSmartShuffle = true;
+    callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
+
+    component.onToggleShuffle();
+    expect(controls.toggleShuffle).not.toHaveBeenCalled();
+  });
+
   it('should change Spotify repeat state to \'context\' on repeat change when state is off', () => {
     component.repeatState = 'off';
     component.onRepeatChange();
@@ -483,13 +540,43 @@ describe('TrackPlayerControlsComponent', () => {
   it('should set the shuffle class when isShuffle', fakeAsync(() => {
     component.isShuffle = true;
     callComponentChange(fixture, 'isShuffle', component.isShuffle);
-    expect(component.shuffleClass).toEqual('track-player-icon-accent');
+    expect(component.shuffleClasses).toEqual(['track-player-icon-accent', '']);
   }));
 
   it('should set the shuffle class when not isShuffle', () => {
     component.isShuffle = false;
     callComponentChange(fixture, 'isShuffle', component.isShuffle);
-    expect(component.shuffleClass).toEqual('track-player-icon');
+    expect(component.shuffleClasses).toEqual(['track-player-icon', '']);
+  });
+
+  it('should set the shuffle classes when isShuffle and isSmartShuffle', () => {
+    component.isShuffle = true;
+    component.isSmartShuffle = true;
+    callComponentChanges(fixture, ['isShuffle', 'isSmartShuffle'], [component.isShuffle, component.isSmartShuffle]);
+
+    expect(component.shuffleClasses).toEqual(['track-player-icon-accent', 'default-cursor']);
+  });
+
+  it('should set the shuffle classes when not isShuffle and isSmartShuffle', () => {
+    component.isShuffle = false;
+    component.isSmartShuffle = true;
+    callComponentChanges(fixture, ['isShuffle', 'isSmartShuffle'], [component.isShuffle, component.isSmartShuffle]);
+
+    expect(component.shuffleClasses).toEqual(['track-player-icon-accent', 'default-cursor']);
+  });
+
+  it('should set the shuffle icon when isShuffle and not isSmartShuffle', () => {
+    component.isShuffle = true;
+    component.isSmartShuffle = false;
+    callComponentChanges(fixture, ['isShuffle', 'isSmartShuffle'], [component.isShuffle, component.isSmartShuffle]);
+    expect(component.shuffleIcon).toEqual('shuffle');
+  });
+
+  it('should set the shuffle icon when isShuffle and isSmartShuffle', () => {
+    component.isShuffle = true;
+    component.isSmartShuffle = true;
+    callComponentChanges(fixture, ['isShuffle', 'isSmartShuffle'], [component.isShuffle, component.isSmartShuffle]);
+    expect(component.shuffleIcon).toEqual('model_training');
   });
 
   it('should set the pause icon name when playing', () => {

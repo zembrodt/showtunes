@@ -59,6 +59,7 @@ describe('TrackPlayerComponent', () => {
   let durationProducer: BehaviorSubject<number>;
   let isPlayingProducer: BehaviorSubject<boolean>;
   let isShuffleProducer: BehaviorSubject<boolean>;
+  let isSmartShuffleProducer: BehaviorSubject<boolean>;
   let repeatProducer: BehaviorSubject<string>;
   let isLikedProducer: BehaviorSubject<boolean>;
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
@@ -84,6 +85,7 @@ describe('TrackPlayerComponent', () => {
     durationProducer = mockSelectors.defineNgxsSelector<number>(component, 'duration$');
     isPlayingProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isPlaying$');
     isShuffleProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isShuffle$');
+    isSmartShuffleProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isSmartShuffle$');
     repeatProducer = mockSelectors.defineNgxsSelector<string>(component, 'repeat$');
     isLikedProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isLiked$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(component, 'showPlayerControls$');
@@ -230,6 +232,7 @@ describe('TrackPlayerComponent', () => {
   it('should correctly set the track player controls values', () => {
     component.showPlayerControls = true;
     isShuffleProducer.next(true);
+    isSmartShuffleProducer.next(true);
     isPlayingProducer.next(true);
     repeatProducer.next('context');
     deviceVolumeProducer.next(50);
@@ -238,6 +241,7 @@ describe('TrackPlayerComponent', () => {
     const playerControls = fixture.debugElement.query(By.directive(TrackPlayerControlsComponent))
       .componentInstance as TrackPlayerControlsComponent;
     expect(playerControls.isShuffle).toBeTrue();
+    expect(playerControls.isSmartShuffle).toBeTrue();
     expect(playerControls.isPlaying).toBeTrue();
     expect(playerControls.repeatState).toEqual('context');
     expect(playerControls.volume).toEqual(50);

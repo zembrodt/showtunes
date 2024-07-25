@@ -14,6 +14,9 @@ const DEFAULT_VOLUME = 50;
 const FADE_DURATION = 500; // ms
 
 // Icons
+const SHUFFLE_ICON = 'shuffle';
+const SMART_SHUFFLE_ICON = 'model_training';
+
 const PLAY_ICON = 'play_arrow';
 const PAUSE_ICON = 'pause';
 
@@ -26,6 +29,8 @@ const VOLUME_MUTE_ICON = 'volume_off';
 
 const ICON_CLASS_PRIMARY = 'track-player-icon';
 const ICON_CLASS_ACCENT = 'track-player-icon-accent';
+
+const DEFAULT_POINTER = 'default-cursor';
 
 // Keys
 const REPEAT_OFF = 'off';
@@ -41,12 +46,14 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   private ngUnsubscribe = new Subject();
 
   @Input() isShuffle = false;
+  @Input() isSmartShuffle = false;
   @Input() isPlaying = false;
   @Input() repeatState: string;
   @Input() volume = DEFAULT_VOLUME;
   @Input() isLiked = false;
 
-  shuffleClass = this.getShuffleClass();
+  shuffleClasses = this.getShuffleClasses();
+  shuffleIcon = this.getShuffleIcon();
   playIcon = this.getPlayIcon();
   repeatIcon = this.getRepeatIcon();
   repeatClass = this.getRepeatClass();
@@ -57,10 +64,12 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
 
   fadePlayerControls: boolean;
 
-  constructor(private controls: SpotifyControlsService,
-              private storage: StorageService,
-              private inactivity: InactivityService,
-              private element: ElementRef) {}
+  constructor(
+    private controls: SpotifyControlsService,
+    private storage: StorageService,
+    private inactivity: InactivityService,
+    private element: ElementRef
+  ) {}
 
   ngOnInit(): void {
     this.showPlayerControls$
@@ -85,7 +94,11 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.isShuffle) {
-      this.shuffleClass = this.getShuffleClass();
+      this.shuffleClasses = this.getShuffleClasses();
+    }
+    if (changes.isSmartShuffle) {
+      this.shuffleIcon = this.getShuffleIcon();
+      this.shuffleClasses = this.getShuffleClasses();
     }
     if (changes.isPlaying) {
       this.playIcon = this.getPlayIcon();
@@ -138,7 +151,9 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   }
 
   onToggleShuffle(): void {
-    this.controls.toggleShuffle();
+    if (!this.isSmartShuffle) {
+      this.controls.toggleShuffle();
+    }
   }
 
   onRepeatChange(): void {
@@ -158,8 +173,15 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
     this.controls.toggleLiked();
   }
 
-  private getShuffleClass(): string {
-    return this.isShuffle ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY;
+  private getShuffleClasses(): string[] {
+    return [
+      this.isShuffle || this.isSmartShuffle ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY,
+      this.isSmartShuffle ? DEFAULT_POINTER : ''
+    ];
+  }
+
+  private getShuffleIcon(): string {
+    return this.isSmartShuffle ? SMART_SHUFFLE_ICON : SHUFFLE_ICON;
   }
 
   private getPlayIcon(): string {

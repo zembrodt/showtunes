@@ -2,8 +2,8 @@
      fxLayout="row"
      fxLayoutAlign="center center"
      fxLayoutGap="48px">
-  <button mat-icon-button [ngClass]="shuffleClass" (click)="onToggleShuffle()">
-    <mat-icon aria-hidden="false" aria-label="Shuffle">shuffle</mat-icon>
+  <button mat-icon-button [ngClass]="shuffleClasses" (click)="onToggleShuffle()" [disableRipple]="isSmartShuffle">
+    <mat-icon aria-hidden="false" aria-label="Shuffle">{{shuffleIcon}}</mat-icon>
   </button>
   <button mat-icon-button class="track-player-icon" (click)="onSkipPrevious()">
     <mat-icon aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>

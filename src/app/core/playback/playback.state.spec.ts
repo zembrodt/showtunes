@@ -15,7 +15,7 @@ import {
   SetPlayerState,
   SetPlaying,
   SetProgress,
-  SetShuffle
+  SetShuffle, SetSmartShuffle
 } from './playback.actions';
 import { AlbumModel, ArtistModel, DeviceModel, PLAYBACK_STATE_NAME, PlayerState, PlaylistModel, TrackModel } from './playback.model';
 import { PlaybackState } from './playback.state';
@@ -108,6 +108,7 @@ describe('PlaybackState', () => {
         progress: 0,
         isPlaying: true,
         isShuffle: true,
+        isSmartShuffle: true,
         repeatState: 'context',
         isLiked: true,
         playerState: PlayerState.Idling
@@ -168,6 +169,11 @@ describe('PlaybackState', () => {
   it('should select isShuffle', () => {
     const isShuffle = selectIsShuffle(store);
     expect(isShuffle).toBeTrue();
+  });
+
+  it('should select isSmartShuffle', () => {
+    const isSmartShuffle = selectIsSmartShuffle(store);
+    expect(isSmartShuffle).toBeTrue();
   });
 
   it('should select repeat', () => {
@@ -276,6 +282,12 @@ describe('PlaybackState', () => {
     expect(isShuffle).toBeFalse();
   });
 
+  it('should set isSmartShuffle', () => {
+    store.dispatch(new SetSmartShuffle(false));
+    const isSmartShuffle = selectIsSmartShuffle(store);
+    expect(isSmartShuffle).toBeFalse();
+  });
+
   it('should change repeat', () => {
     store.dispatch(new ChangeRepeatState('none'));
     const repeat = selectRepeat(store);
@@ -337,6 +349,10 @@ function selectIsPlaying(store: Store): boolean {
 
 function selectIsShuffle(store: Store): boolean {
   return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].isShuffle);
+}
+
+function selectIsSmartShuffle(store: Store): boolean {
+  return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].isSmartShuffle);
 }
 
 function selectRepeat(store: Store): string {

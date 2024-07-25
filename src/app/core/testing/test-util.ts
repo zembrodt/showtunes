@@ -9,6 +9,19 @@ export function callComponentChange(fixture: ComponentFixture<any>, variable: st
   fixture.detectChanges();
 }
 
+export function callComponentChanges(fixture: ComponentFixture<any>, variables: string[], values: any[]): void {
+  if (variables.length !== values.length) {
+    fail('Incompatible amount of variables and values for component change call');
+  } else {
+    const simpleChanges = {};
+    for (let i = 0; i < variables.length; i++) {
+      simpleChanges[variables[i]] = new SimpleChange(null, values[i], false);
+    }
+    fixture.componentInstance.ngOnChanges(simpleChanges);
+    fixture.detectChanges();
+  }
+}
+
 export function generateResponse<T>(body: T, status: number): HttpResponse<T> {
   return new HttpResponse<T>({
     body,

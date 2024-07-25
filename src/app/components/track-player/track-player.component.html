@@ -31,6 +31,7 @@
   <app-track-player-controls
     *ngIf="showPlayerControls"
     [isShuffle]="isShuffle$ | async"
+    [isSmartShuffle]="isSmartShuffle$ | async"
     [isPlaying]="isPlaying$ | async"
     [repeatState]="repeat$ | async"
     [volume]="volume$ | async"

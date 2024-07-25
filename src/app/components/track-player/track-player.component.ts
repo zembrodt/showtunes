@@ -23,6 +23,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   @Select(PlaybackState.duration) duration$: Observable<number>;
   @Select(PlaybackState.isPlaying) isPlaying$: Observable<boolean>;
   @Select(PlaybackState.isShuffle) isShuffle$: Observable<boolean>;
+  @Select(PlaybackState.isSmartShuffle) isSmartShuffle$: Observable<boolean>;
   @Select(PlaybackState.repeat) repeat$: Observable<string>;
   @Select(PlaybackState.isLiked) isLiked$: Observable<boolean>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
