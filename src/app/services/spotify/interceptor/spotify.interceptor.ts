@@ -1,17 +1,23 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { from, Observable, pipe, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { SpotifyAPIResponse, SpotifyService } from './spotify.service';
+import { from, Observable, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
+import { SpotifyAPIResponse } from '../../../core/types';
+import { SpotifyAuthService } from '../auth/spotify-auth.service';
 
 @Injectable()
 export class SpotifyInterceptor implements HttpInterceptor {
   private static readonly authRequestUrls = new Set();
   private static readonly requestUrls = new Set();
 
-  constructor(private spotify: SpotifyService) {}
+  constructor(private auth: SpotifyAuthService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    if (!SpotifyEndpoints.isInitialized()) {
+      return next.handle(req);
+    }
+
     const authReq = this.generateAuthHeaders(req);
     if (authReq === null) {
       return throwError('No auth token present');
@@ -29,7 +35,8 @@ export class SpotifyInterceptor implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
-          return from(this.spotify.checkErrorResponse(err))
+          console.log('interceptor err: ' + JSON.stringify(err));
+          return from(this.auth.checkErrorResponse(err))
             .pipe(switchMap((apiResponse) => {
               if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
                 req = this.generateAuthHeaders(req);
@@ -45,7 +52,7 @@ export class SpotifyInterceptor implements HttpInterceptor {
   private checkTokenExpiryThreshold(req: HttpRequest<any>): Promise<HttpRequest<any>> {
     return new Promise((resolve, reject) => {
       if (this.requestContainsAuthHeaders(req)) {
-        this.spotify.checkAuthTokenWithinExpiryThreshold()
+        this.auth.checkAuthTokenWithinExpiryThreshold()
           .then((apiResponse) => {
             switch (apiResponse) {
               case SpotifyAPIResponse.ReAuthenticated:
@@ -70,12 +77,12 @@ export class SpotifyInterceptor implements HttpInterceptor {
   private generateAuthHeaders(req: HttpRequest<any>): HttpRequest<any> {
     let authReq = req;
     if (this.urlRequiresAuth(req.url)) {
-      const authHeader = this.spotify.getAuthorizationHeader();
+      const authHeader = this.auth.getAuthHeaders();
       if (!authHeader) {
         return null;
       }
       authReq = req.clone({
-        headers: req.headers.set('Authorization', authHeader)
+        headers: req.headers.set('Authorization', authHeader.get('Authorization'))
       });
     }
     return authReq;
@@ -89,7 +96,7 @@ export class SpotifyInterceptor implements HttpInterceptor {
       return false;
     }
 
-    const requiresAuth = url.startsWith(SpotifyService.spotifyApiUrl) && !url.endsWith(SpotifyService.spotifyEndpoints.getTokenEndpoint());
+    const requiresAuth = url.startsWith(SpotifyEndpoints.getSpotifyApiUrl()) && !url.endsWith(SpotifyEndpoints.getTokenEndpoint());
     if (requiresAuth) {
       SpotifyInterceptor.authRequestUrls.add(url);
     } else {

@@ -6,8 +6,8 @@ import { takeUntil } from 'rxjs/operators';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { SettingsState } from '../../../core/settings/settings.state';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
-import { SpotifyService } from '../../../services/spotify/spotify.service';
-import { StorageService } from '../../../services/storage/storage.service';
+import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
+import { PREVIOUS_VOLUME, StorageService } from '../../../services/storage/storage.service';
 
 // Default values
 const DEFAULT_VOLUME = 50;
@@ -57,7 +57,7 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
 
   fadePlayerControls: boolean;
 
-  constructor(private spotify: SpotifyService,
+  constructor(private controls: SpotifyControlsService,
               private storage: StorageService,
               private inactivity: InactivityService,
               private element: ElementRef) {}
@@ -108,37 +108,37 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   }
 
   onPause(): void {
-    this.spotify.togglePlaying();
+    this.controls.togglePlaying();
   }
 
   onSkipPrevious(): void {
-    this.spotify.skipPrevious(false);
+    this.controls.skipPrevious(false);
   }
 
   onSkipNext(): void {
-    this.spotify.skipNext();
+    this.controls.skipNext();
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    this.spotify.setVolume(change.value);
+    this.controls.setVolume(change.value);
   }
 
   onVolumeMute(): void {
     let volumeChange = DEFAULT_VOLUME;
     if (this.volume > 0) {
-      this.storage.set(SpotifyService.PREVIOUS_VOLUME, this.volume.toString());
+      this.storage.set(PREVIOUS_VOLUME, this.volume.toString());
       volumeChange = 0;
     } else {
-      const previousVolume = parseInt(this.storage.get(SpotifyService.PREVIOUS_VOLUME), 10);
+      const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
       if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
         volumeChange = previousVolume;
       }
     }
-    this.spotify.setVolume(volumeChange);
+    this.controls.setVolume(volumeChange);
   }
 
   onToggleShuffle(): void {
-    this.spotify.toggleShuffle();
+    this.controls.toggleShuffle();
   }
 
   onRepeatChange(): void {
@@ -151,11 +151,11 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
         repeatState = REPEAT_TRACK;
         break;
     }
-    this.spotify.setRepeatState(repeatState);
+    this.controls.setRepeatState(repeatState);
   }
 
   onLikeChange(): void {
-    this.spotify.toggleLiked();
+    this.controls.toggleLiked();
   }
 
   private getShuffleClass(): string {

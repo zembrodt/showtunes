@@ -6,13 +6,13 @@ import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
 import { PlayerState } from '../../core/playback/playback.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { SpotifyService } from '../spotify/spotify.service';
+import { SpotifyPollingService } from '../spotify/polling/spotify-polling.service';
 import { PlaybackService } from './playback.service';
 
 describe('PlaybackService', () => {
   const mockSelectors = new NgxsSelectorMock<PlaybackService>();
   let service: PlaybackService;
-  let spotify: SpotifyService;
+  let polling: SpotifyPollingService;
   let intervalProducer: BehaviorSubject<number>;
   let playerStateProducer: BehaviorSubject<PlayerState>;
   let isAuthenticatedProducer: BehaviorSubject<boolean>;
@@ -33,10 +33,10 @@ describe('PlaybackService', () => {
       imports: [
         NgxsModule.forRoot([], { developmentMode: true })
       ],
-      providers: [ MockProvider(SpotifyService) ]
+      providers: [ MockProvider(SpotifyPollingService) ]
     });
     service = TestBed.inject(PlaybackService);
-    spotify = TestBed.inject(SpotifyService);
+    polling = TestBed.inject(SpotifyPollingService);
 
     intervalProducer = mockSelectors.defineNgxsSelector<number>(service, 'interval$');
     playerStateProducer = mockSelectors.defineNgxsSelector<PlayerState>(service, 'playerState$');
@@ -58,7 +58,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Idling);
     jasmine.clock().tick(AppConfig.settings.env.idlePolling);
-    expect(spotify.pollCurrentPlayback).toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).toHaveBeenCalled();
   });
 
   it('should poll Spotify playback with playback polling interval when isAuthenticated and is playing state', () => {
@@ -66,7 +66,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Playing);
     jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
-    expect(spotify.pollCurrentPlayback).toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback after playback polling when not isAuthenticated and is idling state', () => {
@@ -74,7 +74,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Idling);
     jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback after idle polling when not isAuthenticated and is idling state', () => {
@@ -82,7 +82,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Idling);
     jasmine.clock().tick(AppConfig.settings.env.idlePolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback after playback polling when not isAuthenticated and is playing state', () => {
@@ -90,7 +90,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Playing);
     jasmine.clock().tick(AppConfig.settings.env.playbackPolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback after idle polling when not isAuthenticated and is playing state', () => {
@@ -98,7 +98,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Playing);
     jasmine.clock().tick(AppConfig.settings.env.idlePolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback when isAuthenticated and is refreshing state', () => {
@@ -106,7 +106,7 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(true);
     playerStateProducer.next(PlayerState.Refreshing);
     jasmine.clock().tick(AppConfig.settings.env.idlePolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 
   it('should not poll Spotify playback when not isAuthenticated and is refreshing state', () => {
@@ -114,6 +114,6 @@ describe('PlaybackService', () => {
     isAuthenticatedProducer.next(false);
     playerStateProducer.next(PlayerState.Refreshing);
     jasmine.clock().tick(AppConfig.settings.env.idlePolling);
-    expect(spotify.pollCurrentPlayback).not.toHaveBeenCalled();
+    expect(polling.pollCurrentPlayback).not.toHaveBeenCalled();
   });
 });

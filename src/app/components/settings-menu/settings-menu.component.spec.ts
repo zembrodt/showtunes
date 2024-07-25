@@ -36,7 +36,7 @@ import { DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme } from '../../core/s
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { cssRgbToHex, FontColor } from '../../core/util';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { SettingsMenuComponent } from './settings-menu.component';
 
@@ -65,7 +65,7 @@ describe('SettingsMenuComponent', () => {
   let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
   let store: Store;
-  let spotify: SpotifyService;
+  let auth: SpotifyAuthService;
   let router: Router;
 
   let themeProducer: BehaviorSubject<string>;
@@ -98,7 +98,7 @@ describe('SettingsMenuComponent', () => {
       ],
       providers: [
         MockProvider(Store),
-        MockProvider(SpotifyService),
+        MockProvider(SpotifyAuthService),
         MockProvider(Router),
         {
           provide: AppConfig,
@@ -107,7 +107,7 @@ describe('SettingsMenuComponent', () => {
       ]
     }).compileComponents();
     store = TestBed.inject(Store);
-    spotify = TestBed.inject(SpotifyService);
+    auth = TestBed.inject(SpotifyAuthService);
     router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(SettingsMenuComponent);
@@ -1091,7 +1091,7 @@ describe('SettingsMenuComponent', () => {
 
   it('should logout of Spotify service and navigate to /login on logout', () => {
     component.logout();
-    expect(spotify.logout).toHaveBeenCalled();
+    expect(auth.logout).toHaveBeenCalled();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 

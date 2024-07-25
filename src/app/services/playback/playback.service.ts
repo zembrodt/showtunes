@@ -6,7 +6,7 @@ import { AppConfig } from '../../app.config';
 import { AuthState } from '../../core/auth/auth.state';
 import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
-import { SpotifyService } from '../spotify/spotify.service';
+import { SpotifyPollingService } from '../spotify/polling/spotify-polling.service';
 
 @Injectable({providedIn: 'root'})
 export class PlaybackService implements OnDestroy {
@@ -18,7 +18,7 @@ export class PlaybackService implements OnDestroy {
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
-  constructor(private spotify: SpotifyService) { }
+  constructor(private polling: SpotifyPollingService) { }
 
   initialize(): void {
     if (this.interval$) {
@@ -32,8 +32,8 @@ export class PlaybackService implements OnDestroy {
             return NEVER;
           }),
           takeUntil(this.ngUnsubscribe))
-        .subscribe((pollingInterval) => {
-          this.spotify.pollCurrentPlayback(pollingInterval);
+        .subscribe((_) => {
+          this.polling.pollCurrentPlayback();
         });
     }
 

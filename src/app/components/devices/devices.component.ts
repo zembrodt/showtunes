@@ -3,7 +3,7 @@ import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { DeviceModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
 
 @Component({
   selector: 'app-devices',
@@ -15,13 +15,13 @@ export class DevicesComponent {
   @Select(PlaybackState.device) currentDevice$: Observable<DeviceModel>;
   @Select(PlaybackState.availableDevices) availableDevices$: Observable<DeviceModel[]>;
 
-  constructor(private spotify: SpotifyService) { }
+  constructor(private controls: SpotifyControlsService) { }
 
   onMenuOpened(): void {
-    this.spotify.fetchAvailableDevices();
+    this.controls.fetchAvailableDevices();
   }
 
   onSelectDevice(device: DeviceModel): void {
-    this.spotify.setDevice(device, true);
+    this.controls.setDevice(device, true);
   }
 }

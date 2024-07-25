@@ -1,8 +1,10 @@
+import { HttpResponse, HttpStatusCode } from '@angular/common/http';
 import { AlbumResponse } from '../models/album.model';
 import { DeviceResponse } from '../models/device.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
 import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback/playback.model';
+import { SpotifyAPIResponse } from './types';
 
 export const VALID_HEX_COLOR = '^#?[A-Fa-f0-9]{3}$|^#?[A-Fa-f0-9]{6}$';
 const validHexRegex = new RegExp(VALID_HEX_COLOR);
@@ -306,4 +308,20 @@ export function capitalizeWords(words: string, separator: string): string {
     return wordsSplit.length > 0 ? wordsSplit.join(' ') : null;
   }
   return null;
+}
+
+/**
+ * Checks a Spotify API response against common response codes
+ * @param res
+ * @param hasResponse
+ * @param isPlayback (optional)
+ * @private
+ */
+export function checkResponse(res: HttpResponse<any>, hasResponse: boolean, isPlayback = false): SpotifyAPIResponse {
+  if (res.status === HttpStatusCode.Ok && (hasResponse || isPlayback)) {
+    return SpotifyAPIResponse.Success;
+  }
+  else if (res.status === HttpStatusCode.NoContent && (!hasResponse || isPlayback)) {
+    return isPlayback ? SpotifyAPIResponse.NoPlayback : SpotifyAPIResponse.Success;
+  }
 }

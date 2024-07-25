@@ -20,7 +20,6 @@ import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { FontColor } from '../../core/util';
 import { ImageResponse } from '../../models/image.model';
-import { SpotifyService } from '../../services/spotify/spotify.service';
 import { AlbumDisplayComponent } from './album-display.component';
 
 const TEST_IMAGE_RESPONSE: ImageResponse = {
@@ -66,7 +65,6 @@ describe('AlbumDisplayComponent', () => {
   let component: AlbumDisplayComponent;
   let fixture: ComponentFixture<AlbumDisplayComponent>;
   let loader: HarnessLoader;
-  let spotify: SpotifyService;
   let store: Store;
 
   let coverArtProducer: BehaviorSubject<ImageResponse>;
@@ -109,11 +107,9 @@ describe('AlbumDisplayComponent', () => {
           provide: AppConfig,
           deps: [ MockProvider(HttpClient) ]
         },
-        MockProvider(SpotifyService),
         MockProvider(Store)
       ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
     store = TestBed.inject(Store);
 
     fixture = TestBed.createComponent(AlbumDisplayComponent);

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AUTH_STATE_NAME } from '../../core/auth/auth.model';
 
+export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
+
 @Injectable({
   providedIn: 'root'
 })

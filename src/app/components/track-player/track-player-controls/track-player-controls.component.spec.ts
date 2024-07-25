@@ -16,8 +16,8 @@ import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { callComponentChange } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
-import { SpotifyService } from '../../../services/spotify/spotify.service';
-import { StorageService } from '../../../services/storage/storage.service';
+import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
+import { PREVIOUS_VOLUME, StorageService } from '../../../services/storage/storage.service';
 import { DevicesComponent } from '../../devices/devices.component';
 import { TrackPlayerControlsComponent } from './track-player-controls.component';
 
@@ -35,7 +35,7 @@ describe('TrackPlayerControlsComponent', () => {
   let component: TrackPlayerControlsComponent;
   let fixture: ComponentFixture<TrackPlayerControlsComponent>;
   let loader: HarnessLoader;
-  let spotify: SpotifyService;
+  let controls: SpotifyControlsService;
   let storage: StorageService;
 
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
@@ -55,7 +55,7 @@ describe('TrackPlayerControlsComponent', () => {
         NgxsModule.forRoot([], {developmentMode: true})
       ],
       providers: [
-        MockProvider(SpotifyService),
+        MockProvider(SpotifyControlsService),
         MockProvider(StorageService),
         MockProvider(InactivityService, {
           inactive$: inactivityProducer
@@ -63,7 +63,7 @@ describe('TrackPlayerControlsComponent', () => {
         MockProvider(ElementRef)
       ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
+    controls = TestBed.inject(SpotifyControlsService);
     storage = TestBed.inject(StorageService);
 
     fixture = TestBed.createComponent(TrackPlayerControlsComponent);
@@ -395,89 +395,89 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should toggle Spotify playing on pause', () => {
     component.onPause();
-    expect(spotify.togglePlaying).toHaveBeenCalled();
+    expect(controls.togglePlaying).toHaveBeenCalled();
   });
 
   it('should call Spotify skip on skip previous', () => {
     component.onSkipPrevious();
-    expect(spotify.skipPrevious).toHaveBeenCalledWith(false);
+    expect(controls.skipPrevious).toHaveBeenCalledWith(false);
   });
 
   it('should call Spotify skip on skip next', () => {
     component.onSkipNext();
-    expect(spotify.skipNext).toHaveBeenCalled();
+    expect(controls.skipNext).toHaveBeenCalled();
   });
 
   it('should change Spotify device volume on volume change', () => {
     const change = new MatSliderChange();
     change.value = 10;
     component.onVolumeChange(change);
-    expect(spotify.setVolume).toHaveBeenCalledWith(10);
+    expect(controls.setVolume).toHaveBeenCalledWith(10);
   });
 
   it('should change Spotify volume to 0 on volume mute when volume > 0', () => {
     component.volume = 1;
     component.onVolumeMute();
-    expect(storage.set).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME, '1');
-    expect(spotify.setVolume).toHaveBeenCalledWith(0);
+    expect(storage.set).toHaveBeenCalledWith(PREVIOUS_VOLUME, '1');
+    expect(controls.setVolume).toHaveBeenCalledWith(0);
   });
 
   it('should change Spotify volume to previous volume on volume mute when volume = 0', () => {
     storage.get = jasmine.createSpy().and.returnValue('10');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
-    expect(spotify.setVolume).toHaveBeenCalledWith(10);
+    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(controls.setVolume).toHaveBeenCalledWith(10);
   });
 
   it('should change Spotify volume to default volume on volume mute when volume = 0 and previous NaN', () => {
     storage.get = jasmine.createSpy().and.returnValue('abc');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
-    expect(spotify.setVolume).toHaveBeenCalledWith(50);
+    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(controls.setVolume).toHaveBeenCalledWith(50);
   });
 
   it('should change Spotify volume to default volume on volume mute when volume = 0 and previous = 0', () => {
     storage.get = jasmine.createSpy().and.returnValue('0');
     component.volume = 0;
     component.onVolumeMute();
-    expect(storage.get).toHaveBeenCalledWith(SpotifyService.PREVIOUS_VOLUME);
-    expect(spotify.setVolume).toHaveBeenCalledWith(50);
+    expect(storage.get).toHaveBeenCalledWith(PREVIOUS_VOLUME);
+    expect(controls.setVolume).toHaveBeenCalledWith(50);
   });
 
   it('should call Spotify shuffle on toggle shuffle', () => {
     component.onToggleShuffle();
-    expect(spotify.toggleShuffle).toHaveBeenCalled();
+    expect(controls.toggleShuffle).toHaveBeenCalled();
   });
 
   it('should change Spotify repeat state to \'context\' on repeat change when state is off', () => {
     component.repeatState = 'off';
     component.onRepeatChange();
-    expect(spotify.setRepeatState).toHaveBeenCalledWith('context');
+    expect(controls.setRepeatState).toHaveBeenCalledWith('context');
   });
 
   it('should change Spotify repeat state to \'track\' on repeat change when state is context', () => {
     component.repeatState = 'context';
     component.onRepeatChange();
-    expect(spotify.setRepeatState).toHaveBeenCalledWith('track');
+    expect(controls.setRepeatState).toHaveBeenCalledWith('track');
   });
 
   it('should change Spotify repeat state to \'off\' on repeat change when state is track', () => {
     component.repeatState = 'track';
     component.onRepeatChange();
-    expect(spotify.setRepeatState).toHaveBeenCalledWith('off');
+    expect(controls.setRepeatState).toHaveBeenCalledWith('off');
   });
 
   it('should change Spotify repeat state to \'off\' on repeat change when state is null', () => {
     component.repeatState = null;
     component.onRepeatChange();
-    expect(spotify.setRepeatState).toHaveBeenCalledWith('off');
+    expect(controls.setRepeatState).toHaveBeenCalledWith('off');
   });
 
   it('should toggle Spotify liked on like change', () => {
     component.onLikeChange();
-    expect(spotify.toggleLiked).toHaveBeenCalled();
+    expect(controls.toggleLiked).toHaveBeenCalled();
   });
 
   it('should set the shuffle class when isShuffle', fakeAsync(() => {

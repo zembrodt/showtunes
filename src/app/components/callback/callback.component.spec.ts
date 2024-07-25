@@ -7,7 +7,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AuthToken } from '../../core/auth/auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { LoadingComponent } from '../loading/loading.component';
 
 import { CallbackComponent } from './callback.component';
@@ -18,7 +18,7 @@ describe('CallbackComponent', () => {
   let fixture: ComponentFixture<CallbackComponent>;
   let store: Store;
   let router: Router;
-  let spotify: SpotifyService;
+  let auth: SpotifyAuthService;
   let tokenProducer: BehaviorSubject<AuthToken>;
   let paramMapProducer: BehaviorSubject<ParamMap>;
 
@@ -33,21 +33,21 @@ describe('CallbackComponent', () => {
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: paramMapProducer } },
         MockProvider(Router),
-        MockProvider(SpotifyService),
+        MockProvider(SpotifyAuthService),
         MockProvider(Store)
       ]
     }).compileComponents();
     store = TestBed.inject(Store);
     router = TestBed.inject(Router);
-    spotify = TestBed.inject(SpotifyService);
+    auth = TestBed.inject(SpotifyAuthService);
 
     fixture = TestBed.createComponent(CallbackComponent);
     component = fixture.componentInstance;
 
     tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(component, 'token$');
 
-    spotify.compareState = jasmine.createSpy().and.returnValue(true);
-    spotify.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));
+    auth.compareState = jasmine.createSpy().and.returnValue(true);
+    auth.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));
 
     fixture.detectChanges();
   }));
@@ -79,7 +79,7 @@ describe('CallbackComponent', () => {
 
   it('should compare callback state value with current value', () => {
     paramMapProducer.next(convertToParamMap({ code: 'test_code', state: 'test_state' }));
-    expect(spotify.compareState).toHaveBeenCalled();
+    expect(auth.compareState).toHaveBeenCalled();
   });
 
   it('should fail auth token request when callback contains an error', () => {
@@ -95,24 +95,24 @@ describe('CallbackComponent', () => {
   });
 
   it('should fail auth token request when callback doesn\'t contain a state value', () => {
-    spotify.compareState = jasmine.createSpy().and.returnValue(false);
+    auth.compareState = jasmine.createSpy().and.returnValue(false);
     spyOn(console, 'error');
     paramMapProducer.next(convertToParamMap({ code: 'test_code' }));
     expect(console.error).toHaveBeenCalledTimes(2);
   });
 
   it('should fail auth token request when callback contains an invalid state value', () => {
-    spotify.compareState = jasmine.createSpy().and.returnValue(false);
+    auth.compareState = jasmine.createSpy().and.returnValue(false);
     spyOn(console, 'error');
     paramMapProducer.next(convertToParamMap({ code: 'test_code', state: 'bad_state' }));
     expect(console.error).toHaveBeenCalledTimes(2);
   });
 
   it('should give an error for a failed auth token request', fakeAsync(() => {
-    spotify.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.reject('test_error'));
+    auth.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.reject('test_error'));
     spyOn(console, 'error');
     paramMapProducer.next(convertToParamMap({ code: 'bad_code', state: 'test_state' }));
-    expect(spotify.requestAuthToken).toHaveBeenCalled();
+    expect(auth.requestAuthToken).toHaveBeenCalled();
     tick();
     expect(console.error).toHaveBeenCalledTimes(1);
   }));

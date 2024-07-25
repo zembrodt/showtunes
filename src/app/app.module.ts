@@ -34,8 +34,10 @@ import { SettingsState } from './core/settings/settings.state';
 import { MaterialModule } from './modules/material.module';
 import { InactivityService } from './services/inactivity/inactivity.service';
 import { PlaybackService } from './services/playback/playback.service';
-import { SpotifyInterceptor } from './services/spotify/spotify.interceptor';
-import { SpotifyService } from './services/spotify/spotify.service';
+import { SpotifyAuthService } from './services/spotify/auth/spotify-auth.service';
+import { SpotifyControlsService } from './services/spotify/controls/spotify-controls.service';
+import { SpotifyPollingService } from './services/spotify/polling/spotify-polling.service';
+import { SpotifyInterceptor } from './services/spotify/interceptor/spotify.interceptor';
 import { StorageService } from './services/storage/storage.service';
 
 export function initializeApp(appConfig: AppConfig): () => Promise<void> {
@@ -101,7 +103,9 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     },
     InactivityService,
     StorageService,
-    SpotifyService,
+    SpotifyAuthService,
+    SpotifyControlsService,
+    SpotifyPollingService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: SpotifyInterceptor,

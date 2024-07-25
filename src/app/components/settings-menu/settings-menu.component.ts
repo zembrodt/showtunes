@@ -22,7 +22,7 @@ import {
 import { DEFAULT_SETTINGS, DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme, ThemeColor } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { FontColor, isHexColor } from '../../core/util';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { HelpDialogComponent } from './help-dialog/help-dialog.component';
 
 @Component({
@@ -73,7 +73,12 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   readonly presetColors = SettingsMenuComponent.presetColors;
   readonly presetAccentColors = DYNAMIC_THEME_COLORS;
 
-  constructor(private store: Store, private spotify: SpotifyService, private router: Router, public helpDialog: MatDialog) {}
+  constructor(
+    private store: Store,
+    private auth: SpotifyAuthService,
+    private router: Router,
+    public helpDialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.theme$
@@ -118,7 +123,7 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.spotify.logout();
+    this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 

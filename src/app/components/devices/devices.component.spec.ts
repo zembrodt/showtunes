@@ -12,7 +12,7 @@ import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { DeviceModel } from '../../core/playback/playback.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
 
 import { DevicesComponent } from './devices.component';
 
@@ -44,7 +44,7 @@ describe('DevicesComponent', () => {
   let fixture: ComponentFixture<DevicesComponent>;
   let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
-  let spotify: SpotifyService;
+  let controls: SpotifyControlsService;
 
   let currentDeviceProducer: BehaviorSubject<DeviceModel>;
   let availableDevicesProducer: BehaviorSubject<DeviceModel[]>;
@@ -58,9 +58,9 @@ describe('DevicesComponent', () => {
         MatMenuModule,
         NgxsModule.forRoot([], { developmentMode: true })
       ],
-      providers: [ MockProvider(SpotifyService) ]
+      providers: [ MockProvider(SpotifyControlsService) ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
+    controls = TestBed.inject(SpotifyControlsService);
 
     fixture = TestBed.createComponent(DevicesComponent);
     component = fixture.componentInstance;
@@ -121,7 +121,7 @@ describe('DevicesComponent', () => {
 
   it('should retrieve available devices on menu open', () => {
     fixture.debugElement.nativeElement.querySelector('button').click();
-    expect(spotify.fetchAvailableDevices).toHaveBeenCalled();
+    expect(controls.fetchAvailableDevices).toHaveBeenCalled();
   });
 
   it('should update device on select', () => {
@@ -130,6 +130,6 @@ describe('DevicesComponent', () => {
     fixture.detectChanges();
     const device = fixture.debugElement.query(By.directive(MatMenuItem));
     device.triggerEventHandler('click', new MouseEvent('button'));
-    expect(spotify.setDevice).toHaveBeenCalledWith(TEST_DEVICE_1, true);
+    expect(controls.setDevice).toHaveBeenCalledWith(TEST_DEVICE_1, true);
   });
 });

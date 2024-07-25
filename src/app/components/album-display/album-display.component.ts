@@ -10,7 +10,6 @@ import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { SettingsState } from '../../core/settings/settings.state';
 import { expandHexColor, isHexColor } from '../../core/util';
 import { ImageResponse } from '../../models/image.model';
-import { SpotifyService } from '../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-album-display',
@@ -58,7 +57,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   readonly spotifyIcon = faSpotify;
   readonly playingState = PlayerState.Playing;
 
-  constructor(private spotifyService: SpotifyService, private store: Store) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     if (!this.dominantColorFinder) {

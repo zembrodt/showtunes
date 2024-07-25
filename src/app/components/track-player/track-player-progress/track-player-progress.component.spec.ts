@@ -8,14 +8,14 @@ import { By } from '@angular/platform-browser';
 import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { callComponentChange } from '../../../core/testing/test-util';
-import { SpotifyService } from '../../../services/spotify/spotify.service';
+import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 import { TrackPlayerProgressComponent } from './track-player-progress.component';
 
 describe('TrackPlayerProgressComponent', () => {
   let component: TrackPlayerProgressComponent;
   let fixture: ComponentFixture<TrackPlayerProgressComponent>;
   let loader: HarnessLoader;
-  let spotify: SpotifyService;
+  let controls: SpotifyControlsService;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
@@ -24,9 +24,9 @@ describe('TrackPlayerProgressComponent', () => {
         MatSliderModule,
         NgxsModule.forRoot([], { developmentMode: true })
       ],
-      providers: [ MockProvider(SpotifyService) ]
+      providers: [ MockProvider(SpotifyControlsService) ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
+    controls = TestBed.inject(SpotifyControlsService);
 
     fixture = TestBed.createComponent(TrackPlayerProgressComponent);
     component = fixture.componentInstance;
@@ -85,7 +85,7 @@ describe('TrackPlayerProgressComponent', () => {
     const change = new MatSliderChange();
     change.value = 10;
     component.onProgressChange(change);
-    expect(spotify.setTrackPosition).toHaveBeenCalledWith(10);
+    expect(controls.setTrackPosition).toHaveBeenCalledWith(10);
   });
 
   it('should display single seconds digit progress correctly', () => {

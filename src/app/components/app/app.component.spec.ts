@@ -11,7 +11,9 @@ import { PlayerControlsOptions, Theme } from '../../core/settings/settings.model
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
+import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
+import { SpotifyPollingService } from '../../services/spotify/polling/spotify-polling.service';
 import { ErrorComponent } from '../error/error.component';
 import { AppComponent } from './app.component';
 import Spy = jasmine.Spy;
@@ -20,7 +22,9 @@ describe('AppComponent', () => {
   const mockSelectors = new NgxsSelectorMock<AppComponent>();
   let app: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  let spotify: SpotifyService;
+  let auth: SpotifyAuthService;
+  let controls: SpotifyControlsService;
+  let polling: SpotifyPollingService;
   let playback: PlaybackService;
 
   let themeProducer: BehaviorSubject<string>;
@@ -49,10 +53,14 @@ describe('AppComponent', () => {
           inactive$: inactiveProducer
         }),
         MockProvider(PlaybackService),
-        MockProvider(SpotifyService)
+        MockProvider(SpotifyAuthService),
+        MockProvider(SpotifyControlsService),
+        MockProvider(SpotifyPollingService)
       ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
+    auth = TestBed.inject(SpotifyAuthService);
+    controls = TestBed.inject(SpotifyControlsService);
+    polling = TestBed.inject(SpotifyPollingService);
     playback = TestBed.inject(PlaybackService);
 
     fixture = TestBed.createComponent(AppComponent);
@@ -64,8 +72,8 @@ describe('AppComponent', () => {
     useDynamicThemeAccentProducer = mockSelectors.defineNgxsSelector<boolean>(app, 'useDynamicThemeAccent$');
     dynamicAccentColorProducer = mockSelectors.defineNgxsSelector<string>(app, 'dynamicAccentColor$');
 
-    SpotifyService.initialized = false;
-    spotifyInitSpy = spyOn(SpotifyService, 'initialize').and.returnValue(true);
+    SpotifyAuthService.initialized = false;
+    spotifyInitSpy = spyOn(SpotifyAuthService, 'initialize').and.returnValue(true);
 
     fixture.detectChanges();
   }));
@@ -74,24 +82,24 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should initialize the Spotify service if not initialized', () => {
-    expect(SpotifyService.initialize).toHaveBeenCalled();
+  it('should initialize the Spotify auth service if not initialized', () => {
+    expect(SpotifyAuthService.initialize).toHaveBeenCalled();
   });
 
-  it('should not initialize the Spotify service if already initialized', () => {
-    SpotifyService.initialized = true;
+  it('should not initialize the Spotify auth service if already initialized', () => {
+    SpotifyAuthService.initialized = true;
     spyOn(console, 'error');
     spotifyInitSpy.calls.reset();
     app.ngOnInit();
-    expect(SpotifyService.initialize).not.toHaveBeenCalled();
+    expect(SpotifyAuthService.initialize).not.toHaveBeenCalled();
     expect(console.error).not.toHaveBeenCalled();
   });
 
-  it('should print error if Spotify service not initialized', () => {
+  it('should print error if Spotify auth service not initialized', () => {
     spotifyInitSpy.and.returnValue(false);
     spyOn(console, 'error');
     app.ngOnInit();
-    expect(SpotifyService.initialize).toHaveBeenCalled();
+    expect(SpotifyAuthService.initialize).toHaveBeenCalled();
     expect(console.error).toHaveBeenCalled();
   });
 
@@ -112,8 +120,16 @@ describe('AppComponent', () => {
     expect(failedInit.componentInstance.message).toEqual('ShowTunes failed to initialize!');
   });
 
-  it('should initialize the Spotify service subscriptions', () => {
-    expect(spotify.initSubscriptions).toHaveBeenCalled();
+  it('should initialize the Spotify auth service subscriptions', () => {
+    expect(auth.initSubscriptions).toHaveBeenCalled();
+  });
+
+  it('should initialize the Spotify controls service subscriptions', () => {
+    expect(controls.initSubscriptions).toHaveBeenCalled();
+  });
+
+  it('should initialize the Spotify polling service subscriptions', () => {
+    expect(polling.initSubscriptions).toHaveBeenCalled();
   });
 
   it('should initialize the playbackService', () => {
