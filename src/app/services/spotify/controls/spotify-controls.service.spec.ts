@@ -87,7 +87,8 @@ describe('SpotifyControlsService', () => {
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
-        observe: 'response'
+        observe: 'response',
+        responseType: 'text'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -117,7 +118,7 @@ describe('SpotifyControlsService', () => {
     expect(http.put).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPlayEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(true));
   }));
@@ -129,7 +130,7 @@ describe('SpotifyControlsService', () => {
     expect(http.put).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPauseEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(false));
   }));
@@ -159,7 +160,7 @@ describe('SpotifyControlsService', () => {
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPreviousEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
   }));
 
@@ -181,7 +182,7 @@ describe('SpotifyControlsService', () => {
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPreviousEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
   }));
 
@@ -194,7 +195,7 @@ describe('SpotifyControlsService', () => {
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPreviousEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
   }));
 
@@ -205,7 +206,7 @@ describe('SpotifyControlsService', () => {
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getNextEndpoint(),
       {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response' }
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
   }));
 
@@ -219,7 +220,8 @@ describe('SpotifyControlsService', () => {
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
-        observe: 'response'
+        observe: 'response',
+        responseType: 'text'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -237,7 +239,8 @@ describe('SpotifyControlsService', () => {
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
-        observe: 'response'
+        observe: 'response',
+        responseType: 'text'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);
@@ -303,7 +306,8 @@ describe('SpotifyControlsService', () => {
       {
         headers: jasmine.any(HttpHeaders),
         params: jasmine.any(HttpParams),
-        observe: 'response'
+        observe: 'response',
+        responseType: 'text'
       });
     const spyParams = (http.put as jasmine.Spy).calls.mostRecent().args[2].params as HttpParams;
     expect(spyParams.keys().length).toEqual(1);

@@ -67,7 +67,8 @@ export class SpotifyControlsService {
     this.http.put(SpotifyEndpoints.getSeekEndpoint(), {}, {
       headers: this.auth.getAuthHeaders(),
       params: requestParams,
-      observe: 'response'
+      observe: 'response',
+      responseType: 'text'
     }).subscribe((res) => {
       const apiResponse = checkResponse(res, false);
       if (apiResponse === SpotifyAPIResponse.Success) {
@@ -82,6 +83,7 @@ export class SpotifyControlsService {
     this.http.put(endpoint, {}, {
       headers: this.auth.getAuthHeaders(),
       observe: 'response',
+      responseType: 'text'
     }).subscribe((res) => {
         const apiResponse = checkResponse(res, false);
         if (apiResponse === SpotifyAPIResponse.Success) {
@@ -100,13 +102,20 @@ export class SpotifyControlsService {
       && !((SpotifyControlsService.SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
       this.setTrackPosition(0);
     } else {
-      this.http.post(SpotifyEndpoints.getPreviousEndpoint(), {},
-        {headers: this.auth.getAuthHeaders(), observe: 'response'}).subscribe();
+      this.http.post(SpotifyEndpoints.getPreviousEndpoint(), {}, {
+        headers: this.auth.getAuthHeaders(),
+        observe: 'response',
+        responseType: 'text'
+      }).subscribe();
     }
   }
 
   skipNext(): void {
-    this.http.post(SpotifyEndpoints.getNextEndpoint(), {}, {headers: this.auth.getAuthHeaders(), observe: 'response'}).subscribe();
+    this.http.post(SpotifyEndpoints.getNextEndpoint(), {}, {
+      headers: this.auth.getAuthHeaders(),
+      observe: 'response',
+      responseType: 'text'
+    }).subscribe();
   }
 
   setShuffle(isShuffle: boolean): void {
@@ -116,7 +125,8 @@ export class SpotifyControlsService {
     this.http.put(SpotifyEndpoints.getShuffleEndpoint(), {}, {
       headers: this.auth.getAuthHeaders(),
       params: requestParams,
-      observe: 'response'
+      observe: 'response',
+      responseType: 'text'
     }).subscribe((res) => {
       const apiResponse = checkResponse(res, false);
       if (apiResponse === SpotifyAPIResponse.Success) {
@@ -159,7 +169,8 @@ export class SpotifyControlsService {
     this.http.put(SpotifyEndpoints.getRepeatEndpoint(), {}, {
       headers: this.auth.getAuthHeaders(),
       params: requestParams,
-      observe: 'response'
+      observe: 'response',
+      responseType: 'text'
     }).subscribe((res) => {
       const apiResponse = checkResponse(res, false);
       console.log('apiResponse: ' + apiResponse);
