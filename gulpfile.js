@@ -48,6 +48,12 @@ gulp.task('generate-config', () => {
         configJson.env.idlePolling = idlePolling;
       }
     }
+    if ('SHOWTUNES_THROTTLE_DELAY' in process.env) {
+      const throttleDelay = parseInt(process.env.SHOWTUNES_THROTTLE_DELAY);
+      if (!isNaN(throttleDelay)) {
+        configJson.env.throttleDelay = throttleDelay;
+      }
+    }
     if ('SHOWTUNES_CLIENT_ID' in process.env) {
       configJson.auth.clientId = process.env.SHOWTUNES_CLIENT_ID;
     }

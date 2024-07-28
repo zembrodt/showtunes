@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuItem, MatMenuModule } from '@angular/material/menu';
@@ -10,8 +10,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
+import { AppConfig } from '../../app.config';
 import { DeviceModel } from '../../core/playback/playback.model';
+import { MockInteractionThrottleDirective } from '../../core/testing/mock-interaction-throttle.directive';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { getTestAppConfig } from '../../core/testing/test-models';
 import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
 
 import { DevicesComponent } from './devices.component';
@@ -50,8 +53,13 @@ describe('DevicesComponent', () => {
   let availableDevicesProducer: BehaviorSubject<DeviceModel[]>;
 
   beforeEach(waitForAsync(() => {
+    AppConfig.settings = getTestAppConfig();
+    AppConfig.settings.env.throttleDelay = 2;
     TestBed.configureTestingModule({
-      declarations: [ DevicesComponent ],
+      declarations: [
+        DevicesComponent,
+        MockInteractionThrottleDirective
+      ],
       imports: [
         BrowserAnimationsModule,
         MatIconModule,
@@ -123,6 +131,17 @@ describe('DevicesComponent', () => {
     fixture.debugElement.nativeElement.querySelector('button').click();
     expect(controls.fetchAvailableDevices).toHaveBeenCalled();
   });
+
+  it('should throttle fetchAvailableDevices call', fakeAsync(() => {
+    // Check for initial call
+    expect(controls.fetchAvailableDevices).toHaveBeenCalledTimes(1);
+    component.onMenuOpened(); // allowed
+    tick(1);
+    component.onMenuOpened(); // throttled
+    // Check we've only called the initial call and non-throttled call
+    expect(controls.fetchAvailableDevices).toHaveBeenCalledTimes(2);
+    discardPeriodicTasks();
+  }));
 
   it('should update device on select', () => {
     availableDevicesProducer.next([TEST_DEVICE_1, TEST_DEVICE_2]);

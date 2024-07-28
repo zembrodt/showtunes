@@ -4,9 +4,11 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { AppConfig } from './app.config';
+import { getTestAppConfig } from './core/testing/test-models';
 
 const IDLE_POLLING_DEFAULT = 3000;
 const PLAYBACK_POLLING_DEFAULT = 1000;
+const THROTTLE_DELAY_DEFAULT = 1000;
 const EXPIRY_THRESHOLD_DEFAULT = 0;
 
 describe('AppConfig', () => {
@@ -29,6 +31,38 @@ describe('AppConfig', () => {
 
   it('should be truthy', () => {
     expect(appConfig).toBeTruthy();
+  });
+
+  it('should return true for env initialized when env is set', () => {
+    AppConfig.settings = getTestAppConfig();
+    expect(AppConfig.isEnvInitialized()).toBeTrue();
+  });
+
+  it('should return false for env initialized when env is null', () => {
+    AppConfig.settings = getTestAppConfig();
+    AppConfig.settings.env = null;
+    expect(AppConfig.isEnvInitialized()).toBeFalse();
+  });
+
+  it('should return false for env initialized when settings is null', () => {
+    AppConfig.settings = null;
+    expect(AppConfig.isEnvInitialized()).toBeFalse();
+  });
+
+  it('should return true for auth initialized when auth is set', () => {
+    AppConfig.settings = getTestAppConfig();
+    expect(AppConfig.isAuthInitialized()).toBeTrue();
+  });
+
+  it('should return false for auth initialized when auth is null', () => {
+    AppConfig.settings = getTestAppConfig();
+    AppConfig.settings.auth = null;
+    expect(AppConfig.isAuthInitialized()).toBeFalse();
+  });
+
+  it('should return false for auth initialized when settings is null', () => {
+    AppConfig.settings = null;
+    expect(AppConfig.isAuthInitialized()).toBeFalse();
   });
 
   it('should resolve when a valid config is loaded', () => {
@@ -223,6 +257,54 @@ describe('AppConfig', () => {
     }));
     appConfig.load().then(() => {
       expect(AppConfig.settings.env.playbackPolling).toEqual(PLAYBACK_POLLING_DEFAULT);
+    });
+  });
+
+  it('should parse throttleDelay to an int', () => {
+    const expectedValue = 10;
+    const strValue = '10';
+    http.get = jasmine.createSpy().and.returnValue(of({
+      env: {
+        throttleDelay: strValue
+      },
+      auth: {}
+    }));
+    appConfig.load().then(() => {
+      expect(AppConfig.settings.env.throttleDelay).toEqual(expectedValue);
+    });
+  });
+
+  it('should handle throttleDelay as an invalid string and set to default value', () => {
+    http.get = jasmine.createSpy().and.returnValue(of({
+      env: {
+        throttleDelay: 'test'
+      },
+      auth: {}
+    }));
+    appConfig.load().then(() => {
+      expect(AppConfig.settings.env.throttleDelay).toEqual(THROTTLE_DELAY_DEFAULT);
+    });
+  });
+
+  it('should handle throttleDelay as an invalid type and set to default value', () => {
+    http.get = jasmine.createSpy().and.returnValue(of({
+      env: {
+        throttleDelay: {}
+      },
+      auth: {}
+    }));
+    appConfig.load().then(() => {
+      expect(AppConfig.settings.env.throttleDelay).toEqual(THROTTLE_DELAY_DEFAULT);
+    });
+  });
+
+  it('should handle an absent throttleDelay and set to default value', () => {
+    http.get = jasmine.createSpy().and.returnValue(of({
+      env: {},
+      auth: {}
+    }));
+    appConfig.load().then(() => {
+      expect(AppConfig.settings.env.throttleDelay).toEqual(THROTTLE_DELAY_DEFAULT);
     });
   });
 

@@ -13,6 +13,7 @@ import { NgxsModule } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
+import { MockInteractionThrottleDirective } from '../../../core/testing/mock-interaction-throttle.directive';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { callComponentChange, callComponentChanges } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
@@ -46,6 +47,7 @@ describe('TrackPlayerControlsComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         TrackPlayerControlsComponent,
+        MockInteractionThrottleDirective,
         MockComponent(DevicesComponent)
       ],
       imports: [

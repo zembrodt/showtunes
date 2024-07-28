@@ -15,7 +15,8 @@ export function getTestAppConfig(): IAppConfig {
       spotifyApiUrl: 'spotify-url',
       spotifyAccountsUrl: 'spotify-accounts',
       idlePolling: 3000,
-      playbackPolling: 1000
+      playbackPolling: 1000,
+      throttleDelay: 1000
     },
     auth: {
       clientId: 'test-client-id',

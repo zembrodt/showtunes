@@ -6,6 +6,7 @@ export interface IAppConfig {
     spotifyAccountsUrl: string;
     playbackPolling?: number;
     idlePolling?: number;
+    throttleDelay?: number;
   };
   auth: {
     clientId: string;

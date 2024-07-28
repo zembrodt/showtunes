@@ -31,6 +31,7 @@ import { AuthState } from './core/auth/auth.state';
 import { PlaybackState } from './core/playback/playback.state';
 import { SETTINGS_STATE_NAME } from './core/settings/settings.model';
 import { SettingsState } from './core/settings/settings.state';
+import { InteractionThrottleDirective } from './directives/component-throttle/interaction-throttle.directive';
 import { MaterialModule } from './modules/material.module';
 import { InactivityService } from './services/inactivity/inactivity.service';
 import { PlaybackService } from './services/playback/playback.service';
@@ -48,6 +49,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
   declarations: [
     AppComponent,
     AlbumDisplayComponent,
+    InteractionThrottleDirective,
     CallbackComponent,
     ColorPickerComponent,
     DashboardComponent,

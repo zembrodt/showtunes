@@ -9,7 +9,16 @@ export class AppConfig {
 
   private static readonly idlePollingDefault = 3000;
   private static readonly playbackPollingDefault = 1000;
+  private static readonly throttleDelayDefault = 1000;
   private static readonly expiryThresholdDefault = 0;
+
+  static isEnvInitialized(): boolean {
+    return !!AppConfig.settings && !!AppConfig.settings.env;
+  }
+
+  static isAuthInitialized(): boolean {
+    return !!AppConfig.settings && !!AppConfig.settings.auth;
+  }
 
   constructor(private http: HttpClient) {}
 
@@ -30,6 +39,7 @@ export class AppConfig {
   private checkTypes(): void {
     AppConfig.settings.env.idlePolling = this.parseInt(AppConfig.settings.env.idlePolling);
     AppConfig.settings.env.playbackPolling = this.parseInt(AppConfig.settings.env.playbackPolling);
+    AppConfig.settings.env.throttleDelay = this.parseInt(AppConfig.settings.env.throttleDelay);
     AppConfig.settings.auth.forcePkce = this.parseBoolean(AppConfig.settings.auth.forcePkce);
     AppConfig.settings.auth.showDialog = this.parseBoolean(AppConfig.settings.auth.showDialog);
     AppConfig.settings.auth.expiryThreshold = this.parseInt(AppConfig.settings.auth.expiryThreshold);
@@ -41,6 +51,9 @@ export class AppConfig {
     }
     if (AppConfig.settings.env.playbackPolling == null) {
       AppConfig.settings.env.playbackPolling = AppConfig.playbackPollingDefault;
+    }
+    if (AppConfig.settings.env.throttleDelay == null) {
+      AppConfig.settings.env.throttleDelay = AppConfig.throttleDelayDefault;
     }
     if (AppConfig.settings.auth.expiryThreshold == null) {
       AppConfig.settings.auth.expiryThreshold = AppConfig.expiryThresholdDefault;

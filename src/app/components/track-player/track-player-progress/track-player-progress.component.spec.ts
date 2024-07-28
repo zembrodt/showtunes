@@ -7,6 +7,7 @@ import { MatSliderHarness } from '@angular/material/slider/testing';
 import { By } from '@angular/platform-browser';
 import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
+import { MockInteractionThrottleDirective } from '../../../core/testing/mock-interaction-throttle.directive';
 import { callComponentChange } from '../../../core/testing/test-util';
 import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 import { TrackPlayerProgressComponent } from './track-player-progress.component';
@@ -19,7 +20,10 @@ describe('TrackPlayerProgressComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ TrackPlayerProgressComponent ],
+      declarations: [
+        TrackPlayerProgressComponent,
+        MockInteractionThrottleDirective
+      ],
       imports: [
         MatSliderModule,
         NgxsModule.forRoot([], { developmentMode: true })
