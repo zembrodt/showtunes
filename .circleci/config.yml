@@ -34,7 +34,7 @@ jobs:
           name: "Run unit tests and code coverage"
           command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadless --code-coverage
       - store_test_results:
-          path: results
+          path: ./test-results
       - store_artifacts:
           path: coverage
       - codecov/upload:
