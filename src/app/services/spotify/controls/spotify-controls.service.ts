@@ -173,7 +173,6 @@ export class SpotifyControlsService {
       responseType: 'text'
     }).subscribe((res) => {
       const apiResponse = checkResponse(res, false);
-      console.log('apiResponse: ' + apiResponse);
       if (apiResponse === SpotifyAPIResponse.Success) {
         this.store.dispatch(new ChangeRepeatState(repeatState));
       }

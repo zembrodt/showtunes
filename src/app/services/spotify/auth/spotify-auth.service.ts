@@ -19,6 +19,7 @@ export class SpotifyAuthService {
   private static readonly STATE_KEY = 'STATE';
   private static readonly CODE_VERIFIER_KEY = 'CODE_VERIFIER';
   private static readonly STATE_LENGTH = 40;
+  private static readonly RESTRICTION_VIOLATED = 'restriction violated';
 
   public static initialized = false;
   private static clientId: string;
@@ -153,7 +154,10 @@ export class SpotifyAuthService {
         this.store.dispatch(new SetPlayerState(PlayerState.Refreshing));
         return this.refreshAuthToken();
       case HttpStatusCode.Forbidden:
-        // Bad OAuth request
+        // Bad OAuth request or restriction violated
+        if (this.isRestrictionViolated(res.error)) {
+          return Promise.resolve(SpotifyAPIResponse.Restricted);
+        }
         this.logout();
         return Promise.resolve(SpotifyAPIResponse.Error);
       case HttpStatusCode.TooManyRequests:
@@ -239,6 +243,10 @@ export class SpotifyAuthService {
         });
     }
     return Promise.reject('Refresh token not present');
+  }
+
+  private isRestrictionViolated(message: string): boolean {
+    return message && message.toLowerCase().includes(SpotifyAuthService.RESTRICTION_VIOLATED);
   }
 
   private getState(): string {

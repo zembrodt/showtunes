@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { from, Observable, throwError } from 'rxjs';
+import { EMPTY, from, Observable, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
 import { SpotifyAPIResponse } from '../../../core/types';
@@ -8,8 +8,7 @@ import { SpotifyAuthService } from '../auth/spotify-auth.service';
 
 @Injectable()
 export class SpotifyInterceptor implements HttpInterceptor {
-  private static readonly authRequestUrls = new Set();
-  private static readonly requestUrls = new Set();
+  private static readonly urlRequiresAuth = new Map<string, boolean>();
 
   constructor(private auth: SpotifyAuthService) {}
 
@@ -35,15 +34,21 @@ export class SpotifyInterceptor implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
-          console.log('interceptor err: ' + JSON.stringify(err));
           return from(this.auth.checkErrorResponse(err))
             .pipe(switchMap((apiResponse) => {
               if (apiResponse === SpotifyAPIResponse.ReAuthenticated) {
                 req = this.generateAuthHeaders(req);
                 return next.handle(req);
               }
+              else if (apiResponse === SpotifyAPIResponse.Restricted) {
+                // If the response was restricted, cancel the request
+                return EMPTY;
+              }
+              console.error(`Unexpected error response when handling request: ${req.url}`);
+              return throwError(err);
             }));
         }
+        console.error(`Unexpected error type when handling request: ${req.url}`);
         return throwError(err);
       })
     );
@@ -89,20 +94,12 @@ export class SpotifyInterceptor implements HttpInterceptor {
   }
 
   private urlRequiresAuth(url: string): boolean {
-    if (SpotifyInterceptor.authRequestUrls.has(url)) {
-      return true;
-    }
-    else if (SpotifyInterceptor.requestUrls.has(url)) {
-      return false;
+    if (SpotifyInterceptor.urlRequiresAuth.has(url)) {
+      return SpotifyInterceptor.urlRequiresAuth.get(url);
     }
 
     const requiresAuth = url.startsWith(SpotifyEndpoints.getSpotifyApiUrl()) && !url.endsWith(SpotifyEndpoints.getTokenEndpoint());
-    if (requiresAuth) {
-      SpotifyInterceptor.authRequestUrls.add(url);
-    } else {
-      SpotifyInterceptor.requestUrls.add(url);
-    }
-
+    SpotifyInterceptor.urlRequiresAuth.set(url, requiresAuth);
     return requiresAuth;
   }
 

@@ -12,5 +12,6 @@ export enum SpotifyAPIResponse {
   Success,
   NoPlayback,
   ReAuthenticated,
+  Restricted,
   Error
 }
