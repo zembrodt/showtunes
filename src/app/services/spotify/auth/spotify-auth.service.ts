@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../../app.config';
@@ -78,7 +79,7 @@ export class SpotifyAuthService {
     return this.initialized;
   }
 
-  constructor(private http: HttpClient, private store: Store, private storage: StorageService) {
+  constructor(private http: HttpClient, private store: Store, private router: Router, private storage: StorageService) {
     this.setState();
     this.setCodeVerifier();
   }
@@ -228,6 +229,7 @@ export class SpotifyAuthService {
     this.authToken = null;
     this.storage.remove(SpotifyAuthService.STATE_KEY);
     this.storage.removeAuthToken();
+    this.router.navigateByUrl('/login');
   }
 
   private refreshAuthToken(): Promise<SpotifyAPIResponse> {

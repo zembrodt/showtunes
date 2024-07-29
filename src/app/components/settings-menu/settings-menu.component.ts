@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MenuCloseReason } from '@angular/material/menu/menu';
-import { Router } from '@angular/router';
 import { faGithub } from '@fortawesome/free-brands-svg-icons/faGithub';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
@@ -76,7 +75,6 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private auth: SpotifyAuthService,
-    private router: Router,
     public helpDialog: MatDialog
   ) {}
 
@@ -124,7 +122,6 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.auth.logout();
-    this.router.navigateByUrl('/login');
   }
 
   onMenuClose(close: MenuCloseReason): void {

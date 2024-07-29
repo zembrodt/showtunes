@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpStatusCode } from '@angular/
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
+import { Router } from '@angular/router';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -23,6 +24,7 @@ describe('SpotifyAuthService', () => {
   const mockSelectors = new NgxsSelectorMock<SpotifyAuthService>();
   let service: SpotifyAuthService;
   let http: HttpClient;
+  let router: Router;
   let store: Store;
   let storage: StorageService;
 
@@ -40,12 +42,14 @@ describe('SpotifyAuthService', () => {
       providers: [
         SpotifyAuthService,
         MockProvider(HttpClient),
+        MockProvider(Router),
         MockProvider(Store),
         MockProvider(StorageService)
       ]
     });
     service = TestBed.inject(SpotifyAuthService);
     http = TestBed.inject(HttpClient);
+    router = TestBed.inject(Router);
     store = TestBed.inject(Store);
     storage = TestBed.inject(StorageService);
 
@@ -464,6 +468,7 @@ describe('SpotifyAuthService', () => {
     expect(service['authToken']).toBeNull();
     expect(storage.remove).toHaveBeenCalledOnceWith(SpotifyAuthService['STATE_KEY']);
     expect(storage.removeAuthToken).toHaveBeenCalledTimes(1);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('should get current state if not null', () => {

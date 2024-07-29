@@ -18,7 +18,6 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
@@ -66,7 +65,6 @@ describe('SettingsMenuComponent', () => {
   let rootLoader: HarnessLoader;
   let store: Store;
   let auth: SpotifyAuthService;
-  let router: Router;
 
   let themeProducer: BehaviorSubject<string>;
   let customAccentColorProducer: BehaviorSubject<string>;
@@ -99,7 +97,6 @@ describe('SettingsMenuComponent', () => {
       providers: [
         MockProvider(Store),
         MockProvider(SpotifyAuthService),
-        MockProvider(Router),
         {
           provide: AppConfig,
           deps: [ MockProvider(HttpClient) ]
@@ -108,7 +105,6 @@ describe('SettingsMenuComponent', () => {
     }).compileComponents();
     store = TestBed.inject(Store);
     auth = TestBed.inject(SpotifyAuthService);
-    router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(SettingsMenuComponent);
     component = fixture.componentInstance;
@@ -1089,10 +1085,9 @@ describe('SettingsMenuComponent', () => {
     expect(component.openHelpDialog).toHaveBeenCalled();
   }));
 
-  it('should logout of Spotify service and navigate to /login on logout', () => {
+  it('should logout of Spotify auth service', () => {
     component.logout();
     expect(auth.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('should dispatch a colorPicker reset event when menu closed', () => {
