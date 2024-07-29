@@ -82,22 +82,19 @@ export class SettingsState implements NgxsOnInit {
   }
 
   ngxsOnInit(ctx: StateContext<SettingsModel>): void {
-    const state = ctx.getState();
-    this.updateOverlayContainer(state.theme, state.customAccentColor, state.dynamicAccentColor);
+    this.updateOverlayContainer(ctx.getState());
   }
 
   @Action(ChangeTheme)
   changeTheme(ctx: StateContext<SettingsModel>, action: ChangeTheme): void {
-    const state = ctx.getState();
-    this.updateOverlayContainer(action.theme, state.customAccentColor, state.dynamicAccentColor);
     ctx.patchState({theme: action.theme});
+    this.updateOverlayContainer(ctx.getState());
   }
 
   @Action(ChangeCustomAccentColor)
   changeCustomAccentColor(ctx: StateContext<SettingsModel>, action: ChangeCustomAccentColor): void {
-    const state = ctx.getState();
-    this.updateOverlayContainer(state.theme, action.customAccentColor, state.dynamicAccentColor);
     ctx.patchState({customAccentColor: action.customAccentColor});
+    this.updateOverlayContainer(ctx.getState());
   }
 
   @Action(ChangePlayerControls)
@@ -126,7 +123,6 @@ export class SettingsState implements NgxsOnInit {
   @Action(ChangeDynamicColor)
   changeDynamicColor(ctx: StateContext<SettingsModel>, action: ChangeDynamicColor): void {
     ctx.patchState({dynamicColor: action.dynamicColor});
-    const state = ctx.getState();
     if ((action.dynamicColor && isHexColor(action.dynamicColor.hex))) {
       ctx.patchState({
         dynamicColor: action.dynamicColor,
@@ -138,7 +134,7 @@ export class SettingsState implements NgxsOnInit {
         dynamicAccentColor: null
       });
     }
-    this.updateOverlayContainer(state.theme, state.customAccentColor, ctx.getState().dynamicAccentColor);
+    this.updateOverlayContainer(ctx.getState());
   }
 
   @Action(ChangeSpotifyCodeBackgroundColor)
@@ -161,24 +157,21 @@ export class SettingsState implements NgxsOnInit {
         this.calculateDynamicAccentColor(state.dynamicColor.rgb) : null,
       useDynamicThemeAccent: !state.useDynamicThemeAccent,
     });
-    this.updateOverlayContainer(state.theme, state.customAccentColor, ctx.getState().dynamicAccentColor);
+    this.updateOverlayContainer(ctx.getState());
   }
 
   @Action(ChangeDynamicAccentColor)
   changeDynamicAccentColor(ctx: StateContext<SettingsModel>, action: ChangeDynamicAccentColor): void {
-    const state = ctx.getState();
-    this.updateOverlayContainer(state.theme, state.customAccentColor, action.dynamicAccentColor);
     ctx.patchState({dynamicAccentColor: action.dynamicAccentColor});
+    this.updateOverlayContainer(ctx.getState());
   }
 
   /**
    * Updates the theme class on the overlayContainer
-   * @param theme the standard theme (light/dark)
-   * @param customTheme a custom accent color for the theme
-   * @param dynamicTheme a dynamic accent color for the theme (overwrites the custom color)
+   * @param state the current state
    * @private
    */
-  private updateOverlayContainer(theme: string, customTheme: string, dynamicTheme: string): void {
+  private updateOverlayContainer(state: SettingsModel): void {
     const classList = this.overlayContainer.getContainerElement().classList;
     const toRemove = Array.from(classList).filter((item: string) =>
       item.includes('-theme')
@@ -186,11 +179,16 @@ export class SettingsState implements NgxsOnInit {
     if (toRemove.length > 0) {
       classList.remove(...toRemove);
     }
-    let additionalTheme = dynamicTheme;
-    if (!additionalTheme) {
-      additionalTheme = customTheme;
+    if (state.theme !== null) {
+      let theme = state.theme;
+      if (state.useDynamicThemeAccent && state.dynamicAccentColor !== null) {
+        theme = `${state.dynamicAccentColor}-${state.theme}`;
+      }
+      else if (state.customAccentColor !== null) {
+        theme = `${state.customAccentColor}-${state.theme}`;
+      }
+      classList.add(theme);
     }
-    classList.add(additionalTheme ? `${additionalTheme}-${theme}` : theme);
   }
 
   /**

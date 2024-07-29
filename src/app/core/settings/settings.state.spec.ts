@@ -166,11 +166,23 @@ describe('SettingsState', () => {
   it('should use the dynamic accent theme when customAccentColor is changed', () => {
     setState(store, {
       theme: Theme.Light,
-      dynamicAccentColor: 'blue'
+      dynamicAccentColor: 'blue',
+      useDynamicThemeAccent: true
     });
     store.dispatch(new ChangeCustomAccentColor('cyan'));
     expect(element.classList.length).toEqual(1);
     expect(element.classList.contains('blue-light-theme')).toBeTrue();
+  });
+
+  it('should not use the dynamic accent theme when useDynamicThemeAccent is false', () => {
+    setState(store, {
+      theme: Theme.Light,
+      dynamicAccentColor: 'blue',
+      useDynamicThemeAccent: false
+    });
+    store.dispatch(new ChangeCustomAccentColor('cyan'));
+    expect(element.classList.length).toEqual(1);
+    expect(element.classList.contains('cyan-light-theme')).toBeTrue();
   });
 
   it('should change showPlayerControls', () => {
@@ -337,7 +349,8 @@ describe('SettingsState', () => {
   it('should update overlayContainer on dynamicAccentColor change', () => {
     setState(store, {
       theme: Theme.Light,
-      customAccentColor: 'blue'
+      customAccentColor: 'blue',
+      useDynamicThemeAccent: true
     });
     store.dispatch(new ChangeDynamicAccentColor('cyan'));
     expect(element.classList.length).toEqual(1);
