@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AppConfig } from '../../../app.config';
 import { SetAuthToken } from '../../../core/auth/auth.actions';
 import { AuthToken } from '../../../core/auth/auth.model';
@@ -159,16 +160,16 @@ export class SpotifyAuthService {
         if (this.isRestrictionViolated(res.error)) {
           return Promise.resolve(SpotifyAPIResponse.Restricted);
         }
-        this.logout();
-        return Promise.resolve(SpotifyAPIResponse.Error);
+        break;
       case HttpStatusCode.TooManyRequests:
         console.error('Spotify rate limits exceeded');
-        this.logout();
-        return Promise.resolve(SpotifyAPIResponse.Error);
+        break;
       default:
         console.error(`Unexpected response ${res.status}: ${res.statusText}`);
-        return Promise.resolve(SpotifyAPIResponse.Error);
+        break;
     }
+    this.checkIfLogoutRequired(res.status);
+    return Promise.resolve(SpotifyAPIResponse.Error);
   }
 
   /**
@@ -245,6 +246,24 @@ export class SpotifyAuthService {
         });
     }
     return Promise.reject('Refresh token not present');
+  }
+
+  private checkIfLogoutRequired(responseStatus: number): void {
+    this.isAuthTokenValid().then(isValid => {
+      if (!isValid) {
+        console.error(`Unable to authenticate following ${responseStatus} response`);
+        this.logout();
+      }
+    });
+  }
+
+  private isAuthTokenValid(): Promise<boolean> {
+    if (this.authToken) {
+      return this.http.get(SpotifyEndpoints.getUserEndpoint(), {headers: this.getAuthHeaders(), observe: 'response'})
+        .pipe(map(res => res.status === HttpStatusCode.Ok))
+        .toPromise();
+    }
+    return Promise.resolve(false);
   }
 
   private isRestrictionViolated(message: string): boolean {

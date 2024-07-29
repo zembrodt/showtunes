@@ -32,8 +32,9 @@ export function generateResponse<T>(body: T, status: number): HttpResponse<T> {
   });
 }
 
-export function generateErrorResponse(status: number): HttpErrorResponse {
+export function generateErrorResponse(status: number, error = null): HttpErrorResponse {
   return new HttpErrorResponse({
+    error,
     status
   });
 }

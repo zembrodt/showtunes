@@ -22,8 +22,12 @@ export class SpotifyEndpoints {
     return AppConfig.settings.env.spotifyAccountsUrl;
   }
 
+  static getUserEndpoint(): string {
+    return SpotifyEndpoints.getSpotifyApiUrl() + '/me';
+  }
+
   static getPlaybackEndpoint(): string {
-    return SpotifyEndpoints.getSpotifyApiUrl() + '/me/player';
+    return SpotifyEndpoints.getUserEndpoint() + '/player';
   }
 
   static getPlayEndpoint(): string {
@@ -63,7 +67,7 @@ export class SpotifyEndpoints {
   }
 
   static getSavedTracksEndpoint(): string {
-    return SpotifyEndpoints.getSpotifyApiUrl() + '/me/tracks';
+    return SpotifyEndpoints.getUserEndpoint() + '/tracks';
   }
 
   static getCheckSavedEndpoint(): string {

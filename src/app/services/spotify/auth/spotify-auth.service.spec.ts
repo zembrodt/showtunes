@@ -15,10 +15,11 @@ import { PlayerState } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { getTestAppConfig, getTestAuthToken } from '../../../core/testing/test-models';
-import { generateErrorResponse } from '../../../core/testing/test-util';
+import { generateErrorResponse, generateResponse } from '../../../core/testing/test-util';
 import { AuthType, SpotifyAPIResponse } from '../../../core/types';
 import { StorageService } from '../../storage/storage.service';
 import { SpotifyAuthService } from './spotify-auth.service';
+import anything = jasmine.anything;
 
 describe('SpotifyAuthService', () => {
   const mockSelectors = new NgxsSelectorMock<SpotifyAuthService>();
@@ -57,6 +58,7 @@ describe('SpotifyAuthService', () => {
 
     service.initSubscriptions();
     spyOn(console, 'error');
+    spyOn(console, 'warn');
     store.dispatch = jasmine.createSpy().and.returnValue(of(null));
   });
 
@@ -119,12 +121,14 @@ describe('SpotifyAuthService', () => {
     AppConfig.settings.env.spotifyApiUrl = null;
     expect(SpotifyAuthService.initialize()).toBeFalse();
     expect(console.error).toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalled();
   });
 
   it('should fail to initialize if no configured spotifyAccountsUrl', () => {
     AppConfig.settings.env.spotifyAccountsUrl = null;
     expect(SpotifyAuthService.initialize()).toBeFalse();
     expect(console.error).toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalled();
   });
 
   it('should fail to initialize if no configured domain', () => {
@@ -137,6 +141,7 @@ describe('SpotifyAuthService', () => {
     AppConfig.settings.env = null;
     expect(SpotifyAuthService.initialize()).toBeFalse();
     expect(console.error).toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalled();
 
     AppConfig.settings.auth = null;
     expect(SpotifyAuthService.initialize()).toBeFalse();
@@ -579,33 +584,92 @@ describe('SpotifyAuthService', () => {
     expect(apiError).not.toBeNull();
   }));
 
-  it('should logout when error response is a bad OAuth request', fakeAsync(() => {
+  it('should logout when error response is a bad OAuth request and cannot re-authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Forbidden)));
     spyOn(service, 'logout');
     let apiResponse;
     service.checkErrorResponse(generateErrorResponse(HttpStatusCode.Forbidden)).then((response) => apiResponse = response);
 
     flushMicrotasks();
     expect(service.logout).toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(console.error).toHaveBeenCalled();
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
   }));
 
-  it('should logout and log an error when error response is Spotify rate limits exceeded', fakeAsync(() => {
+  it('should not logout when error response is a bad OAuth request and can still authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Ok)));
+    spyOn(service, 'logout');
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(HttpStatusCode.Forbidden)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
+    expect(service.logout).not.toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
+  }));
+
+  it('should not logout when error response is a bad OAuth request for a violated restriction', fakeAsync(() => {
+    spyOn(service, 'logout');
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(HttpStatusCode.Forbidden, 'Restriction Violated'))
+      .then((response) => apiResponse = response);
+
+    flushMicrotasks();
+    expect(service.logout).not.toHaveBeenCalled();
+    expect(http.get).not.toHaveBeenCalled();
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Restricted);
+  }));
+
+  it('should not logout when error response is Spotify rate limits exceeded and cannot re-authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Forbidden)));
     spyOn(service, 'logout');
     let apiResponse;
     service.checkErrorResponse(generateErrorResponse(HttpStatusCode.TooManyRequests)).then((response) => apiResponse = response);
 
     flushMicrotasks();
     expect(service.logout).toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(console.error).toHaveBeenCalledTimes(2);
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
   }));
 
-  it('should log an error when error response is unknown', fakeAsync(() => {
+  it('should logout when error response is Spotify rate limits exceeded and can still authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Ok)));
+    spyOn(service, 'logout');
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(HttpStatusCode.TooManyRequests)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
+    expect(service.logout).not.toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
+  }));
+
+  it('should logout when error response is unknown and cannot re-authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Forbidden)));
+    spyOn(service, 'logout');
     let apiResponse;
     service.checkErrorResponse(generateErrorResponse(HttpStatusCode.NotFound)).then((response) => apiResponse = response);
 
     flushMicrotasks();
-    expect(console.error).toHaveBeenCalled();
+    expect(service.logout).toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(console.error).toHaveBeenCalledTimes(2);
+    expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
+  }));
+
+  it('should not logout when error response is unknown and can still authenticate', fakeAsync(() => {
+    http.get = jasmine.createSpy().and.returnValue(of(generateResponse({}, HttpStatusCode.Ok)));
+    spyOn(service, 'logout');
+    let apiResponse;
+    service.checkErrorResponse(generateErrorResponse(HttpStatusCode.NotFound)).then((response) => apiResponse = response);
+
+    flushMicrotasks();
+    expect(service.logout).not.toHaveBeenCalled();
+    expect(http.get).toHaveBeenCalledWith(SpotifyEndpoints.getUserEndpoint(), anything());
+    expect(console.error).toHaveBeenCalledTimes(1);
     expect(apiResponse).toEqual(SpotifyAPIResponse.Error);
   }));
 
