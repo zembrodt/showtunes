@@ -17,7 +17,7 @@ import {
 import { DeviceModel, TrackModel } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
-import { getTestAppConfig, getTestDeviceResponse, getTestPlaylistResponse, getTestTrackResponse } from '../../../core/testing/test-models';
+import { getTestAppConfig, getTestDeviceResponse, getTestPlaylistResponse, getTestTrackResponse } from '../../../core/testing/test-responses';
 import { generateResponse } from '../../../core/testing/test-util';
 import { parseDevice, parsePlaylist, parseTrack } from '../../../core/util';
 import { DeviceResponse, MultipleDevicesResponse } from '../../../models/device.model';
@@ -151,52 +151,74 @@ describe('SpotifyControlsService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlaying(true));
   }));
 
-  it('should send skip previous request when within threshold', fakeAsync(() => {
+  it('should send skip previous request when within threshold and no disallows', fakeAsync(() => {
+    spyOn(service, 'setTrackPosition');
     const response = generateResponse(null, HttpStatusCode.NoContent);
     http.post = jasmine.createSpy().and.returnValue(of(response));
     progressProducer.next(2999);
     durationProducer.next(6001);
-    service.skipPrevious(false);
+    service.skipPrevious(false, false);
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPreviousEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
+    expect(service.setTrackPosition).not.toHaveBeenCalled();
   }));
 
-  it('should set track position to 0 when not within threshold', fakeAsync(() => {
-    http.post = jasmine.createSpy().and.returnValue(of(null));
+  it('should set track position to 0 when not within threshold and no disallows', fakeAsync(() => {
     spyOn(service, 'setTrackPosition');
     progressProducer.next(3001);
     durationProducer.next(6001);
-    service.skipPrevious(false);
+    service.skipPrevious(false, false);
     expect(service.setTrackPosition).toHaveBeenCalledOnceWith(0);
+    expect(http.post).not.toHaveBeenCalled();
   }));
 
-  it('should send skip previous request when duration is less than double the threshold', fakeAsync(() => {
+  it('should set track position to 0 when within threshold and skip previous disallowed', fakeAsync(() => {
+    spyOn(service, 'setTrackPosition');
+    progressProducer.next(2999);
+    durationProducer.next(6001);
+    service.skipPrevious(true, false);
+    expect(service.setTrackPosition).toHaveBeenCalledOnceWith(0);
+    expect(http.post).not.toHaveBeenCalled();
+  }));
+
+  it('should send skip previous request when not within threshold and seek disallowed', fakeAsync(() => {
+    spyOn(service, 'setTrackPosition');
+    const response = generateResponse(null, HttpStatusCode.NoContent);
+    http.post = jasmine.createSpy().and.returnValue(of(response));
+    progressProducer.next(3001);
+    durationProducer.next(6001);
+    service.skipPrevious(false, true);
+    expect(http.post).toHaveBeenCalledOnceWith(
+      SpotifyEndpoints.getPreviousEndpoint(),
+      {},
+      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
+    );
+    expect(service.setTrackPosition).not.toHaveBeenCalled();
+  }));
+
+  it('should send skip previous request when duration is less than double the threshold and no disallows', fakeAsync(() => {
+    spyOn(service, 'setTrackPosition');
     const response = generateResponse(null, HttpStatusCode.NoContent);
     http.post = jasmine.createSpy().and.returnValue(of(response));
     progressProducer.next(3001);
     durationProducer.next(5999);
-    service.skipPrevious(false);
+    service.skipPrevious(false, false);
     expect(http.post).toHaveBeenCalledOnceWith(
       SpotifyEndpoints.getPreviousEndpoint(),
       {},
       { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
     );
+    expect(service.setTrackPosition).not.toHaveBeenCalled();
   }));
 
-  it('should send skip previous request when forced', fakeAsync(() => {
-    const response = generateResponse(null, HttpStatusCode.NoContent);
-    http.post = jasmine.createSpy().and.returnValue(of(response));
-    progressProducer.next(2999);
-    durationProducer.next(6001);
-    service.skipPrevious(true);
-    expect(http.post).toHaveBeenCalledOnceWith(
-      SpotifyEndpoints.getPreviousEndpoint(),
-      {},
-      { headers: jasmine.any(HttpHeaders), observe: 'response', responseType: 'text' }
-    );
+  it('should not skip previous or set track position when both disallowed', fakeAsync(() => {
+    spyOn(service, 'setTrackPosition');
+    service.skipPrevious(true, true);
+    expect(http.post).not.toHaveBeenCalled();
+    expect(service.setTrackPosition).not.toHaveBeenCalled();
   }));
 
   it('should send skip next request', fakeAsync(() => {

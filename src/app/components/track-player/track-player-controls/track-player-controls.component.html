@@ -2,19 +2,40 @@
      fxLayout="row"
      fxLayoutAlign="center center"
      fxLayoutGap="48px">
-  <button mat-icon-button appInteractionThrottle [ngClass]="shuffleClasses" (throttledClick)="onToggleShuffle()" [disableRipple]="isSmartShuffle">
+  <button mat-icon-button
+          appInteractionThrottle
+          [ngClass]="shuffleClasses"
+          [disabled]="disallows.shuffle"
+          [disableRipple]="isSmartShuffle"
+          (throttledClick)="onToggleShuffle()">
     <mat-icon aria-hidden="false" aria-label="Shuffle">{{shuffleIcon}}</mat-icon>
   </button>
-  <button mat-icon-button appInteractionThrottle class="track-player-icon" (throttledClick)="onSkipPrevious()">
+  <button mat-icon-button
+          appInteractionThrottle
+          class="track-player-icon"
+          [disabled]="disallows.skipPrev && disallows.seek"
+          (throttledClick)="onSkipPrevious()">
     <mat-icon aria-hidden="false" aria-label="SkipPrevious">skip_previous</mat-icon>
   </button>
-  <button mat-fab appInteractionThrottle class="track-player-icon-background" (throttledClick)="onPause()">
+  <button mat-fab
+          appInteractionThrottle
+          class="track-player-icon-background"
+          [disabled]="isPlaying ? disallows.pause : disallows.resume"
+          (throttledClick)="onPause()">
     <mat-icon class="track-player-icon-foreground" aria-hidden="false" aria-label="Play/Pause">{{playIcon}}</mat-icon>
   </button>
-  <button mat-icon-button appInteractionThrottle class="track-player-icon" (throttledClick)="onSkipNext()">
+  <button mat-icon-button
+          appInteractionThrottle
+          class="track-player-icon"
+          [disabled]="disallows.skipNext"
+          (throttledClick)="onSkipNext()">
     <mat-icon aria-hidden="false" aria-label="SkipNext">skip_next</mat-icon>
   </button>
-  <button mat-icon-button appInteractionThrottle [ngClass]="repeatClass" (throttledClick)="onRepeatChange()">
+  <button mat-icon-button
+          appInteractionThrottle
+          [ngClass]="repeatClass"
+          [disabled]="disallows.repeatContext"
+          (throttledClick)="onRepeatChange()">
     <mat-icon aria-hidden="false" aria-label="Repeat">{{repeatIcon}}</mat-icon>
   </button>
 </div>
@@ -22,15 +43,24 @@
      fxLayout="row"
      fxLayoutAlign="center center"
      fxLayoutGap="6px">
-  <button mat-icon-button appInteractionThrottle class="mat-subheading-2 track-player-icon" (throttledClick)="onVolumeMute()">
+  <button mat-icon-button
+          appInteractionThrottle
+          class="mat-subheading-2 track-player-icon"
+          (throttledClick)="onVolumeMute()">
     <mat-icon class="volume-button">{{volumeIcon}}</mat-icon>
   </button>
   <div class="volume-slider">
-    <mat-slider appInteractionThrottle style="width: 100%" min="0" max="100" step="1" [value]="volume" (throttledChange)="onVolumeChange($event)"></mat-slider>
+    <mat-slider appInteractionThrottle
+                style="width: 100%" min="0" max="100" step="1"
+                [value]="volume"
+                (throttledChange)="onVolumeChange($event)"></mat-slider>
   </div>
-  <app-devices></app-devices>
+  <app-devices [disallows]="disallows"></app-devices>
   <div class="like-button">
-    <button mat-icon-button appInteractionThrottle [ngClass]="likedClass" (throttledClick)="onLikeChange()">
+    <button mat-icon-button
+            appInteractionThrottle
+            [ngClass]="likedClass"
+            (throttledClick)="onLikeChange()">
       <mat-icon>thumb_up</mat-icon>
     </button>
   </div>

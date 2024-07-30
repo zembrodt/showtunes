@@ -2,7 +2,12 @@
      fxLayout="column"
      fxLayoutAlign="center center">
   <div class="track-slider">
-    <mat-slider appInteractionThrottle class="track-slider" min="0" [max]="duration" step="1" [value]="progress" (throttledChange)="onProgressChange($event)"></mat-slider>
+    <mat-slider appInteractionThrottle
+                class="track-slider" min="0"
+                [max]="duration" step="1"
+                [value]="progress"
+                [disabled]="disallows.seek"
+                (throttledChange)="onProgressChange($event)"></mat-slider>
   </div>
   <div class="mat-subheading-2 time-values"
        fxLayout="row"

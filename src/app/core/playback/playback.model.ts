@@ -19,6 +19,7 @@ export interface PlaybackModel {
   repeatState: string;
   isLiked: boolean;
   playerState: PlayerState;
+  disallows: DisallowsModel;
 }
 
 export interface TrackModel {
@@ -68,6 +69,20 @@ export interface DeviceModel {
   icon: string;
 }
 
+export interface DisallowsModel {
+  interruptPlayback: boolean;
+  pause: boolean;
+  resume: boolean;
+  seek: boolean;
+  skipNext: boolean;
+  skipPrev: boolean;
+  repeatContext: boolean;
+  shuffle: boolean;
+  repeatTrack: boolean;
+  transferPlayback: boolean;
+
+}
+
 export const DEFAULT_PLAYBACK: PlaybackModel = {
   track: {
     id: '',
@@ -110,5 +125,21 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
   isShuffle: false,
   isSmartShuffle: false,
   repeatState: '',
-  playerState: PlayerState.Idling
+  playerState: PlayerState.Idling,
+  disallows: getDefaultDisallows()
 };
+
+export function getDefaultDisallows(): DisallowsModel {
+  return {
+    interruptPlayback: false,
+    pause: false,
+    resume: false,
+    seek: false,
+    skipNext: false,
+    skipPrev: false,
+    repeatContext: false,
+    shuffle: false,
+    repeatTrack: false,
+    transferPlayback: false
+  };
+}

@@ -1,9 +1,10 @@
 import { HttpResponse, HttpStatusCode } from '@angular/common/http';
+import { ActionsResponse } from '../models/actions.model';
 import { AlbumResponse } from '../models/album.model';
 import { DeviceResponse } from '../models/device.model';
 import { PlaylistResponse } from '../models/playlist.model';
 import { TrackResponse } from '../models/track.model';
-import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback/playback.model';
+import { AlbumModel, DeviceModel, DisallowsModel, PlaylistModel, TrackModel } from './playback/playback.model';
 import { SpotifyAPIResponse } from './types';
 
 export const VALID_HEX_COLOR = '^#?[A-Fa-f0-9]{3}$|^#?[A-Fa-f0-9]{6}$';
@@ -256,6 +257,24 @@ export function parseDevice(device: DeviceResponse): DeviceModel {
     };
   }
   return null;
+}
+
+export function parseDisallows(disallows: ActionsResponse): DisallowsModel {
+  if (!disallows) {
+    disallows = {};
+  }
+  return {
+    interruptPlayback: !!disallows.interrupting_playback,
+    pause: !!disallows.pausing,
+    resume: !!disallows.resuming,
+    seek: !!disallows.seeking,
+    skipNext: !!disallows.skipping_next,
+    skipPrev: !!disallows.skipping_prev,
+    repeatContext: !!disallows.toggling_repeat_context,
+    shuffle: !!disallows.toggling_shuffle,
+    repeatTrack: !!disallows.toggling_repeat_track,
+    transferPlayback: !!disallows.transferring_playback
+  };
 }
 
 export function getIdFromSpotifyUri(uri: string): string {

@@ -14,12 +14,12 @@ import {
   SetLiked,
   SetPlaying,
   SetProgress,
-  SetShuffle, SetSmartShuffle
+  SetShuffle, SetSmartShuffle, SetDisallows
 } from './playback.actions';
 import {
   AlbumModel,
   DEFAULT_PLAYBACK,
-  DeviceModel,
+  DeviceModel, DisallowsModel,
   PLAYBACK_STATE_NAME,
   PlaybackModel,
   PlayerState,
@@ -110,6 +110,11 @@ export class PlaybackState {
     return state.playerState;
   }
 
+  @Selector()
+  static disallows(state: PlaybackModel): DisallowsModel {
+    return state.disallows;
+  }
+
   @Action(ChangeTrack)
   changeTrack(ctx: StateContext<PlaybackModel>, action: ChangeTrack): void {
     ctx.patchState({track: action.track});
@@ -180,5 +185,10 @@ export class PlaybackState {
   @Action(SetPlayerState)
   setIdle(ctx: StateContext<PlaybackModel>, action: SetPlayerState): void {
     ctx.patchState({playerState: action.playerState});
+  }
+
+  @Action(SetDisallows)
+  setDisallows(ctx: StateContext<PlaybackModel>, action: SetDisallows): void {
+    ctx.patchState({disallows: action.disallows});
   }
 }

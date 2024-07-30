@@ -15,6 +15,7 @@ import { BehaviorSubject } from 'rxjs';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { MockInteractionThrottleDirective } from '../../../core/testing/mock-interaction-throttle.directive';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
+import { getTestDisallowsModel } from '../../../core/testing/test-models';
 import { callComponentChange, callComponentChanges } from '../../../core/testing/test-util';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
 import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
@@ -178,13 +179,32 @@ describe('TrackPlayerControlsComponent', () => {
     expect(await icon.getName()).toEqual('model_training');
   });
 
-  it('should display disable the smart shuffle button ripple when isSmartShuffle', async () => {
+  it('should disable the smart shuffle button ripple when isSmartShuffle', async () => {
     component.isSmartShuffle = true;
     callComponentChange(fixture, 'isSmartShuffle', component.isSmartShuffle);
     const buttons = fixture.debugElement.queryAll(By.directive(MatButton));
     expect(buttons.length).toEqual(BUTTON_COUNT);
     const shuffle = buttons[SHUFFLE_BUTTON_INDEX];
     expect(shuffle.attributes['ng-reflect-disable-ripple']).toEqual('true');
+  });
+
+  it('should disable the shuffle button when shuffle disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      shuffle: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const shuffleButton = buttons[SHUFFLE_BUTTON_INDEX];
+    expect(await shuffleButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the shuffle button when shuffle is not disallowed', async () => {
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const shuffleButton = buttons[SHUFFLE_BUTTON_INDEX];
+    expect(await shuffleButton.isDisabled()).toBeFalse();
   });
 
   it('should call onToggleShuffle when shuffle button is clicked and not isSmartShuffle', async () => {
@@ -207,6 +227,50 @@ describe('TrackPlayerControlsComponent', () => {
     const prevButton = buttons[PREVIOUS_BUTTON_INDEX];
     await prevButton.click();
     expect(component.onSkipPrevious).toHaveBeenCalled();
+  });
+
+  it('should disable the skip prev button when skip prev and seek disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipPrev: true,
+      seek: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const prevButton = buttons[PREVIOUS_BUTTON_INDEX];
+    expect(await prevButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the skip prev button when skip prev disallowed and seek is not disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipPrev: true,
+      seek: false
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const prevButton = buttons[PREVIOUS_BUTTON_INDEX];
+    expect(await prevButton.isDisabled()).toBeFalse();
+  });
+
+  it('should not disable the skip prev button when skip prev is not disallowed and seek disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipPrev: false,
+      seek: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const prevButton = buttons[PREVIOUS_BUTTON_INDEX];
+    expect(await prevButton.isDisabled()).toBeFalse();
+  });
+
+  it('should not disable the skip prev button when skip prev and seek are not disallowed', async () => {
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const prevButton = buttons[PREVIOUS_BUTTON_INDEX];
+    expect(await prevButton.isDisabled()).toBeFalse();
   });
 
   it('should call onPause when play/pause button is clicked', async () => {
@@ -240,6 +304,72 @@ describe('TrackPlayerControlsComponent', () => {
     expect(await icon.getName()).toEqual('pause');
   });
 
+  it('should disable the pause button when is playing and pause disallowed', async () => {
+    component.isPlaying = true;
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      pause: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const pauseButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await pauseButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the pause button when is playing and resume disallowed', async () => {
+    component.isPlaying = true;
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      resume: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const pauseButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await pauseButton.isDisabled()).toBeFalse();
+  });
+
+  it('should not disable the pause button when is playing and pause is not disallowed', async () => {
+    component.isPlaying = true;
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const pauseButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await pauseButton.isDisabled()).toBeFalse();
+  });
+
+  it('should disable the resume button when is not playing and resume disallowed', async () => {
+    component.isPlaying = false;
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      resume: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const resumeButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await resumeButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the resume button when is not playing and pause disallowed', async () => {
+    component.isPlaying = false;
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      pause: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const resumeButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await resumeButton.isDisabled()).toBeFalse();
+  });
+
+  it('should not disable the resume button when is not playing and resume is not disallowed', async () => {
+    component.isPlaying = false;
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const resumeButton = buttons[PAUSE_BUTTON_INDEX];
+    expect(await resumeButton.isDisabled()).toBeFalse();
+  });
+
   it('should call onSkipNext when next button is clicked', async () => {
     spyOn(component, 'onSkipNext');
     const buttons = await loader.getAllHarnesses(MatButtonHarness);
@@ -247,6 +377,25 @@ describe('TrackPlayerControlsComponent', () => {
     const nextButton = buttons[NEXT_BUTTON_INDEX];
     await nextButton.click();
     expect(component.onSkipNext).toHaveBeenCalled();
+  });
+
+  it('should disable the skip next button when skip next disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipNext: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const nextButton = buttons[NEXT_BUTTON_INDEX];
+    expect(await nextButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the skip next button when skip next is not disallowed', async () => {
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const nextButton = buttons[NEXT_BUTTON_INDEX];
+    expect(await nextButton.isDisabled()).toBeFalse();
   });
 
   it('should display repeat button with accent if repeat is not off', () => {
@@ -311,6 +460,25 @@ describe('TrackPlayerControlsComponent', () => {
     const icon = await repeatButton.getHarness(MatIconHarness);
     expect(icon).toBeTruthy();
     expect(await icon.getName()).toEqual('repeat_one');
+  });
+
+  it('should disable the repeat button when repeat context disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      repeatContext: true
+    };
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const repeatButton = buttons[REPEAT_BUTTON_INDEX];
+    expect(await repeatButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the repeat button when repeat context is not disallowed', async () => {
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const buttons = await loader.getAllHarnesses(MatButtonHarness);
+    const repeatButton = buttons[REPEAT_BUTTON_INDEX];
+    expect(await repeatButton.isDisabled()).toBeFalse();
   });
 
   it('should call onVolumeMute when volume button is clicked', async () => {
@@ -451,7 +619,38 @@ describe('TrackPlayerControlsComponent', () => {
 
   it('should call Spotify skip on skip previous', () => {
     component.onSkipPrevious();
-    expect(controls.skipPrevious).toHaveBeenCalledWith(false);
+    expect(controls.skipPrevious).toHaveBeenCalledWith(false, false);
+  });
+
+  it('should call Spotify skip on skip previous with skip prev disallowed', () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipPrev: true
+    };
+    fixture.detectChanges();
+    component.onSkipPrevious();
+    expect(controls.skipPrevious).toHaveBeenCalledWith(true, false);
+  });
+
+  it('should call Spotify skip on skip previous with seek disallowed', () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      seek: true
+    };
+    fixture.detectChanges();
+    component.onSkipPrevious();
+    expect(controls.skipPrevious).toHaveBeenCalledWith(false, true);
+  });
+
+  it('should call Spotify skip on skip previous with skip prev and seek disallowed', () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      skipPrev: true,
+      seek: true
+    };
+    fixture.detectChanges();
+    component.onSkipPrevious();
+    expect(controls.skipPrevious).toHaveBeenCalledWith(true, true);
   });
 
   it('should call Spotify skip on skip next', () => {

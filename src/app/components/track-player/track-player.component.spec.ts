@@ -3,9 +3,10 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { By } from '@angular/platform-browser';
 import { MockComponent } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { AlbumModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
+import { AlbumModel, DisallowsModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
 import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { getTestDisallowsModel } from '../../core/testing/test-models';
 import { TrackPlayerControlsComponent } from './track-player-controls/track-player-controls.component';
 import { TrackPlayerProgressComponent } from './track-player-progress/track-player-progress.component';
 
@@ -64,6 +65,7 @@ describe('TrackPlayerComponent', () => {
   let isLikedProducer: BehaviorSubject<boolean>;
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
   let showPlaylistNameProducer: BehaviorSubject<boolean>;
+  let disallowsProducer: BehaviorSubject<DisallowsModel>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
@@ -90,6 +92,7 @@ describe('TrackPlayerComponent', () => {
     isLikedProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'isLiked$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(component, 'showPlayerControls$');
     showPlaylistNameProducer = mockSelectors.defineNgxsSelector<boolean>(component, 'showPlaylistName$');
+    disallowsProducer = mockSelectors.defineNgxsSelector<DisallowsModel>(component, 'disallows$');
 
     fixture.detectChanges();
   }));
@@ -230,6 +233,12 @@ describe('TrackPlayerComponent', () => {
   });
 
   it('should correctly set the track player controls values', () => {
+    const updatedDisallows = {
+      ...getTestDisallowsModel(),
+      resume: true,
+      shuffle: true
+    };
+
     component.showPlayerControls = true;
     isShuffleProducer.next(true);
     isSmartShuffleProducer.next(true);
@@ -237,6 +246,7 @@ describe('TrackPlayerComponent', () => {
     repeatProducer.next('context');
     deviceVolumeProducer.next(50);
     isLikedProducer.next(true);
+    disallowsProducer.next(updatedDisallows);
     fixture.detectChanges();
     const playerControls = fixture.debugElement.query(By.directive(TrackPlayerControlsComponent))
       .componentInstance as TrackPlayerControlsComponent;
@@ -246,6 +256,7 @@ describe('TrackPlayerComponent', () => {
     expect(playerControls.repeatState).toEqual('context');
     expect(playerControls.volume).toEqual(50);
     expect(playerControls.isLiked).toBeTrue();
+    expect(playerControls.disallows).toEqual(updatedDisallows);
   });
 
   it('should show playlist name when showing playlist and playlist exists', () => {

@@ -9,13 +9,13 @@ import {
   ChangeDeviceIsActive,
   ChangeDeviceVolume,
   ChangePlaylist, ChangeRepeatState,
-  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
+  ChangeTrack, SetDisallows, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
 } from '../../../core/playback/playback.actions';
 import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from '../../../core/playback/playback.model';
 import { PlaybackState } from '../../../core/playback/playback.state';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
 import { SpotifyAPIResponse } from '../../../core/types';
-import { checkResponse, getIdFromSpotifyUri, parseAlbum, parseDevice, parseTrack } from '../../../core/util';
+import { checkResponse, getIdFromSpotifyUri, parseAlbum, parseDevice, parseDisallows, parseTrack } from '../../../core/util';
 import { CurrentPlaybackResponse } from '../../../models/current-playback.model';
 import { PREVIOUS_VOLUME, StorageService } from '../../storage/storage.service';
 import { SpotifyControlsService } from '../controls/spotify-controls.service';
@@ -109,6 +109,7 @@ export class SpotifyPollingService {
         this.store.dispatch(new SetSmartShuffle(playback.smart_shuffle));
         this.store.dispatch(new ChangeRepeatState(playback.repeat_state));
         this.store.dispatch(new SetPlayerState(PlayerState.Playing));
+        this.store.dispatch(new SetDisallows(parseDisallows(playback.actions.disallows)));
       } else {
         this.store.dispatch(new SetPlayerState(PlayerState.Idling));
       }

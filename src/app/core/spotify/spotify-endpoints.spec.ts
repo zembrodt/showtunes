@@ -1,6 +1,6 @@
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { AppConfig } from '../../app.config';
-import { getTestAppConfig } from '../testing/test-models';
+import { getTestAppConfig } from '../testing/test-responses';
 import { SpotifyEndpoints } from './spotify-endpoints';
 
 describe('SpotifyEndpoints', () => {

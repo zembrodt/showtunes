@@ -4,7 +4,7 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { AppConfig } from './app.config';
-import { getTestAppConfig } from './core/testing/test-models';
+import { getTestAppConfig } from './core/testing/test-responses';
 
 const IDLE_POLLING_DEFAULT = 3000;
 const PLAYBACK_POLLING_DEFAULT = 1000;

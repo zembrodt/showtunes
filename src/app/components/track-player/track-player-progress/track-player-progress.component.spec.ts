@@ -7,7 +7,9 @@ import { MatSliderHarness } from '@angular/material/slider/testing';
 import { By } from '@angular/platform-browser';
 import { NgxsModule } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
+import { DisallowsModel } from '../../../core/playback/playback.model';
 import { MockInteractionThrottleDirective } from '../../../core/testing/mock-interaction-throttle.directive';
+import { getTestDisallowsModel } from '../../../core/testing/test-models';
 import { callComponentChange } from '../../../core/testing/test-util';
 import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 import { TrackPlayerProgressComponent } from './track-player-progress.component';
@@ -90,6 +92,25 @@ describe('TrackPlayerProgressComponent', () => {
     change.value = 10;
     component.onProgressChange(change);
     expect(controls.setTrackPosition).toHaveBeenCalledWith(10);
+  });
+
+  it('should not disable the progress bar when seeking allowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel()
+    };
+    fixture.detectChanges();
+    const slider = await loader.getHarness(MatSliderHarness);
+    expect(await slider.isDisabled()).toBeFalse();
+  });
+
+  it('should disable the progress bar when seeking disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      seek: true
+    };
+    fixture.detectChanges();
+    const slider = await loader.getHarness(MatSliderHarness);
+    expect(await slider.isDisabled()).toBeTrue();
   });
 
   it('should display single seconds digit progress correctly', () => {

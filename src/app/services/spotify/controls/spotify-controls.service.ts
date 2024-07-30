@@ -96,12 +96,13 @@ export class SpotifyControlsService {
     this.setPlaying(!this.isPlaying);
   }
 
-  skipPrevious(forcePrevious: boolean): void {
+  skipPrevious(skipPrevDisallowed: boolean, seekDisallowed: boolean): void {
     // Check if we should skip to previous track or start of current
-    if (!forcePrevious && this.progress > SpotifyControlsService.SKIP_PREVIOUS_THRESHOLD
-      && !((SpotifyControlsService.SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) {
+    if (!seekDisallowed && (
+      (this.progress > SpotifyControlsService.SKIP_PREVIOUS_THRESHOLD
+      && !((SpotifyControlsService.SKIP_PREVIOUS_THRESHOLD * 2) >= this.duration)) || skipPrevDisallowed)) {
       this.setTrackPosition(0);
-    } else {
+    } else if (!skipPrevDisallowed) {
       this.http.post(SpotifyEndpoints.getPreviousEndpoint(), {}, {
         headers: this.auth.getAuthHeaders(),
         observe: 'response',

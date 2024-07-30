@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AlbumModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
+import { AlbumModel, DisallowsModel, PlaylistModel, TrackModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
@@ -28,6 +28,7 @@ export class TrackPlayerComponent implements OnInit, OnDestroy {
   @Select(PlaybackState.isLiked) isLiked$: Observable<boolean>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
   @Select(SettingsState.showPlaylistName) showPlaylistName$: Observable<boolean>;
+  @Select(PlaybackState.disallows) disallows$: Observable<DisallowsModel>;
 
   showPlayerControls = true;
 

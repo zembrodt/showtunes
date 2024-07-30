@@ -3,6 +3,8 @@ import { MatSliderChange } from '@angular/material/slider';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { DisallowsModel, getDefaultDisallows } from '../../../core/playback/playback.model';
+import { PlaybackState } from '../../../core/playback/playback.state';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { SettingsState } from '../../../core/settings/settings.state';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
@@ -51,6 +53,7 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   @Input() repeatState: string;
   @Input() volume = DEFAULT_VOLUME;
   @Input() isLiked = false;
+  @Input() disallows: DisallowsModel = getDefaultDisallows();
 
   shuffleClasses = this.getShuffleClasses();
   shuffleIcon = this.getShuffleIcon();
@@ -125,7 +128,7 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   }
 
   onSkipPrevious(): void {
-    this.controls.skipPrevious(false);
+    this.controls.skipPrevious(this.disallows.skipPrev, this.disallows.seek);
   }
 
   onSkipNext(): void {

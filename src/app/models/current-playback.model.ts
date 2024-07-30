@@ -1,6 +1,7 @@
+import { ActionsResponse } from './actions.model';
 import { DeviceResponse } from './device.model';
 import { TrackResponse } from './track.model';
-import {ContextResponse} from './context.model';
+import { ContextResponse } from './context.model';
 
 export interface CurrentPlaybackResponse {
   item: TrackResponse;
@@ -13,4 +14,7 @@ export interface CurrentPlaybackResponse {
   device: DeviceResponse;
   currently_playing_type: string;
   timestamp: number;
+  actions: {
+    disallows: ActionsResponse;
+  };
 }

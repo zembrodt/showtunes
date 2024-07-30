@@ -6,10 +6,11 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import {
+  getTestActionsResponse,
   getTestAlbumResponse, getTestAppConfig, getTestDeviceResponse, getTestPlaybackResponse,
   getTestPlaylistResponse,
   getTestTrackResponse,
-} from 'src/app/core/testing/test-models';
+} from 'src/app/core/testing/test-responses';
 import { AppConfig } from '../../../app.config';
 import {
   ChangeAlbum,
@@ -17,13 +18,13 @@ import {
   ChangeDeviceIsActive,
   ChangeDeviceVolume,
   ChangePlaylist,
-  ChangeTrack, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
+  ChangeTrack, SetDisallows, SetPlayerState, SetPlaying, SetProgress, SetShuffle, SetSmartShuffle
 } from '../../../core/playback/playback.actions';
 import { AlbumModel, DeviceModel, PlayerState, PlaylistModel, TrackModel } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
 import { NgxsSelectorMock } from '../../../core/testing/ngxs-selector-mock';
 import { generateResponse } from '../../../core/testing/test-util';
-import { parseAlbum, parseDevice, parsePlaylist, parseTrack } from '../../../core/util';
+import { parseAlbum, parseDevice, parseDisallows, parsePlaylist, parseTrack } from '../../../core/util';
 import { CurrentPlaybackResponse } from '../../../models/current-playback.model';
 import { PREVIOUS_VOLUME, StorageService } from '../../storage/storage.service';
 import { SpotifyControlsService } from '../controls/spotify-controls.service';
@@ -319,6 +320,7 @@ describe('SpotifyPollingService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new SetShuffle(getTestPlaybackResponse().shuffle_state));
     expect(store.dispatch).toHaveBeenCalledWith(new SetSmartShuffle(getTestPlaybackResponse().smart_shuffle));
     expect(store.dispatch).toHaveBeenCalledWith(new SetPlayerState(PlayerState.Playing));
+    expect(store.dispatch).toHaveBeenCalledWith(new SetDisallows(parseDisallows(getTestActionsResponse())));
   }));
 
   it('should set playback to idle when playback not available', fakeAsync(() => {

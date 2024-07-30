@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Select } from '@ngxs/store';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { debounceTime, takeUntil, throttleTime } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
-import { DeviceModel } from '../../core/playback/playback.model';
+import { DeviceModel, DisallowsModel, getDefaultDisallows } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
 
@@ -16,6 +16,8 @@ const FETCH_DEVICES_DELAY = 1000; // ms
 })
 export class DevicesComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
+
+  @Input() disallows: DisallowsModel = getDefaultDisallows();
 
   @Select(PlaybackState.device) currentDevice$: Observable<DeviceModel>;
   @Select(PlaybackState.availableDevices) availableDevices$: Observable<DeviceModel[]>;

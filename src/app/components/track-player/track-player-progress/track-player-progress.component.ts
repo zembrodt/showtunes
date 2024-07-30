@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
+import { DisallowsModel, getDefaultDisallows } from '../../../core/playback/playback.model';
 import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 
 @Component({
@@ -11,6 +12,7 @@ export class TrackPlayerProgressComponent implements OnChanges {
 
   @Input() progress = 0;
   @Input() duration = 100;
+  @Input() disallows: DisallowsModel = getDefaultDisallows();
 
   progressFormatted = this.getFormattedProgress(this.progress);
   durationFormatted = this.getFormattedProgress(this.duration);

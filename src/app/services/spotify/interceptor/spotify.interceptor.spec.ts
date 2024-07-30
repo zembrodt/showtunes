@@ -14,7 +14,7 @@ import { Observable, throwError } from 'rxjs';
 import { isEmpty } from 'rxjs/operators';
 import { AppConfig } from '../../../app.config';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
-import { getTestAppConfig } from '../../../core/testing/test-models';
+import { getTestAppConfig } from '../../../core/testing/test-responses';
 import { SpotifyAPIResponse } from '../../../core/types';
 import { SpotifyAuthService } from '../auth/spotify-auth.service';
 import { SpotifyInterceptor } from './spotify.interceptor';

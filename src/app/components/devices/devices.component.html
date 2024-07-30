@@ -1,11 +1,16 @@
-<button mat-icon-button [matMenuTriggerFor]="devicesMenu" (menuOpened)="onMenuOpened()">
+<button mat-icon-button
+        [disabled]="disallows.transferPlayback"
+        [matMenuTriggerFor]="devicesMenu"
+        (menuOpened)="onMenuOpened()">
   <mat-icon class="app-icon">devices</mat-icon>
 </button>
 <mat-menu class="devices-menu" #devicesMenu="matMenu">
   <ng-container *ngFor="let device of (availableDevices$ | async)">
     <ng-container *ngIf="(currentDevice$ | async) || {}; let currentDevice">
-      <button mat-menu-item appInteractionThrottle
+      <button mat-menu-item
+              appInteractionThrottle
               [class.active]="currentDevice && currentDevice.id === device.id"
+              [disabled]="disallows.transferPlayback"
               (throttledClick)="onSelectDevice(device)"
       >
         <mat-icon class="app-icon">{{device.icon}}</mat-icon>

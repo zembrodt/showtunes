@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { NgxsModule, Store } from '@ngxs/store';
 import { ImageResponse } from '../../models/image.model';
+import { getTestDisallowsModel } from '../testing/test-models';
 import {
   ChangeAlbum,
   ChangeDevice,
@@ -10,14 +11,23 @@ import {
   ChangePlaylist,
   ChangeRepeatState,
   ChangeTrack,
-  SetAvailableDevices,
+  SetAvailableDevices, SetDisallows,
   SetLiked,
   SetPlayerState,
   SetPlaying,
   SetProgress,
   SetShuffle, SetSmartShuffle
 } from './playback.actions';
-import { AlbumModel, ArtistModel, DeviceModel, PLAYBACK_STATE_NAME, PlayerState, PlaylistModel, TrackModel } from './playback.model';
+import {
+  AlbumModel,
+  ArtistModel,
+  DeviceModel,
+  DisallowsModel,
+  PLAYBACK_STATE_NAME,
+  PlayerState,
+  PlaylistModel,
+  TrackModel
+} from './playback.model';
 import { PlaybackState } from './playback.state';
 
 const TEST_ARTIST_1: ArtistModel = {
@@ -111,7 +121,8 @@ describe('PlaybackState', () => {
         isSmartShuffle: true,
         repeatState: 'context',
         isLiked: true,
-        playerState: PlayerState.Idling
+        playerState: PlayerState.Idling,
+        disallows: getTestDisallowsModel()
       }
     });
   });
@@ -189,6 +200,11 @@ describe('PlaybackState', () => {
   it('should select playerState', () => {
     const state = selectPlayerState(store);
     expect(state).toEqual(PlayerState.Idling);
+  });
+
+  it('should select disallows', () => {
+    const disallows = selectDisallows(store);
+    expect(disallows).toEqual(getTestDisallowsModel());
   });
 
   it('should change track', () => {
@@ -305,6 +321,16 @@ describe('PlaybackState', () => {
     const state = selectPlayerState(store);
     expect(state).toEqual(PlayerState.Refreshing);
   });
+
+  it('should set disallows', () => {
+    const updatedDisallows = {
+      ...getTestDisallowsModel(),
+      shuffle: true
+    };
+    store.dispatch(new SetDisallows(updatedDisallows));
+    const disallows = selectDisallows(store);
+    expect(disallows.shuffle).toBeTrue();
+  });
 });
 
 function selectTrack(store: Store): TrackModel {
@@ -363,6 +389,10 @@ function selectIsLiked(store: Store): boolean {
   return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].isLiked);
 }
 
-function selectPlayerState(store: Store): boolean {
+function selectPlayerState(store: Store): PlayerState {
   return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].playerState);
+}
+
+function selectDisallows(store: Store): DisallowsModel {
+  return store.selectSnapshot(state => state[PLAYBACK_STATE_NAME].disallows);
 }

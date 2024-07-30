@@ -2,6 +2,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuItem, MatMenuModule } from '@angular/material/menu';
 import { MatMenuHarness, MatMenuItemHarness } from '@angular/material/menu/testing';
@@ -14,7 +15,8 @@ import { AppConfig } from '../../app.config';
 import { DeviceModel } from '../../core/playback/playback.model';
 import { MockInteractionThrottleDirective } from '../../core/testing/mock-interaction-throttle.directive';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { getTestAppConfig } from '../../core/testing/test-models';
+import { getTestDisallowsModel } from '../../core/testing/test-models';
+import { getTestAppConfig } from '../../core/testing/test-responses';
 import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
 
 import { DevicesComponent } from './devices.component';
@@ -94,6 +96,23 @@ describe('DevicesComponent', () => {
     expect(devices.length).toEqual(2);
   });
 
+  it('should disable the devices menu button when transfer playback disallowed', async () => {
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      transferPlayback: true
+    };
+    fixture.detectChanges();
+    const deviceButton = await loader.getHarness(MatButtonHarness);
+    expect(await deviceButton.isDisabled()).toBeTrue();
+  });
+
+  it('should not disable the devices menu button when transfer playback not disallowed', async () => {
+    component.disallows = getTestDisallowsModel();
+    fixture.detectChanges();
+    const deviceButton = await loader.getHarness(MatButtonHarness);
+    expect(await deviceButton.isDisabled()).toBeFalse();
+  });
+
   it('should highlight the current device', () => {
     availableDevicesProducer.next([TEST_DEVICE_1, TEST_DEVICE_2]);
     currentDeviceProducer.next(TEST_DEVICE_1);
@@ -108,6 +127,29 @@ describe('DevicesComponent', () => {
     fixture.detectChanges();
     expect(devices[0].classes.active).toBeFalsy();
     expect(devices[1].classes.active).toBeTruthy();
+  });
+
+  it('should disable device buttons when transfer playback disallowed', async () => {
+    availableDevicesProducer.next([TEST_DEVICE_1, TEST_DEVICE_2]);
+    component.disallows = {
+      ...getTestDisallowsModel(),
+      transferPlayback: true
+    };
+    fixture.debugElement.nativeElement.querySelector('button').click();
+    fixture.detectChanges();
+    const devices = await rootLoader.getAllHarnesses(MatMenuItemHarness);
+    expect(await devices[0].isDisabled()).toBeTrue();
+    expect(await devices[1].isDisabled()).toBeTrue();
+  });
+
+  it('should not disable device buttons when transfer playback is not disallowed', async () => {
+    availableDevicesProducer.next([TEST_DEVICE_1, TEST_DEVICE_2]);
+    component.disallows = getTestDisallowsModel();
+    fixture.debugElement.nativeElement.querySelector('button').click();
+    fixture.detectChanges();
+    const devices = await rootLoader.getAllHarnesses(MatMenuItemHarness);
+    expect(await devices[0].isDisabled()).toBeFalse();
+    expect(await devices[1].isDisabled()).toBeFalse();
   });
 
   it('should display empty menu when no available devices', async () => {
