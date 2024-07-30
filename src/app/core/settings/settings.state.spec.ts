@@ -4,6 +4,7 @@ import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { DominantColor } from '../dominant-color/dominant-color-finder';
+import { getTestDominantColor } from '../testing/test-models';
 import { FontColor } from '../util';
 import {
   ChangeCustomAccentColor,
@@ -20,17 +21,6 @@ import {
 } from './settings.actions';
 import { PlayerControlsOptions, SETTINGS_STATE_NAME, Theme } from './settings.model';
 import { SettingsState } from './settings.state';
-
-const TEST_DOMINANT_COLOR: DominantColor = {
-  hex: 'DEF789',
-  rgb: {
-    r: 222,
-    g: 247,
-    b: 137,
-    a: 255
-  },
-  foregroundFontColor: FontColor.White
-};
 
 describe('SettingsState', () => {
   let store: Store;
@@ -237,13 +227,13 @@ describe('SettingsState', () => {
   });
 
   it('should update the dynamicColor', () => {
-    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    store.dispatch(new ChangeDynamicColor(getTestDominantColor()));
     const dynamicColor = selectDynamicColor(store);
-    expect(dynamicColor).toEqual(TEST_DOMINANT_COLOR);
+    expect(dynamicColor).toEqual(getTestDominantColor());
   });
 
   it('should update dynamicAccentColor if when dynamicColor updated', () => {
-    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    store.dispatch(new ChangeDynamicColor(getTestDominantColor()));
     const accentColor = selectDynamicAccentColor(store);
     expect(accentColor).toEqual('gray');
   });
@@ -254,7 +244,7 @@ describe('SettingsState', () => {
       dynamicAccentColor: 'test-color'
     });
     const dominantColor: DominantColor = {
-      ...TEST_DOMINANT_COLOR,
+      ...getTestDominantColor(),
       hex: 'badhex'
     };
     store.dispatch(new ChangeDynamicColor(dominantColor));
@@ -282,7 +272,7 @@ describe('SettingsState', () => {
       customAccentColor: 'cyan',
       useDynamicThemeAccent: true
     });
-    store.dispatch(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    store.dispatch(new ChangeDynamicColor(getTestDominantColor()));
     expect(element.classList.length).toEqual(1);
     console.log(element.classList);
     expect(element.classList.contains('gray-dark-theme')).toBeTrue();
@@ -317,7 +307,7 @@ describe('SettingsState', () => {
 
   it('should toggle useDynamicThemeAccent on and set dynamicAccentColor', () => {
     setState(store, {
-      dynamicColor: TEST_DOMINANT_COLOR,
+      dynamicColor: getTestDominantColor(),
       useDynamicThemeAccent: false,
       dynamicAccentColor: null
     });
@@ -332,7 +322,7 @@ describe('SettingsState', () => {
     setState(store, {
       theme: Theme.Light,
       customAccentColor: 'cyan',
-      dynamicColor: TEST_DOMINANT_COLOR,
+      dynamicColor: getTestDominantColor(),
       useDynamicThemeAccent: false
     });
     store.dispatch(new ToggleDynamicThemeAccent());

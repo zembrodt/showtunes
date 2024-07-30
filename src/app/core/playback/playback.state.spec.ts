@@ -2,7 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { NgxsModule, Store } from '@ngxs/store';
 import { ImageResponse } from '../../models/image.model';
-import { getTestDisallowsModel } from '../testing/test-models';
+import {
+  getTestAlbumModel,
+  getTestDeviceModel,
+  getTestDisallowsModel,
+  getTestPlaylistModel,
+  getTestTrackModel
+} from '../testing/test-models';
 import {
   ChangeAlbum,
   ChangeDevice,
@@ -20,7 +26,6 @@ import {
 } from './playback.actions';
 import {
   AlbumModel,
-  ArtistModel,
   DeviceModel,
   DisallowsModel,
   PLAYBACK_STATE_NAME,
@@ -29,72 +34,6 @@ import {
   TrackModel
 } from './playback.model';
 import { PlaybackState } from './playback.state';
-
-const TEST_ARTIST_1: ArtistModel = {
-  name: 'artist-1',
-  href: 'artist-href-1'
-};
-
-const TEST_ARTIST_2: ArtistModel = {
-  name: 'artist-2',
-  href: 'artist-href-2'
-};
-
-const TEST_TRACK: TrackModel = {
-  id: 'track-id',
-  title: 'test-track',
-  duration: 100,
-  artists: [
-    TEST_ARTIST_1,
-    TEST_ARTIST_2
-  ],
-  uri: 'test:track:uri',
-  href: 'track-href'
-};
-
-const TEST_COVER_ART = {
-  width: 500,
-  height: 500,
-  url: 'album-art-url'
-};
-
-const TEST_ALBUM: AlbumModel = {
-  id: 'album-id',
-  name: 'test-album',
-  releaseDate: 'release',
-  totalTracks: 10,
-  type: 'album',
-  artists: [
-    'test-artist-1',
-    'test-artist-2'
-  ],
-  coverArt: TEST_COVER_ART,
-  uri: 'test:album:uri',
-  href: 'album-href'
-};
-
-const TEST_PLAYLIST: PlaylistModel = {
-  id: 'playlist-id',
-  name: 'test-playlist',
-  href: 'playlist-href'
-};
-
-const TEST_DEVICE_1: DeviceModel = {
-  id: 'device-id-1',
-  name: 'test-device-1',
-  type: 'device-type',
-  volume: 50,
-  isActive: true,
-  isPrivateSession: true,
-  isRestricted: true,
-  icon: 'device-icon'
-};
-
-const TEST_DEVICE_2: DeviceModel = {
-  ...TEST_DEVICE_1,
-  id: 'device-id-2',
-  name: 'test-device-2'
-};
 
 describe('PlaybackState', () => {
   let store: Store;
@@ -107,13 +46,13 @@ describe('PlaybackState', () => {
     store.reset({
       ...store.snapshot(),
       SHOWTUNES_PLAYBACK: {
-        track: TEST_TRACK,
-        album: TEST_ALBUM,
-        playlist: TEST_PLAYLIST,
-        device: TEST_DEVICE_1,
+        track: getTestTrackModel(),
+        album: getTestAlbumModel(),
+        playlist: getTestPlaylistModel(),
+        device: getTestDeviceModel(1),
         availableDevices: [
-          TEST_DEVICE_1,
-          TEST_DEVICE_2
+          getTestDeviceModel(1),
+          getTestDeviceModel(2)
         ],
         progress: 0,
         isPlaying: true,
@@ -129,37 +68,37 @@ describe('PlaybackState', () => {
 
   it('should select track', () => {
     const track = selectTrack(store);
-    expect(track).toEqual(TEST_TRACK);
+    expect(track).toEqual(getTestTrackModel());
   });
 
   it('should select album', () => {
     const album = selectAlbum(store);
-    expect(album).toEqual(TEST_ALBUM);
+    expect(album).toEqual(getTestAlbumModel());
   });
 
   it('should select playlist', () => {
     const playlist = selectPlaylist(store);
-    expect(playlist).toEqual(TEST_PLAYLIST);
+    expect(playlist).toEqual(getTestPlaylistModel());
   });
 
   it('should select coverArt', () => {
     const coverArt = selectCoverArt(store);
-    expect(coverArt).toEqual(TEST_COVER_ART);
+    expect(coverArt).toEqual(getTestAlbumModel().coverArt);
   });
 
   it('should select device', () => {
     const device = selectDevice(store);
-    expect(device).toEqual(TEST_DEVICE_1);
+    expect(device).toEqual(getTestDeviceModel(1));
   });
 
   it('should select deviceVolume', () => {
     const deviceVolume = selectDeviceVolume(store);
-    expect(deviceVolume).toEqual(TEST_DEVICE_1.volume);
+    expect(deviceVolume).toEqual(getTestDeviceModel(1).volume);
   });
 
   it('should select availableDevices', () => {
     const availableDevices = selectAvailableDevices(store);
-    expect(availableDevices).toEqual([TEST_DEVICE_1, TEST_DEVICE_2]);
+    expect(availableDevices).toEqual([getTestDeviceModel(1), getTestDeviceModel(2)]);
   });
 
   it('should select progress', () => {
@@ -209,7 +148,7 @@ describe('PlaybackState', () => {
 
   it('should change track', () => {
     const updatedTrack: TrackModel = {
-      ...TEST_TRACK,
+      ...getTestTrackModel(),
       id: 'new-track'
     };
     store.dispatch(new ChangeTrack(updatedTrack));
@@ -219,7 +158,7 @@ describe('PlaybackState', () => {
 
   it('should change album', () => {
     const updatedAlbum: AlbumModel = {
-      ...TEST_ALBUM,
+      ...getTestAlbumModel(),
       id: 'new-album'
     };
     store.dispatch(new ChangeAlbum(updatedAlbum));
@@ -229,7 +168,7 @@ describe('PlaybackState', () => {
 
   it('should change playlist', () => {
     const updatedPlaylist: PlaylistModel = {
-      ...TEST_PLAYLIST,
+      ...getTestPlaylistModel(),
       id: 'new-playlist'
     };
     store.dispatch(new ChangePlaylist(updatedPlaylist));
@@ -238,9 +177,9 @@ describe('PlaybackState', () => {
   });
 
   it('should change device', () => {
-    store.dispatch(new ChangeDevice(TEST_DEVICE_2));
+    store.dispatch(new ChangeDevice(getTestDeviceModel(2)));
     const device = selectDevice(store);
-    expect(device).toEqual(TEST_DEVICE_2);
+    expect(device).toEqual(getTestDeviceModel(2));
   });
 
   it('should change deviceVolume', () => {
@@ -260,7 +199,7 @@ describe('PlaybackState', () => {
       ...store.snapshot(),
       SHOWTUNES_PLAYBACK: {
         device: {
-          ...TEST_DEVICE_1,
+          ...getTestDeviceModel(1),
           isActive: false
         }
       }
@@ -272,8 +211,8 @@ describe('PlaybackState', () => {
 
   it('should set availableDevices', () => {
     const updatedDevices = [
-      {...TEST_DEVICE_1, id: 'updated-device-1'},
-      {...TEST_DEVICE_2, id: 'updated-device-2'}
+      {...getTestDeviceModel(1), id: 'updated-device-1'},
+      {...getTestDeviceModel(2), id: 'updated-device-2'}
     ];
     store.dispatch(new SetAvailableDevices(updatedDevices));
     const availableDevices = selectAvailableDevices(store);

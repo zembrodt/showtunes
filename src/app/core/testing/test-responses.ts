@@ -4,10 +4,9 @@ import { IAppConfig } from '../../models/app-config.model';
 import { ArtistResponse } from '../../models/artist.model';
 import { CurrentPlaybackResponse } from '../../models/current-playback.model';
 import { DeviceResponse } from '../../models/device.model';
+import { ImageResponse } from '../../models/image.model';
 import { PlaylistResponse } from '../../models/playlist.model';
 import { TrackResponse } from '../../models/track.model';
-import { AuthToken } from '../auth/auth.model';
-import { getDefaultDisallows } from '../playback/playback.model';
 
 export function getTestAppConfig(): IAppConfig {
   return {
@@ -32,16 +31,6 @@ export function getTestAppConfig(): IAppConfig {
     logging: {
       level: 'info'
     }
-  };
-}
-
-export function getTestAuthToken(): AuthToken {
-  return {
-    accessToken: 'test-access',
-    tokenType: 'test-type',
-    expiry: new Date(Date.UTC(9999, 1, 1, )),
-    scope: 'test-scope',
-    refreshToken: 'test-refresh'
   };
 }
 
@@ -156,5 +145,13 @@ export function getTestPlaybackResponse(): CurrentPlaybackResponse {
     actions: {
       disallows: getTestActionsResponse()
     }
+  };
+}
+
+export function getTestImageResponse(): ImageResponse {
+  return {
+    url: 'test-url',
+    width: 100,
+    height: 100
   };
 }

@@ -18,47 +18,10 @@ import { DominantColor, DominantColorFinder } from '../../core/dominant-color/do
 import { AlbumModel, PlayerState, TrackModel } from '../../core/playback/playback.model';
 import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { FontColor } from '../../core/util';
+import { getTestAlbumModel, getTestDominantColor, getTestTrackModel } from '../../core/testing/test-models';
+import { getTestImageResponse } from '../../core/testing/test-responses';
 import { ImageResponse } from '../../models/image.model';
 import { AlbumDisplayComponent } from './album-display.component';
-
-const TEST_IMAGE_RESPONSE: ImageResponse = {
-  url: 'test-url',
-  width: 100,
-  height: 100
-};
-
-const TEST_ALBUM_MODEL: AlbumModel = {
-  id: 'id',
-  name: 'test',
-  href: 'album-href',
-  artists: ['test-artist-1', 'test-artist-2'],
-  coverArt: null,
-  type: 'type',
-  uri: 'album-uri',
-  releaseDate: 'release-date',
-  totalTracks: 10
-};
-
-const TEST_TRACK_MODEL: TrackModel = {
-  id: 'id',
-  title: 'title',
-  duration: 100,
-  href: 'track-href',
-  artists: null,
-  uri: 'track-uri'
-};
-
-const TEST_DOMINANT_COLOR: DominantColor = {
-  hex: 'ABC123',
-  rgb: {
-    r: 100,
-    g: 100,
-    b: 100,
-    a: 255
-  },
-  foregroundFontColor: FontColor.White
-};
 
 describe('AlbumDisplayComponent', () => {
   const mockSelectors = new NgxsSelectorMock<AlbumDisplayComponent>();
@@ -138,17 +101,17 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should display the cover art', () => {
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
-    albumProducer.next(TEST_ALBUM_MODEL);
+    coverArtProducer.next(getTestImageResponse());
+    albumProducer.next(getTestAlbumModel());
     fixture.detectChanges();
     const link = fixture.debugElement.query(By.css('a'));
     const img = fixture.debugElement.query(By.css('img'));
     expect(link).toBeTruthy();
     expect(link.properties.href).toBeTruthy();
-    expect(link.properties.href).toEqual(TEST_ALBUM_MODEL.href);
+    expect(link.properties.href).toEqual(getTestAlbumModel().href);
     expect(img).toBeTruthy();
     expect(img.properties.src).toBeTruthy();
-    expect(img.properties.src).toEqual(TEST_IMAGE_RESPONSE.url);
+    expect(img.properties.src).toEqual(getTestImageResponse().url);
   });
 
   it('should display a loading spinner when no coverArt and is not idle', () => {
@@ -159,7 +122,7 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should display a loading spinner when coverArt.url is null and is not idle', () => {
-    const nullCoverArt = {...TEST_IMAGE_RESPONSE};
+    const nullCoverArt = getTestImageResponse();
     nullCoverArt.url = null;
     coverArtProducer.next(nullCoverArt);
     playerStateProducer.next(PlayerState.Playing);
@@ -177,7 +140,7 @@ describe('AlbumDisplayComponent', () => {
   });
 
   it('should display start Spotify message when coverArt.url is null and is idle', () => {
-    const nullCoverArt = {...TEST_IMAGE_RESPONSE};
+    const nullCoverArt = getTestImageResponse();
     nullCoverArt.url = null;
     coverArtProducer.next(nullCoverArt);
     playerStateProducer.next(PlayerState.Idling);
@@ -231,31 +194,31 @@ describe('AlbumDisplayComponent', () => {
 
   it('should set Spotify code URL when the track$ is updated', () => {
     component['setSpotifyCodeUrl'] = jasmine.createSpy();
-    trackProducer.next(TEST_TRACK_MODEL);
+    trackProducer.next(getTestTrackModel());
     fixture.detectChanges();
     expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
   it('should update dynamic color when coverArt$ is updated and dominantColorFinder returns a result', fakeAsync(() => {
-    mockDominantColorFinder.expects(Promise.resolve(TEST_DOMINANT_COLOR));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    mockDominantColorFinder.expects(Promise.resolve(getTestDominantColor()));
+    coverArtProducer.next(getTestImageResponse());
     flushMicrotasks();
-    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(TEST_DOMINANT_COLOR));
+    expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(getTestDominantColor()));
   }));
 
   it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder returns null', fakeAsync(() => {
     mockDominantColorFinder.expects(Promise.resolve(null));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    coverArtProducer.next(getTestImageResponse());
     flushMicrotasks();
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
   }));
 
   it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder returns an invalid hex', fakeAsync(() => {
     mockDominantColorFinder.expects(Promise.resolve({
-      ...TEST_DOMINANT_COLOR,
+      ...getTestDominantColor(),
       hex: 'bad-hex'
     }));
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    coverArtProducer.next(getTestImageResponse());
     flushMicrotasks();
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
   }));
@@ -263,7 +226,7 @@ describe('AlbumDisplayComponent', () => {
   it('should set dynamic color to null when coverArt$ is updated and dominantColorFinder rejects its promise', fakeAsync(() => {
     mockDominantColorFinder.expects(Promise.reject('test-error'));
     spyOn(console, 'error');
-    coverArtProducer.next(TEST_IMAGE_RESPONSE);
+    coverArtProducer.next(getTestImageResponse());
     flushMicrotasks();
     expect(console.error).toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith(new ChangeDynamicColor(null));
@@ -292,38 +255,38 @@ describe('AlbumDisplayComponent', () => {
 
   it('should set Spotify code URL when dynamicColor$ is updated', () => {
     component['setSpotifyCodeUrl'] = jasmine.createSpy();
-    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
+    dynamicColorProducer.next(getTestDominantColor());
     expect(component['setSpotifyCodeUrl']).toHaveBeenCalled();
   });
 
   it('should create a Spotify code URL', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
-    trackProducer.next(TEST_TRACK_MODEL);
+    trackProducer.next(getTestTrackModel());
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).toEqual(
-      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2Fbg-color%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
+    expect(component.spotifyCodeUrl).toEqual('https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2F' +
+      `bg-color%2Fbar-color%2F512%2F${encodeURIComponent(getTestTrackModel().uri)}`);
   });
 
   it('should create a Spotify code URL with expanded background color of length 3', () => {
     backgroundColorProducer.next('ABC');
     barColorProducer.next('bar-color');
-    trackProducer.next(TEST_TRACK_MODEL);
+    trackProducer.next(getTestTrackModel());
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).toEqual(
-      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2FAABBCC%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
+    expect(component.spotifyCodeUrl).toEqual('https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2' +
+      `FAABBCC%2Fbar-color%2F512%2F${encodeURIComponent(getTestTrackModel().uri)}`);
   });
 
   it('should not create Spotify code URL with no background color', () => {
     barColorProducer.next('bar-color');
-    trackProducer.next(TEST_TRACK_MODEL);
+    trackProducer.next(getTestTrackModel());
     fixture.detectChanges();
     expect(component.spotifyCodeUrl).toBeNull();
   });
 
   it('should not create Spotify code URL with no bar color', () => {
     backgroundColorProducer.next('bg-color');
-    trackProducer.next(TEST_TRACK_MODEL);
+    trackProducer.next(getTestTrackModel());
     fixture.detectChanges();
     expect(component.spotifyCodeUrl).toBeNull();
   });
@@ -338,7 +301,7 @@ describe('AlbumDisplayComponent', () => {
   it('should not create Spotify code URL with no track uri', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
-    const nullTrackUri = {...TEST_TRACK_MODEL};
+    const nullTrackUri = getTestTrackModel();
     nullTrackUri.uri = null;
     trackProducer.next(nullTrackUri);
     fixture.detectChanges();
@@ -348,23 +311,24 @@ describe('AlbumDisplayComponent', () => {
   it('should create Spotify code URL with dynamic colors when using dynamic color code', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
-    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
-    trackProducer.next(TEST_TRACK_MODEL);
+    dynamicColorProducer.next(getTestDominantColor());
+    trackProducer.next(getTestTrackModel());
     useDynamicCodeColorProducer.next(true);
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).toEqual(
-      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2F${TEST_DOMINANT_COLOR.hex}%2F${TEST_DOMINANT_COLOR.foregroundFontColor}%2F512%2F${TEST_TRACK_MODEL.uri}`);
+    expect(component.spotifyCodeUrl).toEqual('https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2F' +
+      `${getTestDominantColor().hex}%2F${getTestDominantColor().foregroundFontColor}%2F512%2F` +
+      encodeURIComponent(getTestTrackModel().uri));
   });
 
   it('should create Spotify code URL without dynamic colors when not using dynamic color code', () => {
     backgroundColorProducer.next('bg-color');
     barColorProducer.next('bar-color');
-    dynamicColorProducer.next(TEST_DOMINANT_COLOR);
-    trackProducer.next(TEST_TRACK_MODEL);
+    dynamicColorProducer.next(getTestDominantColor());
+    trackProducer.next(getTestTrackModel());
     useDynamicCodeColorProducer.next(false);
     fixture.detectChanges();
-    expect(component.spotifyCodeUrl).toEqual(
-      `https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2Fbg-color%2Fbar-color%2F512%2F${TEST_TRACK_MODEL.uri}`);
+    expect(component.spotifyCodeUrl).toEqual('https://www.spotifycodes.com/downloadCode.php?uri=jpeg%2F' +
+      `bg-color%2Fbar-color%2F512%2F${encodeURIComponent(getTestTrackModel().uri)}`);
   });
 });
 
