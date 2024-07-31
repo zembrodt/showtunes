@@ -1,10 +1,12 @@
 {
   "name": "showtunes",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "npx ts-node src/environments/create-build-date.ts",
     "build": "ng build",
+    "postbuild": "gulp generate-config",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -54,6 +56,7 @@
     "karma-coverage": "^2.1.0",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.7.0",
+    "karma-junit-reporter": "^2.0.1",
     "karma-spec-reporter": "^0.0.36",
     "ng-mocks": "^13.0.0-alpha.4",
     "protractor": "~7.0.0",

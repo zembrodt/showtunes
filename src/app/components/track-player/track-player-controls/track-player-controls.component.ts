@@ -3,17 +3,22 @@ import { MatSliderChange } from '@angular/material/slider';
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { DisallowsModel, getDefaultDisallows } from '../../../core/playback/playback.model';
+import { PlaybackState } from '../../../core/playback/playback.state';
 import { PlayerControlsOptions } from '../../../core/settings/settings.model';
 import { SettingsState } from '../../../core/settings/settings.state';
 import { InactivityService } from '../../../services/inactivity/inactivity.service';
-import { SpotifyService } from '../../../services/spotify/spotify.service';
-import { StorageService } from '../../../services/storage/storage.service';
+import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
+import { PREVIOUS_VOLUME, StorageService } from '../../../services/storage/storage.service';
 
 // Default values
 const DEFAULT_VOLUME = 50;
 const FADE_DURATION = 500; // ms
 
 // Icons
+const SHUFFLE_ICON = 'shuffle';
+const SMART_SHUFFLE_ICON = 'model_training';
+
 const PLAY_ICON = 'play_arrow';
 const PAUSE_ICON = 'pause';
 
@@ -26,6 +31,8 @@ const VOLUME_MUTE_ICON = 'volume_off';
 
 const ICON_CLASS_PRIMARY = 'track-player-icon';
 const ICON_CLASS_ACCENT = 'track-player-icon-accent';
+
+const DEFAULT_POINTER = 'default-cursor';
 
 // Keys
 const REPEAT_OFF = 'off';
@@ -41,12 +48,15 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   private ngUnsubscribe = new Subject();
 
   @Input() isShuffle = false;
+  @Input() isSmartShuffle = false;
   @Input() isPlaying = false;
   @Input() repeatState: string;
   @Input() volume = DEFAULT_VOLUME;
   @Input() isLiked = false;
+  @Input() disallows: DisallowsModel = getDefaultDisallows();
 
-  shuffleClass = this.getShuffleClass();
+  shuffleClasses = this.getShuffleClasses();
+  shuffleIcon = this.getShuffleIcon();
   playIcon = this.getPlayIcon();
   repeatIcon = this.getRepeatIcon();
   repeatClass = this.getRepeatClass();
@@ -57,10 +67,12 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
 
   fadePlayerControls: boolean;
 
-  constructor(private spotify: SpotifyService,
-              private storage: StorageService,
-              private inactivity: InactivityService,
-              private element: ElementRef) {}
+  constructor(
+    private controls: SpotifyControlsService,
+    private storage: StorageService,
+    private inactivity: InactivityService,
+    private element: ElementRef
+  ) {}
 
   ngOnInit(): void {
     this.showPlayerControls$
@@ -85,7 +97,11 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.isShuffle) {
-      this.shuffleClass = this.getShuffleClass();
+      this.shuffleClasses = this.getShuffleClasses();
+    }
+    if (changes.isSmartShuffle) {
+      this.shuffleIcon = this.getShuffleIcon();
+      this.shuffleClasses = this.getShuffleClasses();
     }
     if (changes.isPlaying) {
       this.playIcon = this.getPlayIcon();
@@ -108,37 +124,39 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
   }
 
   onPause(): void {
-    this.spotify.togglePlaying();
+    this.controls.togglePlaying();
   }
 
   onSkipPrevious(): void {
-    this.spotify.skipPrevious(false);
+    this.controls.skipPrevious(this.disallows.skipPrev, this.disallows.seek);
   }
 
   onSkipNext(): void {
-    this.spotify.skipNext();
+    this.controls.skipNext();
   }
 
   onVolumeChange(change: MatSliderChange): void {
-    this.spotify.setVolume(change.value);
+    this.controls.setVolume(change.value);
   }
 
   onVolumeMute(): void {
     let volumeChange = DEFAULT_VOLUME;
     if (this.volume > 0) {
-      this.storage.set(SpotifyService.PREVIOUS_VOLUME, this.volume.toString());
+      this.storage.set(PREVIOUS_VOLUME, this.volume.toString());
       volumeChange = 0;
     } else {
-      const previousVolume = parseInt(this.storage.get(SpotifyService.PREVIOUS_VOLUME), 10);
+      const previousVolume = parseInt(this.storage.get(PREVIOUS_VOLUME), 10);
       if (previousVolume && !isNaN(previousVolume) && previousVolume > 0) {
         volumeChange = previousVolume;
       }
     }
-    this.spotify.setVolume(volumeChange);
+    this.controls.setVolume(volumeChange);
   }
 
   onToggleShuffle(): void {
-    this.spotify.toggleShuffle();
+    if (!this.isSmartShuffle) {
+      this.controls.toggleShuffle();
+    }
   }
 
   onRepeatChange(): void {
@@ -151,15 +169,22 @@ export class TrackPlayerControlsComponent implements OnInit, OnChanges, OnDestro
         repeatState = REPEAT_TRACK;
         break;
     }
-    this.spotify.setRepeatState(repeatState);
+    this.controls.setRepeatState(repeatState);
   }
 
   onLikeChange(): void {
-    this.spotify.toggleLiked();
+    this.controls.toggleLiked();
   }
 
-  private getShuffleClass(): string {
-    return this.isShuffle ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY;
+  private getShuffleClasses(): string[] {
+    return [
+      this.isShuffle || this.isSmartShuffle ? ICON_CLASS_ACCENT : ICON_CLASS_PRIMARY,
+      this.isSmartShuffle ? DEFAULT_POINTER : ''
+    ];
+  }
+
+  private getShuffleIcon(): string {
+    return this.isSmartShuffle ? SMART_SHUFFLE_ICON : SHUFFLE_ICON;
   }
 
   private getPlayIcon(): string {

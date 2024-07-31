@@ -10,13 +10,22 @@ import {
   ChangeRepeatState,
   ChangeTrack,
   SetAvailableDevices,
-  SetIdle,
+  SetPlayerState,
   SetLiked,
   SetPlaying,
   SetProgress,
-  SetShuffle
+  SetShuffle, SetSmartShuffle, SetDisallows
 } from './playback.actions';
-import { AlbumModel, DEFAULT_PLAYBACK, DeviceModel, PLAYBACK_STATE_NAME, PlaybackModel, PlaylistModel, TrackModel } from './playback.model';
+import {
+  AlbumModel,
+  DEFAULT_PLAYBACK,
+  DeviceModel, DisallowsModel,
+  PLAYBACK_STATE_NAME,
+  PlaybackModel,
+  PlayerState,
+  PlaylistModel,
+  TrackModel
+} from './playback.model';
 
 @State<PlaybackModel>({
   name: PLAYBACK_STATE_NAME,
@@ -82,6 +91,11 @@ export class PlaybackState {
   }
 
   @Selector()
+  static isSmartShuffle(state: PlaybackModel): boolean {
+    return state.isSmartShuffle;
+  }
+
+  @Selector()
   static repeat(state: PlaybackModel): string {
     return state.repeatState;
   }
@@ -92,8 +106,13 @@ export class PlaybackState {
   }
 
   @Selector()
-  static isIdle(state: PlaybackModel): boolean {
-    return state.isIdle;
+  static playerState(state: PlaybackModel): PlayerState {
+    return state.playerState;
+  }
+
+  @Selector()
+  static disallows(state: PlaybackModel): DisallowsModel {
+    return state.disallows;
   }
 
   @Action(ChangeTrack)
@@ -148,6 +167,11 @@ export class PlaybackState {
     ctx.patchState({isShuffle: action.isShuffle});
   }
 
+  @Action(SetSmartShuffle)
+  setSmartShuffle(ctx: StateContext<PlaybackModel>, action: SetSmartShuffle): void {
+    ctx.patchState({isSmartShuffle: action.isSmartShuffle});
+  }
+
   @Action(ChangeRepeatState)
   changeRepeat(ctx: StateContext<PlaybackModel>, action: ChangeRepeatState): void {
     ctx.patchState({repeatState: action.repeatState});
@@ -158,8 +182,13 @@ export class PlaybackState {
     ctx.patchState({isLiked: action.isLiked});
   }
 
-  @Action(SetIdle)
-  setIdle(ctx: StateContext<PlaybackModel>, action: SetIdle): void {
-    ctx.patchState({isIdle: action.isIdle});
+  @Action(SetPlayerState)
+  setIdle(ctx: StateContext<PlaybackModel>, action: SetPlayerState): void {
+    ctx.patchState({playerState: action.playerState});
+  }
+
+  @Action(SetDisallows)
+  setDisallows(ctx: StateContext<PlaybackModel>, action: SetDisallows): void {
+    ctx.patchState({disallows: action.disallows});
   }
 }

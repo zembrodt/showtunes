@@ -68,6 +68,33 @@
                   "maximumError": "15kb"
                 }
               ]
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10kb",
+                  "maximumError": "15kb"
+                }
+              ]
             }
           },
           "defaultConfiguration": ""
@@ -80,6 +107,9 @@
           "configurations": {
             "production": {
               "browserTarget": "showtunes:build:production"
+            },
+            "staging": {
+              "browserTarget": "showtunes:build:staging"
             }
           }
         },

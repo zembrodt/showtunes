@@ -5,18 +5,11 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { NgxsSelectorMock } from '../testing/ngxs-selector-mock';
+import { getTestAuthToken } from '../testing/test-models';
 import { SetAuthToken } from './auth.actions';
 import { AuthGuard } from './auth.guard';
 import { AUTH_STATE_NAME, AuthToken } from './auth.model';
 import { AuthState } from './auth.state';
-
-const TEST_AUTH_TOKEN: AuthToken = {
-  accessToken: 'test-token',
-  tokenType: 'test-type',
-  expiry: new Date(Date.UTC(9999, 1, 1)),
-  scope: 'test-scope',
-  refreshToken: 'test-refresh'
-};
 
 describe('Authentication', () => {
   describe('AuthGuard', () => {
@@ -46,7 +39,7 @@ describe('Authentication', () => {
     });
 
     it('should activate if access token exists', () => {
-      tokenProducer.next(TEST_AUTH_TOKEN);
+      tokenProducer.next(getTestAuthToken());
       expect(guard.canActivate(null, null)).toBeTrue();
     });
 
@@ -70,7 +63,7 @@ describe('Authentication', () => {
       store.reset({
         ...store.snapshot(),
         SHOWTUNES_AUTH: {
-          token: TEST_AUTH_TOKEN,
+          token: getTestAuthToken(),
           isAuthenticated: true
         }
       });
@@ -78,7 +71,7 @@ describe('Authentication', () => {
 
     it('should select token', () => {
       const token = selectToken(store);
-      expect(token).toEqual(TEST_AUTH_TOKEN);
+      expect(token).toEqual(getTestAuthToken());
     });
 
     it('should select isAuthenticated', () => {
@@ -88,7 +81,7 @@ describe('Authentication', () => {
 
     it('should set AuthToken', () => {
       const newToken: AuthToken = {
-        ...TEST_AUTH_TOKEN,
+        ...getTestAuthToken(),
         accessToken: 'new-token'
       };
       store.dispatch(new SetAuthToken(newToken));

@@ -1,4 +1,4 @@
-import { AlbumModel, DeviceModel, PlaylistModel, TrackModel } from './playback.model';
+import { AlbumModel, DeviceModel, DisallowsModel, PlayerState, PlaylistModel, TrackModel } from './playback.model';
 
 const PLAYBACK_ACTION_NAME = '[Playback]';
 
@@ -52,6 +52,11 @@ export class SetShuffle {
   constructor(public isShuffle: boolean) { }
 }
 
+export class SetSmartShuffle {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Smart Shuffle`;
+  constructor(public isSmartShuffle: boolean) { }
+}
+
 export class ChangeRepeatState {
   static readonly type = `${PLAYBACK_ACTION_NAME} Change Repeat State`;
   constructor(public repeatState: string) { }
@@ -62,7 +67,12 @@ export class SetLiked {
   constructor(public isLiked: boolean) { }
 }
 
-export class SetIdle {
-  static readonly type = `${PLAYBACK_ACTION_NAME} Set Idle`;
-  constructor(public isIdle: boolean) { }
+export class SetPlayerState {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Player State`;
+  constructor(public playerState: PlayerState) { }
+}
+
+export class SetDisallows {
+  static readonly type = `${PLAYBACK_ACTION_NAME} Set Disallows`;
+  constructor(public disallows: DisallowsModel) {}
 }

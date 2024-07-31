@@ -1,5 +1,11 @@
 export const PLAYBACK_STATE_NAME = 'SHOWTUNES_PLAYBACK';
 
+export enum PlayerState {
+  Idling,
+  Playing,
+  Refreshing
+}
+
 export interface PlaybackModel {
   track: TrackModel;
   album: AlbumModel;
@@ -9,9 +15,11 @@ export interface PlaybackModel {
   progress: number;
   isPlaying: boolean;
   isShuffle: boolean;
+  isSmartShuffle: boolean;
   repeatState: string;
   isLiked: boolean;
-  isIdle: boolean;
+  playerState: PlayerState;
+  disallows: DisallowsModel;
 }
 
 export interface TrackModel {
@@ -61,6 +69,20 @@ export interface DeviceModel {
   icon: string;
 }
 
+export interface DisallowsModel {
+  interruptPlayback: boolean;
+  pause: boolean;
+  resume: boolean;
+  seek: boolean;
+  skipNext: boolean;
+  skipPrev: boolean;
+  repeatContext: boolean;
+  shuffle: boolean;
+  repeatTrack: boolean;
+  transferPlayback: boolean;
+
+}
+
 export const DEFAULT_PLAYBACK: PlaybackModel = {
   track: {
     id: '',
@@ -101,6 +123,23 @@ export const DEFAULT_PLAYBACK: PlaybackModel = {
   isLiked: false,
   isPlaying: false,
   isShuffle: false,
+  isSmartShuffle: false,
   repeatState: '',
-  isIdle: true
+  playerState: PlayerState.Idling,
+  disallows: getDefaultDisallows()
 };
+
+export function getDefaultDisallows(): DisallowsModel {
+  return {
+    interruptPlayback: false,
+    pause: false,
+    resume: false,
+    seek: false,
+    skipNext: false,
+    skipPrev: false,
+    repeatContext: false,
+    shuffle: false,
+    repeatTrack: false,
+    transferPlayback: false
+  };
+}

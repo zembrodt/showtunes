@@ -1,5 +1,6 @@
 import { fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
+import { ActionsResponse } from '../models/actions.model';
 import { AlbumResponse } from '../models/album.model';
 import { ArtistResponse } from '../models/artist.model';
 import { DeviceResponse } from '../models/device.model';
@@ -18,7 +19,7 @@ import {
   isHexColor,
   isRgbColor,
   parseAlbum,
-  parseDevice,
+  parseDevice, parseDisallows,
   parsePlaylist,
   parseTrack,
   rgbToHex
@@ -455,6 +456,70 @@ describe('util package', () => {
 
       response.type = undefined;
       expect(parseDevice(response).icon).toEqual('device_unknown');
+    });
+  });
+
+  describe('parseDisallows', () => {
+    it('should correctly parse an ActionsResponse to a DisallowsModel', () => {
+      const response: ActionsResponse = {
+        interrupting_playback: true,
+        toggling_repeat_track: true,
+        toggling_repeat_context: true,
+        seeking: true,
+        toggling_shuffle: true,
+        skipping_next: true,
+        skipping_prev: true,
+        transferring_playback: true,
+        resuming: true,
+        pausing: true
+      };
+      const model = parseDisallows(response);
+
+      expect(model.interruptPlayback).toBeTrue();
+      expect(model.repeatTrack).toBeTrue();
+      expect(model.repeatContext).toBeTrue();
+      expect(model.seek).toBeTrue();
+      expect(model.shuffle).toBeTrue();
+      expect(model.skipNext).toBeTrue();
+      expect(model.skipPrev).toBeTrue();
+      expect(model.transferPlayback).toBeTrue();
+      expect(model.resume).toBeTrue();
+      expect(model.pause).toBeTrue();
+    });
+
+    it('should correctly parse an null or undefined ActionsResponse parameters as false in the DisallowsModel', () => {
+      const response: ActionsResponse = {
+        interrupting_playback: null,
+        toggling_repeat_track: false,
+        toggling_repeat_context: undefined
+      };
+      const model = parseDisallows(response);
+
+      expect(model.interruptPlayback).toBeFalse();
+      expect(model.repeatTrack).toBeFalse();
+      expect(model.repeatContext).toBeFalse();
+      expect(model.seek).toBeFalse();
+      expect(model.shuffle).toBeFalse();
+      expect(model.skipNext).toBeFalse();
+      expect(model.skipPrev).toBeFalse();
+      expect(model.transferPlayback).toBeFalse();
+      expect(model.resume).toBeFalse();
+      expect(model.pause).toBeFalse();
+    });
+
+    it('should correctly parse a null ActionsResponse as all false values in the DisallowsModel', () => {
+      const model = parseDisallows(null);
+
+      expect(model.interruptPlayback).toBeFalse();
+      expect(model.repeatTrack).toBeFalse();
+      expect(model.repeatContext).toBeFalse();
+      expect(model.seek).toBeFalse();
+      expect(model.shuffle).toBeFalse();
+      expect(model.skipNext).toBeFalse();
+      expect(model.skipPrev).toBeFalse();
+      expect(model.transferPlayback).toBeFalse();
+      expect(model.resume).toBeFalse();
+      expect(model.pause).toBeFalse();
     });
   });
 

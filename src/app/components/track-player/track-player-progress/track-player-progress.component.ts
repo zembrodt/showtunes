@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
-import { SpotifyService } from '../../../services/spotify/spotify.service';
+import { DisallowsModel, getDefaultDisallows } from '../../../core/playback/playback.model';
+import { SpotifyControlsService } from '../../../services/spotify/controls/spotify-controls.service';
 
 @Component({
   selector: 'app-track-player-progress',
@@ -11,11 +12,12 @@ export class TrackPlayerProgressComponent implements OnChanges {
 
   @Input() progress = 0;
   @Input() duration = 100;
+  @Input() disallows: DisallowsModel = getDefaultDisallows();
 
   progressFormatted = this.getFormattedProgress(this.progress);
   durationFormatted = this.getFormattedProgress(this.duration);
 
-  constructor(private spotify: SpotifyService) {}
+  constructor(private controls: SpotifyControlsService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.progress) {
@@ -27,7 +29,7 @@ export class TrackPlayerProgressComponent implements OnChanges {
   }
 
   onProgressChange(change: MatSliderChange): void {
-    this.spotify.setTrackPosition(change.value);
+    this.controls.setTrackPosition(change.value);
   }
 
   private getFormattedProgress(milliseconds: number): string {

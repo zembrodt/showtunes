@@ -6,7 +6,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AuthToken } from '../../core/auth/auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { LoadingComponent } from '../loading/loading.component';
 
 import { LoginComponent } from './login.component';
@@ -16,7 +16,7 @@ describe('LoginComponent', () => {
   const authorizeUrl = 'https://example.com/authorize';
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let spotify: SpotifyService;
+  let auth: SpotifyAuthService;
   let router: Router;
   let tokenProducer: BehaviorSubject<AuthToken>;
   let navigateToUrlSpy;
@@ -28,11 +28,11 @@ describe('LoginComponent', () => {
         MockComponent(LoadingComponent)
       ],
       providers: [
-        MockProvider(SpotifyService),
+        MockProvider(SpotifyAuthService),
         MockProvider(Router)
       ]
     }).compileComponents();
-    spotify = TestBed.inject(SpotifyService);
+    auth = TestBed.inject(SpotifyAuthService);
     router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -41,7 +41,7 @@ describe('LoginComponent', () => {
     tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(component, 'token$');
     navigateToUrlSpy = spyOn<any>(component, 'navigateToUrl');
 
-    spotify.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
+    auth.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
 
     fixture.detectChanges();
   }));
@@ -72,7 +72,7 @@ describe('LoginComponent', () => {
 
   it('should navigate to the Spotify authorize request URL when no auth token present', async () => {
     tokenProducer.next(null);
-    expect(spotify.getAuthorizeRequestUrl).toHaveBeenCalled();
+    expect(auth.getAuthorizeRequestUrl).toHaveBeenCalled();
     expect(await navigateToUrlSpy).toHaveBeenCalledWith(authorizeUrl);
   });
 });

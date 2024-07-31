@@ -18,7 +18,6 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
@@ -36,7 +35,7 @@ import { DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme } from '../../core/s
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { cssRgbToHex, FontColor } from '../../core/util';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { SettingsMenuComponent } from './settings-menu.component';
 
@@ -65,8 +64,7 @@ describe('SettingsMenuComponent', () => {
   let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
   let store: Store;
-  let spotify: SpotifyService;
-  let router: Router;
+  let auth: SpotifyAuthService;
 
   let themeProducer: BehaviorSubject<string>;
   let customAccentColorProducer: BehaviorSubject<string>;
@@ -98,8 +96,7 @@ describe('SettingsMenuComponent', () => {
       ],
       providers: [
         MockProvider(Store),
-        MockProvider(SpotifyService),
-        MockProvider(Router),
+        MockProvider(SpotifyAuthService),
         {
           provide: AppConfig,
           deps: [ MockProvider(HttpClient) ]
@@ -107,8 +104,7 @@ describe('SettingsMenuComponent', () => {
       ]
     }).compileComponents();
     store = TestBed.inject(Store);
-    spotify = TestBed.inject(SpotifyService);
-    router = TestBed.inject(Router);
+    auth = TestBed.inject(SpotifyAuthService);
 
     fixture = TestBed.createComponent(SettingsMenuComponent);
     component = fixture.componentInstance;
@@ -128,11 +124,11 @@ describe('SettingsMenuComponent', () => {
     AppConfig.settings = {
       env: {
         spotifyApiUrl: null,
+        spotifyAccountsUrl: null,
         name: null,
         domain: null
       },
-      auth: null,
-      logging: null
+      auth: null
     };
 
     fixture.detectChanges();
@@ -1089,10 +1085,9 @@ describe('SettingsMenuComponent', () => {
     expect(component.openHelpDialog).toHaveBeenCalled();
   }));
 
-  it('should logout of Spotify service and navigate to /login on logout', () => {
+  it('should logout of Spotify auth service', () => {
     component.logout();
-    expect(spotify.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
+    expect(auth.logout).toHaveBeenCalled();
   });
 
   it('should dispatch a colorPicker reset event when menu closed', () => {

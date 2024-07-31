@@ -6,7 +6,9 @@ import { PlayerControlsOptions } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { InactivityService } from '../../services/inactivity/inactivity.service';
 import { PlaybackService } from '../../services/playback/playback.service';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
+import { SpotifyControlsService } from '../../services/spotify/controls/spotify-controls.service';
+import { SpotifyPollingService } from '../../services/spotify/polling/spotify-polling.service';
 
 @Component({
   selector: 'app-root',
@@ -26,16 +28,23 @@ export class AppComponent implements OnInit, OnDestroy {
   fadeCursor = false;
   appInitialized = false;
 
-  constructor(private spotify: SpotifyService, private playback: PlaybackService, private inactivity: InactivityService) {}
+  constructor(
+    private auth: SpotifyAuthService,
+    private controls: SpotifyControlsService,
+    private polling: SpotifyPollingService,
+    private playback: PlaybackService,
+    private inactivity: InactivityService
+  ) {}
 
   ngOnInit(): void {
-    if (!SpotifyService.initialized && !SpotifyService.initialize()) {
-      console.error('Failed to initialize Spotify service');
+    if (!SpotifyAuthService.initialized && !SpotifyAuthService.initialize()) {
+      console.error('Failed to initialize the Spotify authentication service');
     } else {
       this.appInitialized = true;
 
-      this.spotify.initSubscriptions();
-
+      this.auth.initSubscriptions();
+      this.controls.initSubscriptions();
+      this.polling.initSubscriptions();
       this.playback.initialize();
 
       this.inactivity.inactive$

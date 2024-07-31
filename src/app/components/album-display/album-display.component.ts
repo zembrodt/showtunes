@@ -4,13 +4,12 @@ import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DominantColor, DominantColorFinder } from '../../core/dominant-color/dominant-color-finder';
-import { AlbumModel, TrackModel } from '../../core/playback/playback.model';
+import { AlbumModel, PlayerState, TrackModel } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { SettingsState } from '../../core/settings/settings.state';
 import { expandHexColor, isHexColor } from '../../core/util';
 import { ImageResponse } from '../../models/image.model';
-import { SpotifyService } from '../../services/spotify/spotify.service';
 
 @Component({
   selector: 'app-album-display',
@@ -30,7 +29,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   @Select(PlaybackState.album) album$: Observable<AlbumModel>;
 
-  @Select(PlaybackState.isIdle) isIdle$: Observable<boolean>;
+  @Select(PlaybackState.playerState) playerState$: Observable<PlayerState>;
 
   @Select(SettingsState.useDynamicCodeColor) useDynamicCodeColor$: Observable<boolean>;
   private useDynamicCodeColor: boolean;
@@ -56,8 +55,9 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   // Template constants
   readonly spotifyIcon = faSpotify;
+  readonly playingState = PlayerState.Playing;
 
-  constructor(private spotifyService: SpotifyService, private store: Store) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     if (!this.dominantColorFinder) {

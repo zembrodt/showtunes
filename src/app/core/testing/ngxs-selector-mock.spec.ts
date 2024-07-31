@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { BehaviorSubject } from 'rxjs';
 import { NgxsSelectorMock } from './ngxs-selector-mock';
 

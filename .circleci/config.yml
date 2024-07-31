@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  browser-tools: circleci/browser-tools@1.4.2
-  codecov: codecov/codecov@3.2.5
+  browser-tools: circleci/browser-tools@1.4.8
+  codecov: codecov/codecov@4.1.0
 
 jobs:
   build:
@@ -33,6 +33,8 @@ jobs:
       - run:
           name: "Run unit tests and code coverage"
           command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadless --code-coverage
+      - store_test_results:
+          path: ./test-results
       - store_artifacts:
           path: coverage
       - codecov/upload:

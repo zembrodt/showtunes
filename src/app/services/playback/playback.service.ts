@@ -2,44 +2,47 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
+import { AppConfig } from '../../app.config';
 import { AuthState } from '../../core/auth/auth.state';
+import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
-import { SpotifyService } from '../spotify/spotify.service';
-
-export const IDLE_POLLING = 3000; // ms
-export const PLAYBACK_POLLING = 1000; // ms
+import { SpotifyPollingService } from '../spotify/polling/spotify-polling.service';
 
 @Injectable({providedIn: 'root'})
 export class PlaybackService implements OnDestroy {
   private ngUnsubscribe = new Subject();
 
-  private interval$ = new BehaviorSubject(PLAYBACK_POLLING);
-  @Select(PlaybackState.isIdle) isIdle$: Observable<boolean>;
-  private isIdle = true;
+  private interval$ = new BehaviorSubject(AppConfig.settings.env.playbackPolling);
+  @Select(PlaybackState.playerState) playerState$: Observable<PlayerState>;
+  private playerState = PlayerState.Idling;
   @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
-  constructor(private spotify: SpotifyService) { }
+  constructor(private polling: SpotifyPollingService) { }
 
   initialize(): void {
     if (this.interval$) {
       this.interval$
         .pipe(
           switchMap(value => {
-            return this.isAuthenticated ? interval(value) : NEVER;
+            // Don't poll playback if not authenticated or currently refreshing the auth token
+            if (this.isAuthenticated && this.playerState !== PlayerState.Refreshing) {
+              return interval(value);
+            }
+            return NEVER;
           }),
           takeUntil(this.ngUnsubscribe))
-        .subscribe((pollingInterval) => {
-          this.spotify.pollCurrentPlayback(pollingInterval);
+        .subscribe((_) => {
+          this.polling.pollCurrentPlayback();
         });
     }
 
-    if (this.isIdle$) {
-      this.isIdle$
+    if (this.playerState$) {
+      this.playerState$
         .pipe(takeUntil(this.ngUnsubscribe))
-        .subscribe(isIdle => {
-          this.isIdle = isIdle;
-          this.interval$.next(isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+        .subscribe(playerState => {
+          this.playerState = playerState;
+          this.interval$.next(this.calculatePollingRate(playerState));
         });
     }
 
@@ -49,9 +52,14 @@ export class PlaybackService implements OnDestroy {
         .subscribe(isAuthenticated => {
           this.isAuthenticated = isAuthenticated;
           // Send a new polling value to either start or stop playback
-          this.interval$.next(this.isIdle ? IDLE_POLLING : PLAYBACK_POLLING);
+          this.interval$.next(this.calculatePollingRate(this.playerState));
         });
     }
+  }
+
+  private calculatePollingRate(playerState: PlayerState): number {
+    return playerState === PlayerState.Playing ?
+      AppConfig.settings.env.playbackPolling : AppConfig.settings.env.idlePolling;
   }
 
   ngOnDestroy(): void {

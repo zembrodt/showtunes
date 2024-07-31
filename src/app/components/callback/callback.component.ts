@@ -4,7 +4,7 @@ import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { AuthToken } from '../../core/auth/auth.model';
 import { AuthState } from '../../core/auth/auth.state';
-import { SpotifyService } from '../../services/spotify/spotify.service';
+import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 
 const codeKey = 'code';
 const errorKey = 'error';
@@ -22,7 +22,7 @@ export class CallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private spotify: SpotifyService) { }
+    private auth: SpotifyAuthService) { }
 
   ngOnInit(): void {
     // redirect to /dashboard if already authenticated
@@ -38,9 +38,9 @@ export class CallbackComponent implements OnInit {
       const error = params.get(errorKey);
       const state = params.get(stateKey);
 
-      if (!error && code && this.spotify.compareState(state)) {
+      if (!error && code && this.auth.compareState(state)) {
         // use code to get auth tokens
-        this.spotify.requestAuthToken(code, false)
+        this.auth.requestAuthToken(code, false)
           .catch((reason) => {
             console.error(`Spotify request failed: ${reason}`);
             this.router.navigateByUrl('/error');
@@ -51,7 +51,7 @@ export class CallbackComponent implements OnInit {
           if (!code) {
             console.error('No code value given for callback');
           }
-          else if (!this.spotify.compareState(state)) {
+          else if (!this.auth.compareState(state)) {
             console.error(`State value is not correct: ${state}`);
           }
         }

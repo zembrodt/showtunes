@@ -27,14 +27,20 @@
        fxLayoutAlign="center start">
     <div class="mat-display-1">No track currently playing</div>
   </div>
-  <app-track-player-progress [duration]="duration$ | async" [progress]="progress$ | async"></app-track-player-progress>
+  <app-track-player-progress
+    [duration]="duration$ | async"
+    [progress]="progress$ | async"
+    [disallows]="disallows$ | async"
+  ></app-track-player-progress>
   <app-track-player-controls
     *ngIf="showPlayerControls"
     [isShuffle]="isShuffle$ | async"
+    [isSmartShuffle]="isSmartShuffle$ | async"
     [isPlaying]="isPlaying$ | async"
     [repeatState]="repeat$ | async"
     [volume]="volume$ | async"
     [isLiked]="isLiked$ | async"
+    [disallows]="disallows$ | async"
   ></app-track-player-controls>
   <div class="mat-subheading-1 playlist-font"
        *ngIf="(showPlaylistName$ | async) && (playlist$ | async)"

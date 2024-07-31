@@ -1,18 +1,23 @@
 export interface IAppConfig {
   env: {
-    name: string;
+    name?: string;
     domain: string;
     spotifyApiUrl: string;
+    spotifyAccountsUrl: string;
+    playbackPolling?: number;
+    idlePolling?: number;
+    throttleDelay?: number;
   };
   auth: {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     scopes: string;
-    tokenUrl: string;
-    forcePkce: boolean;
-    showDialog: boolean;
+    tokenUrl?: string;
+    forcePkce?: boolean;
+    showDialog?: boolean;
+    expiryThreshold?: number;
   };
-  logging: {
+  logging?: {
     level: string;
   };
 }
