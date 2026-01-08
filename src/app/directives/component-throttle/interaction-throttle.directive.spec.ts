@@ -20,7 +20,7 @@ class TestComponent {
   onClick(): void {}
 }
 
-describe('ButtonThrottleDirective', () => {
+describe('InteractionThrottleDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   let component: TestComponent;
 
