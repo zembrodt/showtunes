@@ -3,14 +3,14 @@ import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from
 import { Select } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthToken } from './auth.model';
-import { AuthState } from './auth.state';
+import { SpotifyAuthToken } from './spotify-auth.model';
+import { SpotifyAuthState } from './spotify-auth.state';
 
 @Injectable()
-export class AuthGuard implements CanActivate, OnDestroy {
+export class SpotifyAuthGuard implements CanActivate, OnDestroy {
   private ngUnsubscribe = new Subject();
 
-  @Select(AuthState.token) token$: Observable<AuthToken>;
+  @Select(SpotifyAuthState.token) token$: Observable<SpotifyAuthToken>;
   private accessToken: string = null;
 
   constructor(private router: Router) {

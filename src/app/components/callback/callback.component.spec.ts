@@ -5,7 +5,7 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/ro
 import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { AuthToken } from '../../core/auth/auth.model';
+import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { LoadingComponent } from '../loading/loading.component';
@@ -19,7 +19,7 @@ describe('CallbackComponent', () => {
   let store: Store;
   let router: Router;
   let auth: SpotifyAuthService;
-  let tokenProducer: BehaviorSubject<AuthToken>;
+  let tokenProducer: BehaviorSubject<SpotifyAuthToken>;
   let paramMapProducer: BehaviorSubject<ParamMap>;
 
   beforeEach(waitForAsync(() => {
@@ -44,7 +44,7 @@ describe('CallbackComponent', () => {
     fixture = TestBed.createComponent(CallbackComponent);
     component = fixture.componentInstance;
 
-    tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(component, 'token$');
+    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'token$');
 
     auth.compareState = jasmine.createSpy().and.returnValue(true);
     auth.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));

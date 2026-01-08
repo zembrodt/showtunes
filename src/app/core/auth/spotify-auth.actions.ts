@@ -1,10 +1,10 @@
-import {AuthToken} from './auth.model';
+import {SpotifyAuthToken} from './spotify-auth.model';
 
-const AUTH_ACTION_NAME = '[Authentication]';
+const AUTH_ACTION_NAME = '[Spotify Authentication]';
 
 export class SetAuthToken {
   static readonly type = `${AUTH_ACTION_NAME} Set Auth Token`;
-  constructor(public token: AuthToken) { }
+  constructor(public token: SpotifyAuthToken) { }
 }
 
 export class SetIsAuthenticated {

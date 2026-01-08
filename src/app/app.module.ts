@@ -21,13 +21,14 @@ import { DevicesComponent } from './components/devices/devices.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { LoginComponent } from './components/login/login.component';
+import { MenuComponent } from './components/menu/menu.component';
 import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
 import { SettingsMenuComponent } from './components/settings-menu/settings-menu.component';
 import { TrackPlayerControlsComponent } from './components/track-player/track-player-controls/track-player-controls.component';
 import { TrackPlayerProgressComponent } from './components/track-player/track-player-progress/track-player-progress.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
-import { AUTH_STATE_NAME } from './core/auth/auth.model';
-import { AuthState } from './core/auth/auth.state';
+import { SPOTIFY_AUTH_STATE_NAME } from './core/auth/spotify-auth.model';
+import { SpotifyAuthState } from './core/auth/spotify-auth.state';
 import { PlaybackState } from './core/playback/playback.state';
 import { SETTINGS_STATE_NAME } from './core/settings/settings.model';
 import { SettingsState } from './core/settings/settings.state';
@@ -58,6 +59,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     HelpDialogComponent,
     LoadingComponent,
     LoginComponent,
+    MenuComponent,
     SettingsMenuComponent,
     TrackPlayerComponent,
     TrackPlayerControlsComponent,
@@ -73,13 +75,13 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     FontAwesomeModule,
     FormsModule,
     NgxsModule.forRoot(
-      [ AuthState, PlaybackState, SettingsState ],
+      [ SpotifyAuthState, PlaybackState, SettingsState ],
       { developmentMode: !environment.production }
       ),
     NgxsStoragePluginModule.forRoot({
-      key: [ AUTH_STATE_NAME, SETTINGS_STATE_NAME ],
+      key: [ SPOTIFY_AUTH_STATE_NAME, SETTINGS_STATE_NAME ],
       afterDeserialize: (obj: any, key: string) => {
-        if (key === AUTH_STATE_NAME && obj.token && obj.token.expiry) {
+        if (key === SPOTIFY_AUTH_STATE_NAME && obj.token && obj.token.expiry) {
           return {
             ...obj,
             token: {

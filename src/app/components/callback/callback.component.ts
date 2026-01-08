@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { AuthToken } from '../../core/auth/auth.model';
-import { AuthState } from '../../core/auth/auth.state';
+import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
+import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 
 const codeKey = 'code';
@@ -17,7 +17,7 @@ const stateKey = 'state';
 })
 export class CallbackComponent implements OnInit {
 
-  @Select(AuthState.token) token$: Observable<AuthToken>;
+  @Select(SpotifyAuthState.token) token$: Observable<SpotifyAuthToken>;
 
   constructor(
     private route: ActivatedRoute,

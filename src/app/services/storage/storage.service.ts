@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AUTH_STATE_NAME } from '../../core/auth/auth.model';
+import { SPOTIFY_AUTH_STATE_NAME } from '../../core/auth/spotify-auth.model';
 
 export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
 
@@ -23,8 +23,8 @@ export class StorageService {
     window.localStorage.removeItem(this.getKey(key));
   }
 
-  removeAuthToken(): void {
-    window.localStorage.removeItem(AUTH_STATE_NAME);
+  removeSpotifyAuthToken(): void {
+    window.localStorage.removeItem(SPOTIFY_AUTH_STATE_NAME);
   }
 
   private getKey(key: string): string {

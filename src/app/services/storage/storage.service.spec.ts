@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AUTH_STATE_NAME } from '../../core/auth/auth.model';
+import { SPOTIFY_AUTH_STATE_NAME } from '../../core/auth/spotify-auth.model';
 
 import { StorageService } from './storage.service';
 
@@ -46,7 +46,7 @@ describe('StorageService', () => {
   });
 
   it('should remove the auth state fom localStorage with correct key', () => {
-    service.removeAuthToken();
-    expect(window.localStorage.removeItem).toHaveBeenCalledOnceWith(AUTH_STATE_NAME);
+    service.removeSpotifyAuthToken();
+    expect(window.localStorage.removeItem).toHaveBeenCalledOnceWith(SPOTIFY_AUTH_STATE_NAME);
   });
 });

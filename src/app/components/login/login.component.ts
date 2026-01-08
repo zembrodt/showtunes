@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { AuthToken } from '../../core/auth/auth.model';
-import { AuthState } from '../../core/auth/auth.state';
+import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
+import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 
 @Component({
@@ -12,15 +12,15 @@ import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.ser
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  @Select(AuthState.token) token$: Observable<AuthToken>;
+  @Select(SpotifyAuthState.token) token$: Observable<SpotifyAuthToken>;
 
-  constructor(private auth: SpotifyAuthService, private router: Router) { }
+  constructor(private spotifyAuth: SpotifyAuthService, private router: Router) { }
 
   ngOnInit(): void {
     this.token$.subscribe(token => {
       // Redirect to Spotify OAuth if no token exists
       if (!token) {
-        this.auth.getAuthorizeRequestUrl()
+        this.spotifyAuth.getAuthorizeRequestUrl()
           .then((authorizeRequestUrl) => {
             this.navigateToUrl(authorizeRequestUrl);
           });

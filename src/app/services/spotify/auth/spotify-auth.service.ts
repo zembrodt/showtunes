@@ -5,9 +5,9 @@ import { Select, Store } from '@ngxs/store';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfig } from '../../../app.config';
-import { SetAuthToken } from '../../../core/auth/auth.actions';
-import { AuthToken } from '../../../core/auth/auth.model';
-import { AuthState } from '../../../core/auth/auth.state';
+import { SetAuthToken } from '../../../core/auth/spotify-auth.actions';
+import { SpotifyAuthToken } from '../../../core/auth/spotify-auth.model';
+import { SpotifyAuthState } from '../../../core/auth/spotify-auth.state';
 import { SetPlayerState } from '../../../core/playback/playback.actions';
 import { PlayerState } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
@@ -32,8 +32,8 @@ export class SpotifyAuthService {
   private static redirectUri: string;
   private static showAuthDialog = true;
 
-  @Select(AuthState.token) private authToken$: BehaviorSubject<AuthToken>;
-  private authToken: AuthToken = null;
+  @Select(SpotifyAuthState.token) private authToken$: BehaviorSubject<SpotifyAuthToken>;
+  private authToken: SpotifyAuthToken = null;
   private state: string = null;
   private codeVerifier = null;
 
@@ -127,7 +127,7 @@ export class SpotifyAuthService {
               expiry.setSeconds(expiry.getSeconds() + token.expires_in);
             }
 
-            const authToken: AuthToken = {
+            const authToken: SpotifyAuthToken = {
               accessToken: token.access_token,
               tokenType: token.token_type,
               expiry,
@@ -229,7 +229,7 @@ export class SpotifyAuthService {
     this.codeVerifier = null;
     this.authToken = null;
     this.storage.remove(SpotifyAuthService.STATE_KEY);
-    this.storage.removeAuthToken();
+    this.storage.removeSpotifyAuthToken();
     this.router.navigateByUrl('/login');
   }
 

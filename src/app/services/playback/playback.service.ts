@@ -3,7 +3,7 @@ import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
-import { AuthState } from '../../core/auth/auth.state';
+import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
 import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { SpotifyPollingService } from '../spotify/polling/spotify-polling.service';
@@ -15,7 +15,7 @@ export class PlaybackService implements OnDestroy {
   private interval$ = new BehaviorSubject(AppConfig.settings.env.playbackPolling);
   @Select(PlaybackState.playerState) playerState$: Observable<PlayerState>;
   private playerState = PlayerState.Idling;
-  @Select(AuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
+  @Select(SpotifyAuthState.isAuthenticated) isAuthenticated$: Observable<boolean>;
   private isAuthenticated = false;
 
   constructor(private polling: SpotifyPollingService) { }

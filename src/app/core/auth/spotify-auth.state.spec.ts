@@ -6,17 +6,17 @@ import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { NgxsSelectorMock } from '../testing/ngxs-selector-mock';
 import { getTestAuthToken } from '../testing/test-models';
-import { SetAuthToken } from './auth.actions';
-import { AuthGuard } from './auth.guard';
-import { AUTH_STATE_NAME, AuthToken } from './auth.model';
-import { AuthState } from './auth.state';
+import { SetAuthToken } from './spotify-auth.actions';
+import { SpotifyAuthGuard } from './spotify-auth.guard';
+import { SPOTIFY_AUTH_STATE_NAME, SpotifyAuthToken } from './spotify-auth.model';
+import { SpotifyAuthState } from './spotify-auth.state';
 
 describe('Authentication', () => {
   describe('AuthGuard', () => {
-    const mockSelectors = new NgxsSelectorMock<AuthGuard>();
-    let guard: AuthGuard;
+    const mockSelectors = new NgxsSelectorMock<SpotifyAuthGuard>();
+    let guard: SpotifyAuthGuard;
     let router: Router;
-    let tokenProducer: BehaviorSubject<AuthToken>;
+    let tokenProducer: BehaviorSubject<SpotifyAuthToken>;
 
     beforeEach(() => {
       TestBed.configureTestingModule({
@@ -24,13 +24,13 @@ describe('Authentication', () => {
           NgxsModule.forRoot([], {developmentMode: true})
         ],
         providers: [
-          AuthGuard,
+          SpotifyAuthGuard,
           MockProvider(Router)
         ]
       });
-      guard = TestBed.inject(AuthGuard);
+      guard = TestBed.inject(SpotifyAuthGuard);
       router = TestBed.inject(Router);
-      tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(guard, 'token$');
+      tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(guard, 'token$');
       guard.initSubscriptions();
     });
 
@@ -57,7 +57,7 @@ describe('Authentication', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
-        imports: [NgxsModule.forRoot([AuthState], {developmentMode: true})]
+        imports: [NgxsModule.forRoot([SpotifyAuthState], {developmentMode: true})]
       });
       store = TestBed.inject(Store);
       store.reset({
@@ -80,7 +80,7 @@ describe('Authentication', () => {
     });
 
     it('should set AuthToken', () => {
-      const newToken: AuthToken = {
+      const newToken: SpotifyAuthToken = {
         ...getTestAuthToken(),
         accessToken: 'new-token'
       };
@@ -103,10 +103,10 @@ describe('Authentication', () => {
   });
 });
 
-function selectToken(store: Store): AuthToken {
-  return store.selectSnapshot(state => state[AUTH_STATE_NAME].token);
+function selectToken(store: Store): SpotifyAuthToken {
+  return store.selectSnapshot(state => state[SPOTIFY_AUTH_STATE_NAME].token);
 }
 
 function selectIsAuthenticated(store: Store): boolean {
-  return store.selectSnapshot(state => state[AUTH_STATE_NAME].isAuthenticated);
+  return store.selectSnapshot(state => state[SPOTIFY_AUTH_STATE_NAME].isAuthenticated);
 }

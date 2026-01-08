@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { AuthToken } from '../../core/auth/auth.model';
+import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { LoadingComponent } from '../loading/loading.component';
@@ -18,7 +18,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let auth: SpotifyAuthService;
   let router: Router;
-  let tokenProducer: BehaviorSubject<AuthToken>;
+  let tokenProducer: BehaviorSubject<SpotifyAuthToken>;
   let navigateToUrlSpy;
 
   beforeEach(waitForAsync(() => {
@@ -38,7 +38,7 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
 
-    tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(component, 'token$');
+    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'token$');
     navigateToUrlSpy = spyOn<any>(component, 'navigateToUrl');
 
     auth.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));

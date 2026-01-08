@@ -8,8 +8,8 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { AppConfig } from '../../../app.config';
-import { SetAuthToken } from '../../../core/auth/auth.actions';
-import { AuthToken } from '../../../core/auth/auth.model';
+import { SetAuthToken } from '../../../core/auth/spotify-auth.actions';
+import { SpotifyAuthToken } from '../../../core/auth/spotify-auth.model';
 import { SetPlayerState } from '../../../core/playback/playback.actions';
 import { PlayerState } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
@@ -30,7 +30,7 @@ describe('SpotifyAuthService', () => {
   let store: Store;
   let storage: StorageService;
 
-  let tokenProducer: BehaviorSubject<AuthToken>;
+  let tokenProducer: BehaviorSubject<SpotifyAuthToken>;
 
   beforeEach(() => {
     AppConfig.settings = getTestAppConfig();
@@ -55,7 +55,7 @@ describe('SpotifyAuthService', () => {
     store = TestBed.inject(Store);
     storage = TestBed.inject(StorageService);
 
-    tokenProducer = mockSelectors.defineNgxsSelector<AuthToken>(service, 'authToken$', getTestAuthToken());
+    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(service, 'authToken$', getTestAuthToken());
 
     service.initSubscriptions();
     spyOn(console, 'error');
@@ -473,7 +473,7 @@ describe('SpotifyAuthService', () => {
     expect(service['codeVerifier']).toBeNull();
     expect(service['authToken']).toBeNull();
     expect(storage.remove).toHaveBeenCalledOnceWith(SpotifyAuthService['STATE_KEY']);
-    expect(storage.removeAuthToken).toHaveBeenCalledTimes(1);
+    expect(storage.removeSpotifyAuthToken).toHaveBeenCalledTimes(1);
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
