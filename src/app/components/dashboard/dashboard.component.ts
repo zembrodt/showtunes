@@ -1,16 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Dashboards, DashboardType } from '../../models/dashboard.model';
+import { Select, Store } from '@ngxs/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ChangeDashboard } from '../../core/dashboard/dashboard.action';
+import { Dashboards, DashboardType } from '../../core/dashboard/dashboard.model';
+import { DashboardState } from '../../core/dashboard/dashboard.state';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
-  dashboardType: DashboardType;
+export class DashboardComponent implements OnInit, OnDestroy {
+  private ngUnsubscribe = new Subject();
 
-  constructor(private route: ActivatedRoute, private router: Router) { }
+  @Select(DashboardState.currentDashboard) dashboard$: Observable<DashboardType>;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private store: Store
+  ) {}
 
   ngOnInit(): void {
     const type = this.route.snapshot.paramMap.get('type');
@@ -20,6 +31,16 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/landing']);
       return;
     }
-    this.dashboardType = Dashboards.find(d => d.name.toLowerCase() === type.toLowerCase());
+    const dashboardType = Dashboards.find(d => d.name.toLowerCase() === type.toLowerCase());
+    this.store.dispatch(new ChangeDashboard(dashboardType));
+
+    this.dashboard$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

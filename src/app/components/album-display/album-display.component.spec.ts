@@ -14,13 +14,13 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
+import { Dashboard, DashboardType } from '../../core/dashboard/dashboard.model';
 import { DominantColor, DominantColorFinder } from '../../core/dominant-color/dominant-color-finder';
 import { AlbumModel, PlayerState, TrackModel } from '../../core/playback/playback.model';
 import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { getTestAlbumModel, getTestDominantColor, getTestTrackModel } from '../../core/testing/test-models';
 import { getTestImageResponse } from '../../core/testing/test-responses';
-import { Dashboard } from '../../models/dashboard.model';
 import { ImageResponse } from '../../models/image.model';
 import { AlbumDisplayComponent } from './album-display.component';
 
@@ -31,6 +31,7 @@ describe('AlbumDisplayComponent', () => {
   let loader: HarnessLoader;
   let store: Store;
 
+  let dashboardProducer: BehaviorSubject<DashboardType>;
   let coverArtProducer: BehaviorSubject<ImageResponse>;
   let trackProducer: BehaviorSubject<TrackModel>;
   let albumProducer: BehaviorSubject<AlbumModel>;
@@ -80,6 +81,7 @@ describe('AlbumDisplayComponent', () => {
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
 
+    dashboardProducer = mockSelectors.defineNgxsSelector<DashboardType>(component, 'dashboard$');
     coverArtProducer = mockSelectors.defineNgxsSelector<ImageResponse>(component, 'coverArt$');
     trackProducer = mockSelectors.defineNgxsSelector<TrackModel>(component, 'track$');
     albumProducer = mockSelectors.defineNgxsSelector<AlbumModel>(component, 'album$');
@@ -93,7 +95,8 @@ describe('AlbumDisplayComponent', () => {
 
     mockDominantColorFinder = new MockDominantColorFinder();
     component['dominantColorFinder'] = mockDominantColorFinder;
-    component.dashboardType = Dashboard.Spotify;
+
+    dashboardProducer.next(Dashboard.Spotify);
 
     fixture.detectChanges();
   }));

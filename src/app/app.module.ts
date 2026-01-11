@@ -29,6 +29,7 @@ import { TrackPlayerProgressComponent } from './components/track-player/track-pl
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
 import { SPOTIFY_AUTH_STATE_NAME } from './core/auth/spotify-auth.model';
 import { SpotifyAuthState } from './core/auth/spotify-auth.state';
+import { DashboardState } from './core/dashboard/dashboard.state';
 import { PlaybackState } from './core/playback/playback.state';
 import { SETTINGS_STATE_NAME } from './core/settings/settings.model';
 import { SettingsState } from './core/settings/settings.state';
@@ -75,7 +76,12 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     FontAwesomeModule,
     FormsModule,
     NgxsModule.forRoot(
-      [ SpotifyAuthState, PlaybackState, SettingsState ],
+      [
+        SpotifyAuthState,
+        PlaybackState,
+        SettingsState,
+        DashboardState
+      ],
       { developmentMode: !environment.production }
       ),
     NgxsStoragePluginModule.forRoot({

@@ -22,6 +22,7 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig } from '../../app.config';
+import { Dashboard, DashboardType } from '../../core/dashboard/dashboard.model';
 import {
   ChangePlayerControls,
   ChangeSpotifyCodeBackgroundColor,
@@ -35,10 +36,8 @@ import { DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme } from '../../core/s
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { cssRgbToHex, FontColor } from '../../core/util';
-import { Dashboard } from '../../models/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
-import { DashboardComponent } from '../dashboard/dashboard.component';
 import { SettingsMenuComponent } from './settings-menu.component';
 
 const THEME_INDEX = 0;
@@ -68,6 +67,7 @@ describe('SettingsMenuComponent', () => {
   let store: Store;
   let auth: SpotifyAuthService;
 
+  let dashboardProducer: BehaviorSubject<DashboardType>;
   let themeProducer: BehaviorSubject<string>;
   let customAccentColorProducer: BehaviorSubject<string>;
   let showPlayerControlsProducer: BehaviorSubject<PlayerControlsOptions>;
@@ -110,10 +110,10 @@ describe('SettingsMenuComponent', () => {
 
     fixture = TestBed.createComponent(SettingsMenuComponent);
     component = fixture.componentInstance;
-    component.dashboardType = Dashboard.Spotify;
     loader = TestbedHarnessEnvironment.loader(fixture);
     rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
 
+    dashboardProducer = mockSelectors.defineNgxsSelector<DashboardType>(component, 'dashboard$');
     themeProducer = mockSelectors.defineNgxsSelector<string>(component, 'theme$');
     customAccentColorProducer = mockSelectors.defineNgxsSelector<string>(component, 'customAccentColor$');
     showPlayerControlsProducer = mockSelectors.defineNgxsSelector<PlayerControlsOptions>(component, 'showPlayerControls$');
@@ -133,6 +133,8 @@ describe('SettingsMenuComponent', () => {
       },
       auth: null
     };
+
+    dashboardProducer.next(Dashboard.Spotify);
 
     fixture.detectChanges();
   }));

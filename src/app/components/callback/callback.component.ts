@@ -4,7 +4,7 @@ import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
 import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
-import { Dashboard, Dashboards, DashboardType } from '../../models/dashboard.model';
+import { Dashboard, Dashboards, DashboardType } from '../../core/dashboard/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 
 const codeKey = 'code';

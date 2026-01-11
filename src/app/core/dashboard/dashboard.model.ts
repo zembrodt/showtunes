@@ -1,3 +1,5 @@
+export const DASHBOARD_STATE_NAME = 'SHOWTUNES_DASHBOARD';
+
 export interface DashboardType {
   name: string;
   allowsAlbumArt: boolean;
@@ -13,3 +15,11 @@ export const Dashboard = {
 };
 
 export const Dashboards = [ Dashboard.Spotify ];
+
+export interface DashboardModel {
+  currentDashboard: DashboardType;
+}
+
+export const DEFAULT_DASHBOARD: DashboardModel = {
+  currentDashboard: null
+};

@@ -7,6 +7,8 @@ import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { Dashboard, DashboardType } from '../../core/dashboard/dashboard.model';
+import { DashboardState } from '../../core/dashboard/dashboard.state';
 import {
   ChangeCustomAccentColor,
   ChangePlayerControls,
@@ -21,10 +23,7 @@ import {
 import { DEFAULT_SETTINGS, DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme, ThemeColor } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { FontColor, isHexColor } from '../../core/util';
-import { Dashboard, DashboardType } from '../../models/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
-import { DashboardComponent } from '../dashboard/dashboard.component';
-import { LandingComponent } from '../landing/landing.component';
 import { HelpDialogComponent } from './help-dialog/help-dialog.component';
 
 @Component({
@@ -43,8 +42,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
 
   @Input() isLandingPage = false;
-  @Input() dashboardType: DashboardType;
 
+  @Select(DashboardState.currentDashboard) dashboard$: Observable<DashboardType>;
   @Select(SettingsState.theme) theme$: Observable<string>;
   @Select(SettingsState.customAccentColor) customAccentColor$: Observable<string>;
   @Select(SettingsState.showPlayerControls) showPlayerControls$: Observable<PlayerControlsOptions>;
@@ -87,7 +86,11 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.isSpotifyDashboard = this.dashboardType === Dashboard.Spotify;
+    this.dashboard$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((currentDashboard) => {
+        this.isSpotifyDashboard = currentDashboard === Dashboard.Spotify;
+      });
 
     this.theme$
       .pipe(takeUntil(this.ngUnsubscribe))
