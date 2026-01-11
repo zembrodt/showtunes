@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MenuCloseReason } from '@angular/material/menu/menu';
@@ -21,7 +21,10 @@ import {
 import { DEFAULT_SETTINGS, DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme, ThemeColor } from '../../core/settings/settings.model';
 import { SettingsState } from '../../core/settings/settings.state';
 import { FontColor, isHexColor } from '../../core/util';
+import { Dashboard, DashboardType } from '../../models/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
+import { DashboardComponent } from '../dashboard/dashboard.component';
+import { LandingComponent } from '../landing/landing.component';
 import { HelpDialogComponent } from './help-dialog/help-dialog.component';
 
 @Component({
@@ -38,6 +41,9 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
     'FEC1C9', 'B091C1', 'FB6C98', 'F91D9F', 'B31990', '543651'
   ];
   private ngUnsubscribe = new Subject();
+
+  @Input() isLandingPage = false;
+  @Input() dashboardType: DashboardType;
 
   @Select(SettingsState.theme) theme$: Observable<string>;
   @Select(SettingsState.customAccentColor) customAccentColor$: Observable<string>;
@@ -56,6 +62,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
 
   showDynamicColorSettings = false;
   customAccentColor: ThemeColor = null;
+
+  isSpotifyDashboard = false;
 
   colorPickerResetEvent = new Subject<void>();
 
@@ -79,6 +87,8 @@ export class SettingsMenuComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.isSpotifyDashboard = this.dashboardType === Dashboard.Spotify;
+
     this.theme$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((theme) => this.currentTheme = theme);

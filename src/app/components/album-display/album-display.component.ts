@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { faSpotify } from '@fortawesome/free-brands-svg-icons';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
@@ -9,6 +9,7 @@ import { PlaybackState } from '../../core/playback/playback.state';
 import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { SettingsState } from '../../core/settings/settings.state';
 import { expandHexColor, isHexColor } from '../../core/util';
+import { Dashboard, DashboardType } from '../../models/dashboard.model';
 import { ImageResponse } from '../../models/image.model';
 
 @Component({
@@ -20,6 +21,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   private static readonly spotifyCodesUrl = 'https://www.spotifycodes.com/downloadCode.php';
   private static readonly maxCodeWidth = 512;
   private ngUnsubscribe = new Subject();
+
+  @Input() dashboardType: DashboardType;
 
   @Select(PlaybackState.covertArt) coverArt$: Observable<ImageResponse>;
   private coverArt: ImageResponse;
@@ -52,6 +55,8 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   private dominantColorFinder: DominantColorFinder = null;
 
   spotifyCodeUrl: string;
+  isSpotifyDashboard = false;
+  noAlbumMessage = 'No album selected!';
 
   // Template constants
   readonly spotifyIcon = faSpotify;
@@ -62,6 +67,10 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.dominantColorFinder) {
       this.dominantColorFinder = new DominantColorFinder();
+    }
+    if (this.dashboardType && this.dashboardType === Dashboard.Spotify) {
+      this.isSpotifyDashboard = true;
+      this.noAlbumMessage = 'Start Spotify to display music!';
     }
 
     this.track$

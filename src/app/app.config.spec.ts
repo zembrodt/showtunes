@@ -107,10 +107,12 @@ describe('AppConfig', () => {
         idlePolling: expectedIdlePolling
       },
       auth: {
-        clientId: expectedClientId,
-        clientSecret: expectedClientSecret,
-        scopes: expectedScopes,
-        tokenUrl: expectedTokenUrl,
+        spotify: {
+          clientId: expectedClientId,
+          clientSecret: expectedClientSecret,
+          scopes: expectedScopes,
+          tokenUrl: expectedTokenUrl,
+        },
         forcePkce: expectedForcePkce,
         showDialog: expectedShowDialog,
         expiryThreshold: expectedExpiryThreshold
@@ -127,10 +129,10 @@ describe('AppConfig', () => {
       expect(AppConfig.settings.env.spotifyAccountsUrl).toEqual(expectedSpotifyAccountsUrl);
       expect(AppConfig.settings.env.playbackPolling).toEqual(expectedPlaybackPolling);
       expect(AppConfig.settings.env.idlePolling).toEqual(expectedIdlePolling);
-      expect(AppConfig.settings.auth.clientId).toEqual(expectedClientId);
-      expect(AppConfig.settings.auth.clientSecret).toEqual(expectedClientSecret);
-      expect(AppConfig.settings.auth.scopes).toEqual(expectedScopes);
-      expect(AppConfig.settings.auth.tokenUrl).toEqual(expectedTokenUrl);
+      expect(AppConfig.settings.auth.spotify.clientId).toEqual(expectedClientId);
+      expect(AppConfig.settings.auth.spotify.clientSecret).toEqual(expectedClientSecret);
+      expect(AppConfig.settings.auth.spotify.scopes).toEqual(expectedScopes);
+      expect(AppConfig.settings.auth.spotify.tokenUrl).toEqual(expectedTokenUrl);
       expect(AppConfig.settings.auth.forcePkce).toEqual(expectedForcePkce);
       expect(AppConfig.settings.auth.showDialog).toEqual(expectedShowDialog);
       expect(AppConfig.settings.auth.expiryThreshold).toEqual(expectedExpiryThreshold);

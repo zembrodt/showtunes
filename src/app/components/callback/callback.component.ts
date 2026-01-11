@@ -4,6 +4,7 @@ import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
 import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
+import { Dashboard, Dashboards, DashboardType } from '../../models/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 
 const codeKey = 'code';
@@ -17,7 +18,9 @@ const stateKey = 'state';
 })
 export class CallbackComponent implements OnInit {
 
-  @Select(SpotifyAuthState.token) token$: Observable<SpotifyAuthToken>;
+  @Select(SpotifyAuthState.token) spotifyToken$: Observable<SpotifyAuthToken>;
+
+  private dashboardType: DashboardType;
 
   constructor(
     private route: ActivatedRoute,
@@ -25,10 +28,25 @@ export class CallbackComponent implements OnInit {
     private auth: SpotifyAuthService) { }
 
   ngOnInit(): void {
+    const type = this.route.snapshot.paramMap.get('type');
+    const validDashboardTypes = Dashboards.map(d => d.name.toLowerCase());
+    if (type == null || !validDashboardTypes.includes(type.toLowerCase())) {
+      console.error(`Invalid callback type requested: '${type}'. Valid types are [${validDashboardTypes.join(', ')}]`);
+      this.router.navigate(['/landing']);
+      return;
+    }
+    this.dashboardType = Dashboards.find(d => d.name.toLowerCase() === type.toLowerCase());
+
+    if (this.dashboardType === Dashboard.Spotify) {
+      this.handleSpotifyCallback();
+    }
+  }
+
+  private handleSpotifyCallback(): void {
     // redirect to /dashboard if already authenticated
-    this.token$.subscribe(token => {
+    this.spotifyToken$.subscribe(token => {
       if (token) {
-        this.router.navigateByUrl('/dashboard');
+        this.router.navigateByUrl('/dashboard/spotify');
       }
     });
 
@@ -50,8 +68,7 @@ export class CallbackComponent implements OnInit {
         if (!error) {
           if (!code) {
             console.error('No code value given for callback');
-          }
-          else if (!this.auth.compareState(state)) {
+          } else if (!this.auth.compareState(state)) {
             console.error(`State value is not correct: ${state}`);
           }
         }

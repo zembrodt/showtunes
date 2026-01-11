@@ -40,15 +40,15 @@ export class SpotifyAuthService {
   static initialize(): boolean {
     this.initialized = true;
     try {
-      this.clientId = AppConfig.settings.auth.clientId;
+      this.clientId = AppConfig.settings.auth.spotify.clientId;
       if (!this.clientId) {
         console.error('No Spotify API Client ID provided');
         this.initialized = false;
       }
 
-      this.tokenUrl = AppConfig.settings.auth.tokenUrl;
-      this.clientSecret = AppConfig.settings.auth.clientSecret;
-      this.scopes = AppConfig.settings.auth.scopes;
+      this.tokenUrl = AppConfig.settings.auth.spotify.tokenUrl;
+      this.clientSecret = AppConfig.settings.auth.spotify.clientSecret;
+      this.scopes = AppConfig.settings.auth.spotify.scopes;
       this.showAuthDialog = AppConfig.settings.auth.showDialog;
 
       if (AppConfig.settings.auth.forcePkce || (!this.tokenUrl && !this.clientSecret)) {
@@ -68,7 +68,7 @@ export class SpotifyAuthService {
       }
 
       if (AppConfig.settings.env.domain) {
-        this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback');
+        this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback/spotify');
       } else {
         console.error('No domain set for Spotify OAuth callback URL');
         this.initialized = false;

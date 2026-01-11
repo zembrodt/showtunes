@@ -35,8 +35,10 @@ import { DYNAMIC_THEME_COLORS, PlayerControlsOptions, Theme } from '../../core/s
 import { SettingsState } from '../../core/settings/settings.state';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { cssRgbToHex, FontColor } from '../../core/util';
+import { Dashboard } from '../../models/dashboard.model';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
+import { DashboardComponent } from '../dashboard/dashboard.component';
 import { SettingsMenuComponent } from './settings-menu.component';
 
 const THEME_INDEX = 0;
@@ -108,6 +110,7 @@ describe('SettingsMenuComponent', () => {
 
     fixture = TestBed.createComponent(SettingsMenuComponent);
     component = fixture.componentInstance;
+    component.dashboardType = Dashboard.Spotify;
     loader = TestbedHarnessEnvironment.loader(fixture);
     rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
 

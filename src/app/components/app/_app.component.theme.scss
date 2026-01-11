@@ -15,6 +15,10 @@
     color: mat.get-color-from-palette($foreground, text);
   }
 
+  .app-accent-text {
+    color: mat.get-color-from-palette($accent, text);
+  }
+
   /* Link styling */
   a:link, a:visited {
     color: mat.get-color-from-palette($accent, text) !important;

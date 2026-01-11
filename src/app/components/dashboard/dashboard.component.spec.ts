@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MockComponent } from 'ng-mocks';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import { MockComponent, MockProvider } from 'ng-mocks';
 import { AlbumDisplayComponent } from '../album-display/album-display.component';
 import { SettingsMenuComponent } from '../settings-menu/settings-menu.component';
 import { TrackPlayerComponent } from '../track-player/track-player.component';
@@ -19,6 +20,19 @@ describe('DashboardComponent', () => {
         MockComponent(AlbumDisplayComponent),
         MockComponent(TrackPlayerComponent)
       ],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({
+                type: 'spotify'
+              })
+            }
+          }
+        },
+        MockProvider(Router)
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);

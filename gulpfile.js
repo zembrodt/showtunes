@@ -54,20 +54,20 @@ gulp.task('generate-config', () => {
         configJson.env.throttleDelay = throttleDelay;
       }
     }
-    if ('SHOWTUNES_CLIENT_ID' in process.env) {
-      configJson.auth.clientId = process.env.SHOWTUNES_CLIENT_ID;
+    if ('SHOWTUNES_SPOTIFY_CLIENT_ID' in process.env) {
+      configJson.auth.spotify.clientId = process.env.SHOWTUNES_SPOTIFY_CLIENT_ID;
     }
-    if ('SHOWTUNES_SCOPES' in process.env) {
-      configJson.auth.scopes = process.env.SHOWTUNES_SCOPES;
+    if ('SHOWTUNES_SPOTIFY_CLIENT_SECRET' in process.env) {
+      configJson.auth.spotify.clientSecret = process.env.SHOWTUNES_SPOTIFY_CLIENT_SECRET;
+    }
+    if ('SHOWTUNES_SPOTIFY_SCOPES' in process.env) {
+      configJson.auth.spotify.scopes = process.env.SHOWTUNES_SPOTIFY_SCOPES;
+    }
+    if ('SHOWTUNES_SPOTIFY_TOKEN_URL' in process.env) {
+      configJson.auth.spotify.tokenUrl = process.env.SHOWTUNES_SPOTIFY_TOKEN_URL;
     }
     if ('SHOWTUNES_FORCE_PKCE' in process.env) {
       configJson.auth.forcePkce = process.env.SHOWTUNES_FORCE_PKCE;
-    }
-    if ('SHOWTUNES_CLIENT_SECRET' in process.env) {
-      configJson.auth.clientSecret = process.env.SHOWTUNES_CLIENT_SECRET;
-    }
-    if ('SHOWTUNES_TOKEN_URL' in process.env) {
-      configJson.auth.tokenUrl = process.env.SHOWTUNES_TOKEN_URL;
     }
     if ('SHOWTUNES_AUTH_SHOW_DIALOG' in process.env) {
       configJson.auth.showDialog = process.env.SHOWTUNES_AUTH_SHOW_DIALOG;

@@ -9,10 +9,12 @@ export interface IAppConfig {
     throttleDelay?: number;
   };
   auth: {
-    clientId: string;
-    clientSecret?: string;
-    scopes: string;
-    tokenUrl?: string;
+    spotify: {
+      clientId: string;
+      clientSecret?: string;
+      scopes: string;
+      tokenUrl?: string;
+    },
     forcePkce?: boolean;
     showDialog?: boolean;
     expiryThreshold?: number;

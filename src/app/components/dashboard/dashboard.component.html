@@ -1,15 +1,17 @@
 <div class="dashboard">
   <div class="user-options-menu">
-    <app-settings-menu></app-settings-menu>
+    <app-settings-menu [dashboardType]="dashboardType"></app-settings-menu>
   </div>
   <div class="content"
        fxLayout="row"
        fxLayout.lt-sm="column"
        fxLayoutAlign="space-around center">
-    <div class="dashboard-item album-display">
-      <app-album-display></app-album-display>
+    <div class="dashboard-item album-display"
+         *ngIf="dashboardType.allowsAlbumArt">
+      <app-album-display [dashboardType]="dashboardType"></app-album-display>
     </div>
-    <div class="dashboard-item track-player">
+    <div class="dashboard-item track-player"
+         *ngIf="dashboardType.allowsTrackPlayer">
       <app-track-player></app-track-player>
     </div>
   </div>

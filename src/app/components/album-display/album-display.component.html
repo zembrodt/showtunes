@@ -14,29 +14,31 @@
       <div class="album-placeholder" [ngClass.lt-md]="'album-placeholder-sm'"
            fxLayout="column"
            fxLayoutAlign="center center">
-        <mat-spinner *ngIf="(playerState$ | async) === playingState; else noMusicMessage" class="album-placeholder-spinner"></mat-spinner>
-        <ng-template #noMusicMessage>
-          <span class="mat-h1" style="margin: 0">Start Spotify to display music!</span>
+        <mat-spinner *ngIf="(playerState$ | async) === playingState; else noAlbum" class="album-placeholder-spinner"></mat-spinner>
+        <ng-template #noAlbum>
+          <span class="mat-h1" style="margin: 0">{{ noAlbumMessage }}</span>
         </ng-template>
       </div>
     </div>
   </ng-template>
-  <div *ngIf="(showSpotifyCode$ | async) && !spotifyCodeUrl; else spotifyCode">
-    <div class="qr-code-image">
-      <div class="qr-code-placeholder" [ngClass.lt-md]="'qr-code-placeholder-sm'"
-           fxLayout="column"
-           fxLayoutAlign="center center">
-        <div style="width: 100%; height: 100%"
-             fxLayout="row"
-             fxLayoutAlign="center center"
-             fxLayoutGap="12px">
-          <fa-icon [icon]="spotifyIcon" style="font-size: 20px"></fa-icon>
-          <mat-progress-bar *ngIf="(playerState$ | async) === playingState" style="width: 33%" mode="indeterminate"></mat-progress-bar>
+  <div *ngIf="isSpotifyDashboard">
+    <div *ngIf="(showSpotifyCode$ | async) && !spotifyCodeUrl; else spotifyCode">
+      <div class="qr-code-image">
+        <div class="qr-code-placeholder" [ngClass.lt-md]="'qr-code-placeholder-sm'"
+             fxLayout="column"
+             fxLayoutAlign="center center">
+          <div style="width: 100%; height: 100%"
+               fxLayout="row"
+               fxLayoutAlign="center center"
+               fxLayoutGap="12px">
+            <fa-icon [icon]="spotifyIcon" style="font-size: 20px"></fa-icon>
+            <mat-progress-bar *ngIf="(playerState$ | async) === playingState" style="width: 33%" mode="indeterminate"></mat-progress-bar>
+          </div>
         </div>
       </div>
     </div>
+    <ng-template #spotifyCode>
+      <img *ngIf="showSpotifyCode$ | async" src="{{spotifyCodeUrl}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
+    </ng-template>
   </div>
-  <ng-template #spotifyCode>
-    <img *ngIf="showSpotifyCode$ | async" src="{{spotifyCodeUrl}}" class="qr-code-image" [ngClass.lt-md]="'img-sm'" />
-  </ng-template>
 </div>

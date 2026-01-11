@@ -4,23 +4,23 @@ import { AlbumDisplayComponent } from '../album-display/album-display.component'
 import { SettingsMenuComponent } from '../settings-menu/settings-menu.component';
 import { TrackPlayerComponent } from '../track-player/track-player.component';
 
-import { MenuComponent } from './menu.component';
+import { LandingComponent } from './landing.component';
 
 describe('MenuComponent', () => {
-  let component: MenuComponent;
-  let fixture: ComponentFixture<MenuComponent>;
+  let component: LandingComponent;
+  let fixture: ComponentFixture<LandingComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
-        MenuComponent,
+        LandingComponent,
         MockComponent(SettingsMenuComponent),
         MockComponent(AlbumDisplayComponent),
         MockComponent(TrackPlayerComponent)
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MenuComponent);
+    fixture = TestBed.createComponent(LandingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

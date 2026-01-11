@@ -20,10 +20,12 @@ export function getTestAppConfig(): IAppConfig {
       throttleDelay: 1000
     },
     auth: {
-      clientId: 'test-client-id',
-      clientSecret: null,
-      scopes: 'test-scope',
-      tokenUrl: null,
+      spotify: {
+        clientId: 'test-client-id',
+        clientSecret: null,
+        scopes: 'test-scope',
+        tokenUrl: null,
+      },
       forcePkce: false,
       showDialog: true,
       expiryThreshold: 5000

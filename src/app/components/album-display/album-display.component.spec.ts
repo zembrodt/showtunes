@@ -20,6 +20,7 @@ import { ChangeDynamicColor } from '../../core/settings/settings.actions';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
 import { getTestAlbumModel, getTestDominantColor, getTestTrackModel } from '../../core/testing/test-models';
 import { getTestImageResponse } from '../../core/testing/test-responses';
+import { Dashboard } from '../../models/dashboard.model';
 import { ImageResponse } from '../../models/image.model';
 import { AlbumDisplayComponent } from './album-display.component';
 
@@ -92,6 +93,7 @@ describe('AlbumDisplayComponent', () => {
 
     mockDominantColorFinder = new MockDominantColorFinder();
     component['dominantColorFinder'] = mockDominantColorFinder;
+    component.dashboardType = Dashboard.Spotify;
 
     fixture.detectChanges();
   }));

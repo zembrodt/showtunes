@@ -68,19 +68,19 @@ describe('SpotifyAuthService', () => {
   });
 
   it('should fail to initialize if no configured clientId', () => {
-    AppConfig.settings.auth.clientId = null;
+    AppConfig.settings.auth.spotify.clientId = null;
     expect(SpotifyAuthService.initialize()).toBeFalse();
     expect(console.error).toHaveBeenCalled();
   });
 
   it('should set tokenUrl on initialization when configured', () => {
-    AppConfig.settings.auth.tokenUrl = 'test-token-url';
+    AppConfig.settings.auth.spotify.tokenUrl = 'test-token-url';
     expect(SpotifyAuthService.initialize()).toBeTrue();
     expect(SpotifyAuthService['tokenUrl']).toBeTruthy();
   });
 
   it('should set clientSecret on initialization when configured', () => {
-    AppConfig.settings.auth.clientSecret = 'test-client-secret';
+    AppConfig.settings.auth.spotify.clientSecret = 'test-client-secret';
     expect(SpotifyAuthService.initialize()).toBeTrue();
     expect(SpotifyAuthService['clientSecret']).toBeTruthy();
   });
@@ -107,13 +107,13 @@ describe('SpotifyAuthService', () => {
   });
 
   it('should set auth type to ThirdParty if tokenUrl is configured and clientSecret not configured', () => {
-    AppConfig.settings.auth.tokenUrl = 'test-token-url';
+    AppConfig.settings.auth.spotify.tokenUrl = 'test-token-url';
     expect(SpotifyAuthService.initialize()).toBeTrue();
     expect(SpotifyAuthService['authType']).toEqual(AuthType.ThirdParty);
   });
 
   it('should set auth type to Secret if tokenUrl not configured and clientSecret is configured', () => {
-    AppConfig.settings.auth.clientSecret = 'test-client-secret';
+    AppConfig.settings.auth.spotify.clientSecret = 'test-client-secret';
     expect(SpotifyAuthService.initialize()).toBeTrue();
     expect(SpotifyAuthService['authType']).toEqual(AuthType.Secret);
   });
@@ -402,7 +402,7 @@ describe('SpotifyAuthService', () => {
       response_type: 'code',
       client_id: SpotifyAuthService['clientId'],
       scope: 'test-scope',
-      redirect_uri: `${AppConfig.settings.env.domain}/callback`,
+      redirect_uri: `${AppConfig.settings.env.domain}/callback/spotify`,
       state: 'test-state',
       show_dialog: 'true'
     });
@@ -422,7 +422,7 @@ describe('SpotifyAuthService', () => {
       response_type: 'code',
       client_id: SpotifyAuthService['clientId'],
       scope: 'test-scope',
-      redirect_uri: `${AppConfig.settings.env.domain}/callback`,
+      redirect_uri: `${AppConfig.settings.env.domain}/callback/spotify`,
       state: 'test-state',
       show_dialog: 'true',
       code_challenge_method: 'S256',

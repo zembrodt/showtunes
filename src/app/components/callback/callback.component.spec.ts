@@ -31,7 +31,17 @@ describe('CallbackComponent', () => {
       ],
       imports: [ NgxsModule.forRoot([], { developmentMode: true }) ],
       providers: [
-        { provide: ActivatedRoute, useValue: { queryParamMap: paramMapProducer } },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParamMap: paramMapProducer,
+            snapshot: {
+              paramMap: convertToParamMap({
+                type: 'spotify'
+              })
+            }
+          }
+        },
         MockProvider(Router),
         MockProvider(SpotifyAuthService),
         MockProvider(Store)
@@ -44,7 +54,7 @@ describe('CallbackComponent', () => {
     fixture = TestBed.createComponent(CallbackComponent);
     component = fixture.componentInstance;
 
-    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'token$');
+    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'spotifyToken$');
 
     auth.compareState = jasmine.createSpy().and.returnValue(true);
     auth.requestAuthToken = jasmine.createSpy().and.returnValue(Promise.resolve(null));

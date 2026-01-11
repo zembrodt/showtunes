@@ -1,0 +1,20 @@
+<div class="landing">
+  <div class="user-options-menu">
+    <app-settings-menu [isLandingPage]="true"></app-settings-menu>
+  </div>
+  <div class="content"
+       fxLayout="row"
+       fxLayout.lt-sm="column"
+       fxLayoutAlign="space-around center">
+    <a routerLink="/dashboard/spotify" class="no-decoration">
+      <mat-card class="landing-item">
+        <mat-card-header>
+          <mat-card-title class="landing-title">
+            <fa-icon [icon]="spotifyIcon" class="app-accent-text"></fa-icon>
+            Spotify
+          </mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    </a>
+  </div>
+</div>

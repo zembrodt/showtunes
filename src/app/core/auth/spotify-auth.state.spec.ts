@@ -62,7 +62,7 @@ describe('Authentication', () => {
       store = TestBed.inject(Store);
       store.reset({
         ...store.snapshot(),
-        SHOWTUNES_AUTH: {
+        SHOWTUNES_SPOTIFY_AUTH: {
           token: getTestAuthToken(),
           isAuthenticated: true
         }

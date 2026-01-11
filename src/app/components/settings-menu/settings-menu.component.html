@@ -19,7 +19,7 @@
           (click)="$event.stopPropagation();"
         ></mat-slide-toggle>
       </div>
-      <div class="menu-item">
+      <div class="menu-item" *ngIf="isSpotifyDashboard">
         <mat-button-toggle-group
             name="playerControlsOptions"
             [value]="showPlayerControls$ | async"
@@ -37,6 +37,7 @@
         </mat-button-toggle-group>
       </div>
       <div class="menu-item"
+           *ngIf="isSpotifyDashboard"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">queue_music</mat-icon>
@@ -48,6 +49,7 @@
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
+           *ngIf="isSpotifyDashboard"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">qr_code_2</mat-icon>
@@ -59,6 +61,7 @@
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
+           *ngIf="isSpotifyDashboard"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">lightbulb</mat-icon>
@@ -70,9 +73,9 @@
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
+           *ngIf="isSpotifyDashboard && showDynamicColorSettings"
            fxLayout="row"
-           fxLayoutGap="{{menuItemSpacing}}"
-           *ngIf="showDynamicColorSettings">
+           fxLayoutGap="{{menuItemSpacing}}">
         <div class="app-icon"></div>
         <mat-icon class="app-icon">play_circle_outline</mat-icon>
         <mat-slide-toggle
@@ -91,9 +94,9 @@
         ></mat-slide-toggle>
       </div>
       <div class="menu-item"
+           *ngIf="isSpotifyDashboard && !(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)"
            fxLayout="row"
-           fxLayoutGap="{{menuItemSpacing}}"
-           *ngIf="!(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)">
+           fxLayoutGap="{{menuItemSpacing}}">
         <mat-icon class="app-icon">invert_colors</mat-icon>
         <mat-slide-toggle
           [checked]="(barColor$ | async) === fontColorBlack"
@@ -103,13 +106,13 @@
         ></mat-slide-toggle>
       </div>
       <app-color-picker
+        *ngIf="isSpotifyDashboard && !(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)"
         [color]="backgroundColor$ | async"
         [placeholderColor]="placeholderColor"
         [presetColors]="presetColors"
         [colorReset$]="colorPickerResetEvent.asObservable()"
         (colorChange)="onColorChange($event)"
-        (click)="$event.stopPropagation();"
-        *ngIf="!(useDynamicCodeColor$ | async) && (showSpotifyCode$ | async)"></app-color-picker>
+        (click)="$event.stopPropagation();"></app-color-picker>
       <div class="menu-item"
            fxLayout="row"
            fxLayoutGap="{{menuItemSpacing}}"
@@ -134,7 +137,10 @@
     <div class="menu-help"
          fxLayout="row"
          fxLayoutAlign="center start">
-      <button mat-icon-button (click)="logout()" class="track-player-icon">
+      <button mat-icon-button
+              *ngIf="isSpotifyDashboard"
+              (click)="logout()"
+              class="track-player-icon">
         <mat-icon>logout</mat-icon>
       </button>
       <button mat-icon-button (click)="openHelpDialog()" class="track-player-icon">

@@ -21,7 +21,7 @@ import { DevicesComponent } from './components/devices/devices.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { LoginComponent } from './components/login/login.component';
-import { MenuComponent } from './components/menu/menu.component';
+import { LandingComponent } from './components/landing/landing.component';
 import { HelpDialogComponent } from './components/settings-menu/help-dialog/help-dialog.component';
 import { SettingsMenuComponent } from './components/settings-menu/settings-menu.component';
 import { TrackPlayerControlsComponent } from './components/track-player/track-player-controls/track-player-controls.component';
@@ -59,7 +59,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
     HelpDialogComponent,
     LoadingComponent,
     LoginComponent,
-    MenuComponent,
+    LandingComponent,
     SettingsMenuComponent,
     TrackPlayerComponent,
     TrackPlayerControlsComponent,
