@@ -5,7 +5,7 @@ import { LandingComponent } from './components/landing/landing.component';
 import { LoginComponent } from './components/login/login.component';
 import { CallbackComponent } from './components/callback/callback.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { SpotifyAuthGuard } from './core/auth/spotify-auth.guard';
+import { AuthGuard } from './core/auth/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/landing', pathMatch: 'full' },
@@ -13,9 +13,9 @@ const routes: Routes = [
   { path: 'callback/:type', component: CallbackComponent },
   { path: 'landing', component: LandingComponent },
   { path: 'dashboard', redirectTo: '/landing', pathMatch: 'full'},
-  { path: 'dashboard/:type', component: DashboardComponent, canActivate: [SpotifyAuthGuard] },
+  { path: 'dashboard/:type', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'error', component: ErrorComponent },
-  { path: 'login', component: LoginComponent }
+  { path: 'login/:type', component: LoginComponent }
 ];
 
 @NgModule({
@@ -24,6 +24,6 @@ const routes: Routes = [
     RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })
   ],
   exports: [RouterModule],
-  providers: [SpotifyAuthGuard]
+  providers: [AuthGuard]
 })
 export class AppRoutingModule { }

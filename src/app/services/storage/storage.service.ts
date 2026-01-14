@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SPOTIFY_AUTH_STATE_NAME } from '../../core/auth/spotify-auth.model';
+import { SPOTIFY_AUTH_STATE_NAME } from '../../core/spotify/auth/spotify-auth.model';
 
 export const PREVIOUS_VOLUME = 'PREVIOUS_VOLUME';
 

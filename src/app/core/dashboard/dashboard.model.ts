@@ -11,10 +11,15 @@ export const Dashboard = {
     name: 'Spotify',
     allowsAlbumArt: true,
     allowsTrackPlayer: true
+  } as DashboardType,
+  Discogs: {
+    name: 'Discogs',
+    allowsAlbumArt: true,
+    allowsTrackPlayer: false
   } as DashboardType
 };
 
-export const Dashboards = [ Dashboard.Spotify ];
+export const Dashboards = [ Dashboard.Spotify, Dashboard.Discogs ];
 
 export interface DashboardModel {
   currentDashboard: DashboardType;

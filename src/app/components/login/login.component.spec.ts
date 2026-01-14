@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from '@angular/flex-layout/_private-utils/testing';
 import { By } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, convertToParamMap, Router } from '@angular/router';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { SpotifyAuthToken } from '../../core/auth/spotify-auth.model';
+import { SpotifyAuthToken } from '../../core/spotify/auth/spotify-auth.model';
 import { NgxsSelectorMock } from '../../core/testing/ngxs-selector-mock';
+import { DiscogsAuthService } from '../../services/discogs/auth/discogs-auth.service';
 import { SpotifyAuthService } from '../../services/spotify/auth/spotify-auth.service';
 import { LoadingComponent } from '../loading/loading.component';
 
@@ -16,9 +17,11 @@ describe('LoginComponent', () => {
   const authorizeUrl = 'https://example.com/authorize';
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let auth: SpotifyAuthService;
+  let spotifyAuth: SpotifyAuthService;
+  let discogsAuth: DiscogsAuthService;
   let router: Router;
-  let tokenProducer: BehaviorSubject<SpotifyAuthToken>;
+  let route: ActivatedRoute;
+  let spotifyTokenProducer: BehaviorSubject<SpotifyAuthToken>;
   let navigateToUrlSpy;
 
   beforeEach(waitForAsync(() => {
@@ -29,19 +32,26 @@ describe('LoginComponent', () => {
       ],
       providers: [
         MockProvider(SpotifyAuthService),
-        MockProvider(Router)
+        MockProvider(DiscogsAuthService),
+        MockProvider(Router),
+        MockProvider(ActivatedRoute)
       ]
     }).compileComponents();
-    auth = TestBed.inject(SpotifyAuthService);
+    spotifyAuth = TestBed.inject(SpotifyAuthService);
+    discogsAuth = TestBed.inject(DiscogsAuthService);
     router = TestBed.inject(Router);
+    route = TestBed.inject(ActivatedRoute);
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
 
-    tokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'token$');
+    spotifyTokenProducer = mockSelectors.defineNgxsSelector<SpotifyAuthToken>(component, 'spotifyToken$');
     navigateToUrlSpy = spyOn<any>(component, 'navigateToUrl');
 
-    auth.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
+    spotifyAuth.getAuthorizeRequestUrl = jasmine.createSpy().and.returnValue(Promise.resolve(authorizeUrl));
+    (route as any).snapshot = {
+      paramMap: convertToParamMap({type: 'spotify'})
+    };
 
     fixture.detectChanges();
   }));
@@ -60,19 +70,19 @@ describe('LoginComponent', () => {
   });
 
   it('should navigate to the dashboard when auth token present', () => {
-    tokenProducer.next({
+    spotifyTokenProducer.next({
       accessToken: 'access_token',
       tokenType: 'type',
       expiry: new Date(),
       scope: 'scope',
       refreshToken: 'refresh'
     });
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard/spotify');
   });
 
   it('should navigate to the Spotify authorize request URL when no auth token present', async () => {
-    tokenProducer.next(null);
-    expect(auth.getAuthorizeRequestUrl).toHaveBeenCalled();
+    spotifyTokenProducer.next(null);
+    expect(spotifyAuth.getAuthorizeRequestUrl).toHaveBeenCalled();
     expect(await navigateToUrlSpy).toHaveBeenCalledWith(authorizeUrl);
   });
 });

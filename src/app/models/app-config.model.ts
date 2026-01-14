@@ -4,6 +4,7 @@ export interface IAppConfig {
     domain: string;
     spotifyApiUrl: string;
     spotifyAccountsUrl: string;
+    discogsOAuthUrl?: string;
     playbackPolling?: number;
     idlePolling?: number;
     throttleDelay?: number;
@@ -15,6 +16,11 @@ export interface IAppConfig {
       scopes: string;
       tokenUrl?: string;
     },
+    discogs?: {
+      clientId: string;
+      clientSecret: string;
+      tokenUrl: string;
+    }
     forcePkce?: boolean;
     showDialog?: boolean;
     expiryThreshold?: number;

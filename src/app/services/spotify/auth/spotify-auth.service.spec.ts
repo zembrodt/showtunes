@@ -8,8 +8,8 @@ import { NgxsModule, Store } from '@ngxs/store';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { AppConfig } from '../../../app.config';
-import { SetAuthToken } from '../../../core/auth/spotify-auth.actions';
-import { SpotifyAuthToken } from '../../../core/auth/spotify-auth.model';
+import { SetAuthToken } from '../../../core/spotify/auth/spotify-auth.actions';
+import { SpotifyAuthToken } from '../../../core/spotify/auth/spotify-auth.model';
 import { SetPlayerState } from '../../../core/playback/playback.actions';
 import { PlayerState } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
@@ -474,7 +474,7 @@ describe('SpotifyAuthService', () => {
     expect(service['authToken']).toBeNull();
     expect(storage.remove).toHaveBeenCalledOnceWith(SpotifyAuthService['STATE_KEY']);
     expect(storage.removeSpotifyAuthToken).toHaveBeenCalledTimes(1);
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/login/spotify');
   });
 
   it('should get current state if not null', () => {

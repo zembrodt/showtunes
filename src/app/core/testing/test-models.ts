@@ -1,4 +1,4 @@
-import { SpotifyAuthToken } from '../auth/spotify-auth.model';
+import { SpotifyAuthToken } from '../spotify/auth/spotify-auth.model';
 import { DominantColor } from '../dominant-color/dominant-color-finder';
 import { AlbumModel, ArtistModel, DeviceModel, DisallowsModel, PlaylistModel, TrackModel } from '../playback/playback.model';
 import { FontColor } from '../util';

@@ -27,14 +27,15 @@ import { SettingsMenuComponent } from './components/settings-menu/settings-menu.
 import { TrackPlayerControlsComponent } from './components/track-player/track-player-controls/track-player-controls.component';
 import { TrackPlayerProgressComponent } from './components/track-player/track-player-progress/track-player-progress.component';
 import { TrackPlayerComponent } from './components/track-player/track-player.component';
-import { SPOTIFY_AUTH_STATE_NAME } from './core/auth/spotify-auth.model';
-import { SpotifyAuthState } from './core/auth/spotify-auth.state';
+import { SPOTIFY_AUTH_STATE_NAME } from './core/spotify/auth/spotify-auth.model';
+import { SpotifyAuthState } from './core/spotify/auth/spotify-auth.state';
 import { DashboardState } from './core/dashboard/dashboard.state';
 import { PlaybackState } from './core/playback/playback.state';
 import { SETTINGS_STATE_NAME } from './core/settings/settings.model';
 import { SettingsState } from './core/settings/settings.state';
 import { InteractionThrottleDirective } from './directives/component-throttle/interaction-throttle.directive';
 import { MaterialModule } from './modules/material.module';
+import { DiscogsAuthService } from './services/discogs/auth/discogs-auth.service';
 import { InactivityService } from './services/inactivity/inactivity.service';
 import { PlaybackService } from './services/playback/playback.service';
 import { SpotifyAuthService } from './services/spotify/auth/spotify-auth.service';
@@ -121,6 +122,7 @@ export function initializeApp(appConfig: AppConfig): () => Promise<void> {
       useClass: SpotifyInterceptor,
       multi: true
     },
+    DiscogsAuthService,
     PlaybackService,
   ],
   bootstrap: [ AppComponent ]

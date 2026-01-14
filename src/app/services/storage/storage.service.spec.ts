@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SPOTIFY_AUTH_STATE_NAME } from '../../core/auth/spotify-auth.model';
+import { SPOTIFY_AUTH_STATE_NAME } from '../../core/spotify/auth/spotify-auth.model';
 
 import { StorageService } from './storage.service';
 

@@ -3,7 +3,7 @@ import { Select } from '@ngxs/store';
 import { BehaviorSubject, interval, NEVER, Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AppConfig } from '../../app.config';
-import { SpotifyAuthState } from '../../core/auth/spotify-auth.state';
+import { SpotifyAuthState } from '../../core/spotify/auth/spotify-auth.state';
 import { PlayerState } from '../../core/playback/playback.model';
 import { PlaybackState } from '../../core/playback/playback.state';
 import { SpotifyPollingService } from '../spotify/polling/spotify-polling.service';

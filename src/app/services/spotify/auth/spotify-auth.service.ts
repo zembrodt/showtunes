@@ -5,9 +5,9 @@ import { Select, Store } from '@ngxs/store';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppConfig } from '../../../app.config';
-import { SetAuthToken } from '../../../core/auth/spotify-auth.actions';
-import { SpotifyAuthToken } from '../../../core/auth/spotify-auth.model';
-import { SpotifyAuthState } from '../../../core/auth/spotify-auth.state';
+import { SetAuthToken } from '../../../core/spotify/auth/spotify-auth.actions';
+import { SpotifyAuthToken } from '../../../core/spotify/auth/spotify-auth.model';
+import { SpotifyAuthState } from '../../../core/spotify/auth/spotify-auth.state';
 import { SetPlayerState } from '../../../core/playback/playback.actions';
 import { PlayerState } from '../../../core/playback/playback.model';
 import { SpotifyEndpoints } from '../../../core/spotify/spotify-endpoints';
@@ -70,11 +70,11 @@ export class SpotifyAuthService {
       if (AppConfig.settings.env.domain) {
         this.redirectUri = encodeURI(AppConfig.settings.env.domain + '/callback/spotify');
       } else {
-        console.error('No domain set for Spotify OAuth callback URL');
+        console.error('No domain set for OAuth callback URL');
         this.initialized = false;
       }
     } catch (error) {
-      console.error(`Failed to initialize spotify service: ${error}`);
+      console.error(`Failed to initialize Spotify service: ${error}`);
       this.initialized = false;
     }
     return this.initialized;
@@ -138,7 +138,7 @@ export class SpotifyAuthService {
               .subscribe(() => resolve());
           },
           (error) => {
-            const errMsg = `Error requesting token: ${JSON.stringify(error)}`;
+            const errMsg = `Error requesting Spotify auth token: ${JSON.stringify(error)}`;
             console.error(errMsg);
             reject(errMsg);
           });
@@ -230,7 +230,7 @@ export class SpotifyAuthService {
     this.authToken = null;
     this.storage.remove(SpotifyAuthService.STATE_KEY);
     this.storage.removeSpotifyAuthToken();
-    this.router.navigateByUrl('/login');
+    this.router.navigateByUrl('/login/spotify');
   }
 
   private refreshAuthToken(): Promise<SpotifyAPIResponse> {
